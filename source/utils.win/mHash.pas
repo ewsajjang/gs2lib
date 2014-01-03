@@ -14,6 +14,7 @@ type
 implementation
 
 uses
+  // see - http://www.cityinthesky.co.uk/opensource/dcpcrypt/
   DCPcrypt2, DCPsha256, DCPblockciphers, DCPrijndael;
 
 { TSHA256 }
