@@ -43,7 +43,7 @@ type
 implementation
 
 uses
-  vm.List, _mi18n, mEvents
+  vm.List, mEvents
   , v.Windows.Helper
 
   , System.Actions
@@ -62,15 +62,6 @@ begin
   Scaled := False;
 
   AlignTabOrder;
-
-  //AssignFontTo(NanumGothic_NAME);
-  AssignFontTo(i18n.FontName);
-
-  Event.Handler(enLanguageChanged,
-    procedure
-    begin
-      //AssignFontTo(i18n.FontName);
-    end);
 end;
 
 function Tv<Tvm>.Getvm: Tvm;
@@ -83,8 +74,8 @@ var
   LText: String;
 begin
   LText := (Sender as TEdit).Text;
-  if (not CharInSet(Key, [#8, '0'..'9', i18n.FmtSettings.DecimalSeparator])) or
-     (Key = i18n.FmtSettings.DecimalSeparator) and LText.Contains(i18n.FmtSettings.DecimalSeparator) then
+  if (not CharInSet(Key, [#8, '0'..'9', FormatSettings.DecimalSeparator])) or
+     (Key = FormatSettings.DecimalSeparator) and LText.Contains(FormatSettings.DecimalSeparator) then
     Key := #0;
 end;
 
@@ -94,7 +85,7 @@ var
 begin
   LText := (Sender as TEdit).Text;
   if (not CharInSet(Key, [#8, '0'..'9'])) or
-     (Key = i18n.FmtSettings.DecimalSeparator) and LText.Contains(i18n.FmtSettings.DecimalSeparator) then
+     (Key = FormatSettings.DecimalSeparator) and LText.Contains(FormatSettings.DecimalSeparator) then
     Key := #0;
 end;
 

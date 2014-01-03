@@ -36,7 +36,7 @@ type
     function Excute(en: TEventNotify): Boolean; overload;
     function Excute<T>(en: TEventNotify; const Data: T): Boolean; overload;
     procedure Handler(en: TEventNotify; Func: TFunc<Boolean>); overload;
-    procedure RemoveHandler(en: TEventNotify);
+    procedure RemoveHandler(en: TEventNotify); overload;
 
     function Data<T>: T; overload;
     function Data2<T>: T; overload;

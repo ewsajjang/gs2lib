@@ -24,7 +24,7 @@ type
     procedure SetC(Name: String; const Value: TColor);
 
   public
-    procedure TryDeleteByS(const AValue: String);
+    procedure TryDelete(const AValue: String);
     procedure PriorityS(const AName, AValue: String);
 
     function SequentialIdx(S: String; var AIdx: Integer): TSequentialIdx;
@@ -211,7 +211,7 @@ begin
   Values[Name] := Value;
 end;
 
-procedure TStringListHelper.TryDeleteByS(const AValue: String);
+procedure TStringListHelper.TryDelete(const AValue: String);
 var
   LIdx: Integer;
 begin

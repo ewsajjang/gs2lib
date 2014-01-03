@@ -23,7 +23,6 @@ function EmailValidate(const Value: String): Boolean;
 implementation
 
 uses
-  _mi18n,
   System.TypInfo, System.RegularExpressions
   ,Winapi.Windows, Winapi.Messages
   ;
