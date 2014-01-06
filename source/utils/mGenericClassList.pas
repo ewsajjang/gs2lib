@@ -1,4 +1,4 @@
-unit vm.List;
+unit mGenericClassList;
 
 interface
 
@@ -9,53 +9,49 @@ uses
 type
   EGenericAlreadyRegistered = class(Exception);
   EGenricItemNotRegistered = class(Exception);
-  TvmList = class
+  TGenericClassList = class
   private
     FList: TDictionary<String, TObject>;
-
-    constructor Create;
 
     function Key<T: class>: String;
     procedure OnValueNotify(Sender: TObject; const Item: TObject; Action: TCollectionNotification);
   public
+    constructor Create;
     destructor Destroy; override;
 
-    procedure Add(GenricInstance: TObject);
+    procedure Add(AGenricInstance: TObject);
     procedure Remove<T: class>;
     function Get<T: class>: T;
     function Exists<T: class>: Boolean;
   end;
-
-var
-  vmList: TvmList = nil;
 
 implementation
 
 uses
   System.Rtti, System.TypInfo;
 
-{ TvmList }
+{ TGenericClassList }
 
-procedure TvmList.Add(GenricInstance: TObject);
+procedure TGenericClassList.Add(AGenricInstance: TObject);
 var
   LKey: String;
 begin
-  if not Assigned(GenricInstance) then
+  if not Assigned(AGenricInstance) then
     raise EArgumentNilException.Create('Cannot add a nil instance');
 
-  LKey := GenricInstance.ClassName;
+  LKey := AGenricInstance.ClassName;
   if FList.ContainsKey(LKey) then
     raise EGenericAlreadyRegistered.Create('Genric Item already registered');
 
-  FList.Add(LKey, GenricInstance);
+  FList.Add(LKey, AGenricInstance);
 end;
 
-function TvmList.Exists<T>: Boolean;
+function TGenericClassList.Exists<T>: Boolean;
 begin
   Result := FList.ContainsKey(Key<T>);
 end;
 
-function TvmList.Get<T>: T;
+function TGenericClassList.Get<T>: T;
 var
   LKey: String;
   LObj: TObject;
@@ -67,7 +63,7 @@ begin
     raise EGenricItemNotRegistered.Create(Format('Genric Item %s not registered', [LKey]));
 end;
 
-function TvmList.Key<T>: String;
+function TGenericClassList.Key<T>: String;
 var
   LTypeInfo: PTypeInfo;
   LRttiContext: TRttiContext;
@@ -78,20 +74,20 @@ begin
   Result := Format('%s', [LType.Name]);
 end;
 
-constructor TvmList.Create;
+constructor TGenericClassList.Create;
 begin
   FList := TDictionary<String, TObject>.Create;
   FList.OnValueNotify := OnValueNotify;
 end;
 
-destructor TvmList.Destroy;
+destructor TGenericClassList.Destroy;
 begin
   FreeAndNil(FList);
 
   inherited;
 end;
 
-procedure TvmList.OnValueNotify(Sender: TObject; const Item: TObject;
+procedure TGenericClassList.OnValueNotify(Sender: TObject; const Item: TObject;
   Action: TCollectionNotification);
 begin
   if Action = cnRemoved then
@@ -99,7 +95,7 @@ begin
       Item.Free;
 end;
 
-procedure TvmList.Remove<T>;
+procedure TGenericClassList.Remove<T>;
 var
   LKey: String;
 begin
@@ -107,16 +103,5 @@ begin
   if FList.ContainsKey(LKey) then
     FList.Remove(LKey);
 end;
-
-initialization
-  if not Assigned(vmList) then
-    vmList := TvmList.Create;
-
-finalization
-  if Assigned(vmList) then
-  begin
-    vmList.Free;
-    vmList := nil;
-  end;
 
 end.
