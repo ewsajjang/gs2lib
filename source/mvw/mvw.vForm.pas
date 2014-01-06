@@ -1,4 +1,4 @@
-unit v.Windows;
+unit mvw.vForm;
 
 interface
 
@@ -43,7 +43,7 @@ type
 implementation
 
 uses
-  mServices, v.Windows.Helper,
+  mvw.Services, mvw.vForm.Helper,
   System.Actions
   ;
 
@@ -59,7 +59,7 @@ begin
 
   Scaled := False;
 
-  AlignTabOrder;
+  TabOrderAlign;
 end;
 
 function Tv<Tvm>.Getvm: Tvm;
