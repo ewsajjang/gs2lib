@@ -15,8 +15,13 @@ type
   TNotifyInteger = procedure(Sender: TObject; Value: Integer) of object;
   TNotifyString  = procedure(Sender: TObject; Value: String) of object;
 
-  TProcProgress = reference to procedure(Sender: TObject; Total: Boolean; Value: Int64);
-  TProcString = TProc<String>;
+  TProcBoolean = reference to procedure(Value: Boolean);
+  TProcPointer = reference to procedure(Sender: TObject; Value: Pointer; Length: Int64);
+  TProcBytes = reference to procedure(Value: TBytes);
+  TProcError = reference to procedure(Sender: TObject; ErCode: Integer; ErMsg: String);
+  TProcProgress= reference to procedure(Total: Boolean; Value: Int64);
+  TProcInteger = reference to procedure(Sender: TObject; Value: Integer);
+  TProcStr = reference to procedure(Value: String);
 
   TBytesList = TList<TBytes>;
 

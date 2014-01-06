@@ -1,11 +1,9 @@
-unit mUtils;
+unit mSysUtilsEx;
 
 interface
 
 uses
   System.SysUtils, System.Types;
-
-function MinimumCount(const ADividend, ADivisor: Integer): Integer;
 
 function BytesToHexStr(const AValue: TBytes): String; overload;
 function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
@@ -15,6 +13,8 @@ function StrToHexStr(const Str: String): String;
 procedure HexStrToBytes(const Source: String; var Dest: TBytes);
 function HexStrToStr(const Source: String): String;
 
+// Numbers Utils
+function MinimumCount(const ADividend, ADivisor: Integer): Integer;
 function SwapByte(Value: DWord): DWord; overload;
 function SwapByte(Value: Word): Word; overload;
 

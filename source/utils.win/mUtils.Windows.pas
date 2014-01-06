@@ -23,7 +23,8 @@ procedure MyDocumentFile(var AFileName: String);
 procedure EmailByOutlook(const Subject, Body, FileName: String);
 
 function ExeVersion(FileName: String = ''): String;
-function ExtractExePath: String;
+function ExtractExePath: String; overload;
+function ExtractExePath(const AFileName: String): String; overload;
 
 type
   TFileHelper = record helper for TFile
@@ -278,6 +279,11 @@ function ExtractExePath: String;
 begin
   Result := ExtractFilePath(ParamStr(0));
   Result := IncludeTrailingPathDelimiter(Result);
+end;
+
+function ExtractExePath(const AFileName: String): String;
+begin
+  Result := ExtractExePath + AFileName;
 end;
 
 { TFileHelper }

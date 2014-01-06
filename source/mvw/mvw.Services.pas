@@ -7,7 +7,7 @@ uses
   System.Classes, System.SysUtils;
 
 var
-  EventRouter: TRouter<String> = nil;
+  router: TRouter<String> = nil;
   vmList: TGenericClassList = nil;
   svcList: TGenericClassList = nil;
 
@@ -15,8 +15,8 @@ implementation
 
 initialization
 
-  if not Assigned(EventRouter) then
-    EventRouter := TRouter<String>.Create;
+  if not Assigned(router) then
+    router := TRouter<String>.Create;
 
   if not Assigned(vmList) then
     vmList := TGenericClassList.Create;
@@ -37,10 +37,10 @@ finalization
     vmList := nil;
   end;
 
-  if Assigned(EventRouter) then
+  if Assigned(router) then
   begin
-    EventRouter.Free;
-    EventRouter := nil;
+    router.Free;
+    router := nil;
   end;
 
 end.
