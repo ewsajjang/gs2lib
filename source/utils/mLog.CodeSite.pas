@@ -14,6 +14,8 @@ type
     constructor Create;
     destructor Destroy; override;
 
+    procedure Clear;
+
     procedure Enter(const AValue: String);
     procedure Exit(const AValue: String);
 
@@ -69,18 +71,22 @@ const
   csmSnd = csmOrange;
   csmRcv = csmGreen;
 
+procedure TLogCodeSite.Clear;
+begin
+  CodeSite.Clear;
+end;
+
 constructor TLogCodeSite.Create;
 begin
   FCodeSiteDest := TCodeSiteDestination.Create(nil);
-  FCodeSiteDest.Viewer.Active := True;
+  FCodeSiteDest.Viewer.Active := CodeSite.Installed;
   FCodeSiteDest.LogFile.Active := False;
   CodeSite.Destination := FCodeSiteDest;
-  CodeSite.Send(ClassName + '.Create');
+  CodeSite.Clear;
 end;
 
 destructor TLogCodeSite.Destroy;
 begin
-  CodeSite.Send(TLogCodeSite.ClassName + '.Destory');
   FreeAndNil(FCodeSiteDest);
 
   inherited;
@@ -174,22 +180,22 @@ end;
 
 procedure TLogCodeSite.Rcv(const AMsg: String; const APacket: TBytes);
 begin
-  CodeSite.Send(csmRcv, BytesToHexStr(APacket));
+  CodeSite.Send(csmRcv, '[%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Rcv(const APacket: TBytes);
 begin
-  CodeSite.Send(csmRcv, BytesToHexStr(APacket));
+  CodeSite.Send(csmRcv, '[%s]%s', ['RCV', BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Snd(const APacket: TBytes);
 begin
-  CodeSite.Send(csmSnd, BytesToHexStr(APacket));
+  CodeSite.Send(csmSnd, '[%s]%s', ['SND', BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Snd(const AMsg: String; const APacket: TBytes);
 begin
-  CodeSite.Send(csmSnd, BytesToHexStr(APacket));
+  CodeSite.Send(csmSnd, '[%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Snd(const AMsg: String; const Args: array of const;
