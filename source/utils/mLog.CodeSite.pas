@@ -22,10 +22,16 @@ type
     procedure Snd(const APacket: TBytes); overload;
     procedure Snd(const AMsg: String; const APacket: TBytes); overload;
     procedure Snd(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
+    procedure Snd(const AErCondition: Boolean; const APacket: TBytes); overload;
+    procedure Snd(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); overload;
+    procedure Snd(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
 
     procedure Rcv(const APacket: TBytes); overload;
     procedure Rcv(const AMsg: String; const APacket: TBytes); overload;
     procedure Rcv(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
+    procedure Rcv(const AErCondition: Boolean; const APacket: TBytes); overload;
+    procedure Rcv(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); overload;
+    procedure Rcv(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
 
     procedure Msg(const AMsg: String); overload;
     procedure Msg(const AMsg: String; const Args: array of const); overload;
@@ -43,6 +49,13 @@ type
     procedure Error(const Sender: TObject; const AMsg: String; const APacket: TBytes); overload;
     procedure Error(const Sender: TObject; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
   end;
+
+{IFDEF DEBUG}
+
+var
+  Log: TLogCodeSite = nil;
+
+{ENDIF DEBUG}
 
 implementation
 
@@ -68,7 +81,8 @@ const
 //csmLevel5, csmBlue	  $1c
 //csmLevel6, csmIndigo	$1d
 //csmLevel7, csmViolet	$1e
-  csmSnd = csmOrange;
+  cmsSuccess = csmYellow;
+  csmSnd = csmIndigo;
   csmRcv = csmGreen;
 
 procedure TLogCodeSite.Clear;
@@ -151,7 +165,7 @@ end;
 procedure TLogCodeSite.Msg(const AErCondition: Boolean; const AMsg: String);
 begin
   if AErCondition then
-    Msg(AMsg)
+    CodeSite.SendMsg(cmsSuccess, AMsg)
   else
     Error(AMsg);
 end;
@@ -160,6 +174,32 @@ procedure TLogCodeSite.Msg(const AErCondition: Boolean; const AMsg: String;
   const Args: array of const);
 begin
   Msg(AErCondition, Format(AMsg, Args));
+end;
+
+procedure TLogCodeSite.Rcv(const AErCondition: Boolean; const APacket: TBytes);
+begin
+  if AErCondition then
+    Rcv(APacket)
+  else
+    CodeSite.Send(csmError, '[%s]%s', ['RCV', BytesToHexStr(APacket)]);
+end;
+
+procedure TLogCodeSite.Rcv(const AErCondition: Boolean; const AMsg: String;
+  const APacket: TBytes);
+begin
+  if AErCondition then
+    Rcv(AMsg, APacket)
+  else
+    CodeSite.Send(csmError, '[%s]%s', ['RCV', BytesToHexStr(APacket)]);
+end;
+
+procedure TLogCodeSite.Rcv(const AErCondition: Boolean; const AMsg: String;
+  const Args: array of const; const APacket: TBytes);
+begin
+  if AErCondition then
+    Rcv(AMsg, Args, APacket)
+  else
+    CodeSite.Send(csmError, '[%s%s]%s', ['RCV', Format(AMsg, Args), BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Msg(const AMsg: String);
@@ -203,5 +243,43 @@ procedure TLogCodeSite.Snd(const AMsg: String; const Args: array of const;
 begin
   Snd(Format(AMsg, Args), APacket);
 end;
+
+{IFDEF DEBUG}
+
+procedure TLogCodeSite.Snd(const AErCondition: Boolean; const APacket: TBytes);
+begin
+  if AErCondition then
+    Snd(APacket)
+  else
+    CodeSite.Send(csmError, '[%s]%s', ['Snd', BytesToHexStr(APacket)]);
+end;
+
+procedure TLogCodeSite.Snd(const AErCondition: Boolean; const AMsg: String;
+  const APacket: TBytes);
+begin
+  if AErCondition then
+    Snd(AMsg, APacket)
+  else
+    CodeSite.Send(csmError, '[%s]%s', ['Snd', BytesToHexStr(APacket)]);
+end;
+
+procedure TLogCodeSite.Snd(const AErCondition: Boolean; const AMsg: String;
+  const Args: array of const; const APacket: TBytes);
+begin
+  if AErCondition then
+    Snd(AMsg, Args, APacket)
+  else
+    CodeSite.Send(csmError, '[%s%s]%s', ['Snd', Format(AMsg, Args), BytesToHexStr(APacket)]);
+end;
+
+initialization
+  if not Assigned(Log) then
+    Log := TLogCodeSite.Create;
+
+finalization
+  if Assigned(Log) then
+    FreeAndNil(Log);
+
+{ENDIF DEBUG}
 
 end.
