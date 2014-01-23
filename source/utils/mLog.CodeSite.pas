@@ -19,6 +19,9 @@ type
     procedure Enter(const AValue: String);
     procedure Exit(const AValue: String);
 
+    procedure BeginUpdate;
+    procedure EndUpdate;
+
     procedure Snd(const APacket: TBytes); overload;
     procedure Snd(const AMsg: String; const APacket: TBytes); overload;
     procedure Snd(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
@@ -35,6 +38,9 @@ type
 
     procedure Msg(const AMsg: String); overload;
     procedure Msg(const AMsg: String; const Args: array of const); overload;
+    procedure Msg(const APacket: TBytes); overload;
+    procedure Msg(const AMsg: String; const APacket: TBytes); overload;
+    procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
 
     procedure Msg(const AErCondition: Boolean; const AMsg: String); overload;
     procedure Msg(const AErCondition: Boolean; const AMsg: String; const Args: array of const); overload;
@@ -82,8 +88,13 @@ const
 //csmLevel6, csmIndigo	$1d
 //csmLevel7, csmViolet	$1e
   cmsSuccess = csmYellow;
-  csmSnd = csmIndigo;
+  csmSnd = csmViolet;
   csmRcv = csmGreen;
+
+procedure TLogCodeSite.BeginUpdate;
+begin
+  FCodeSiteDest.BeginUpdate;
+end;
 
 procedure TLogCodeSite.Clear;
 begin
@@ -133,6 +144,11 @@ begin
   Error(Format(AMsg, Args));
 end;
 
+procedure TLogCodeSite.EndUpdate;
+begin
+  FCodeSiteDest.EndUpdate;
+end;
+
 procedure TLogCodeSite.Enter(const AValue: String);
 begin
   CodeSite.EnterMethod(AValue);
@@ -174,6 +190,22 @@ procedure TLogCodeSite.Msg(const AErCondition: Boolean; const AMsg: String;
   const Args: array of const);
 begin
   Msg(AErCondition, Format(AMsg, Args));
+end;
+
+procedure TLogCodeSite.Msg(const AMsg: String; const APacket: TBytes);
+begin
+  CodeSite.Send('[%s]%s', [AMsg, BytesToHexStr(APacket)]);
+end;
+
+procedure TLogCodeSite.Msg(const AMsg: String; const Args: array of const;
+  const APacket: TBytes);
+begin
+  CodeSite.Send('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)]);
+end;
+
+procedure TLogCodeSite.Msg(const APacket: TBytes);
+begin
+  CodeSite.Send(BytesToHexStr(APacket));
 end;
 
 procedure TLogCodeSite.Rcv(const AErCondition: Boolean; const APacket: TBytes);
