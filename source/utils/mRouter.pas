@@ -12,7 +12,7 @@ type
     ERouterMethodIDNotExists = class(ERouter);
     ERouterMethodNotAssigned = class(ERouter);
 
-  TRouter<TMethodID> = class
+  TRouter<TID> = class
   private const
     FMT_METHOD_ID_ALREADY_EXISTS = '[%s]Method ID is already exists';
     FMT_METHOD_ID_NOT_EXISTS = '[%s]Method ID does not exists';
@@ -20,38 +20,38 @@ type
   private
     FValue: TValue;
     FValue2: TValue;
-    FNotifyList: TDictionary<TMethodID, TList<TProc>>;
-    FExcuteList: TDictionary<TMethodID, TFunc<Boolean>>;
-    FGenericList: TDictionary<TMethodID, TFunc<TValue>>;
+    FNotifyList: TDictionary<TID, TList<TProc>>;
+    FExcuteList: TDictionary<TID, TFunc<Boolean>>;
+    FGenericList: TDictionary<TID, TFunc<TValue>>;
 
     procedure OnNotify(Sender: TObject; const Item: TList<TProc>; Action: TCollectionNotification);
-    function RouterKeyToStr(AID: TMethodID): String;
+    function RouterKeyToStr(AID: TID): String;
   public
     constructor Create;
     destructor Destroy; override;
 
     procedure Clear;
 
-    procedure Notify(AID: TMethodID); overload;
-    procedure Notify<T>(AID: TMethodID; const Data: T); overload;
-    procedure Notify<T, T2>(AID: TMethodID; const Data: T; Data2: T2); overload;
-    procedure Handler(AID: TMethodID; Proc: TProc); overload;
-    procedure Handler(enArray: array of TMethodID; Proc: TProc); overload;
-    procedure RemoveHandler(AID: TMethodID; Proc: TProc); overload;
+    procedure Notify(AID: TID); overload;
+    procedure Notify<T>(AID: TID; const Data: T); overload;
+    procedure Notify<T, T2>(AID: TID; const Data: T; Data2: T2); overload;
+    procedure Handler(AID: TID; Proc: TProc); overload;
+    procedure Handler(enArray: array of TID; Proc: TProc); overload;
+    procedure RemoveHandler(AID: TID; Proc: TProc); overload;
 
-    function Excute(AID: TMethodID): Boolean; overload;
-    function Excute<T>(AID: TMethodID; const Data: T): Boolean; overload;
-    procedure Handler(AID: TMethodID; Func: TFunc<Boolean>); overload;
-    procedure RemoveHandler(AID: TMethodID); overload;
+    function Excute(AID: TID): Boolean; overload;
+    function Excute<T>(AID: TID; const Data: T): Boolean; overload;
+    procedure Handler(AID: TID; Func: TFunc<Boolean>); overload;
+    procedure RemoveHandler(AID: TID); overload;
 
     function Data<T>: T; overload;
     function Data2<T>: T; overload;
     procedure Data<T>(AValue: T); overload;
     procedure Data2<T>(AValue: T); overload;
 
-    function Query<TResult>(AID: TMethodID; var Value: TResult): Boolean; overload;
-    function Query<TResult>(AID: TMethodID): TResult; overload;
-    procedure Feed<TResult>(AID: TMethodID; Func: TFunc<TResult>); overload;
+    function Query<T>(AID: TID; var Value: T): Boolean; overload;
+    function Query<T>(AID: TID): T; overload;
+    procedure Feed<T>(AID: TID; Func: TFunc<T>); overload;
   end;
 
 implementation
@@ -61,7 +61,7 @@ uses
 
 { TRouter }
 
-procedure TRouter<TMethodID>.Handler(AID: TMethodID; Proc: TProc);
+procedure TRouter<TID>.Handler(AID: TID; Proc: TProc);
 var
   LList: TList<TProc>;
 begin
@@ -72,44 +72,44 @@ begin
     LList.Add(Proc);
 end;
 
-procedure TRouter<TMethodID>.Clear;
+procedure TRouter<TID>.Clear;
 begin
   FGenericList.Clear;
   FExcuteList.Clear;
   FNotifyList.Clear;
 end;
 
-constructor TRouter<TMethodID>.Create;
+constructor TRouter<TID>.Create;
 begin
-  FNotifyList := TDictionary<TMethodID, TList<TProc>>.Create;
+  FNotifyList := TDictionary<TID, TList<TProc>>.Create;
   FNotifyList.OnValueNotify := OnNotify;
 
-  FExcuteList := TDictionary<TMethodID, TFunc<Boolean>>.Create;
+  FExcuteList := TDictionary<TID, TFunc<Boolean>>.Create;
 
-  FGenericList := TDictionary<TMethodID, TFunc<TValue>>.Create;
+  FGenericList := TDictionary<TID, TFunc<TValue>>.Create;
 end;
 
-function TRouter<TMethodID>.Data<T>: T;
+function TRouter<TID>.Data<T>: T;
 begin
   Result := FValue.AsType<T>;
 end;
 
-function TRouter<TMethodID>.Data2<T>: T;
+function TRouter<TID>.Data2<T>: T;
 begin
   Result := FValue2.AsType<T>;
 end;
 
-procedure TRouter<TMethodID>.Data2<T>(AValue: T);
+procedure TRouter<TID>.Data2<T>(AValue: T);
 begin
   FValue2 := TValue.From<T>(AValue);
 end;
 
-procedure TRouter<TMethodID>.Data<T>(AValue: T);
+procedure TRouter<TID>.Data<T>(AValue: T);
 begin
   FValue := TValue.From<T>(AValue);
 end;
 
-destructor TRouter<TMethodID>.Destroy;
+destructor TRouter<TID>.Destroy;
 begin
   FreeAndNil(FGenericList);
   FreeAndNil(FExcuteList);
@@ -118,7 +118,7 @@ begin
   inherited;
 end;
 
-procedure TRouter<TMethodID>.Handler(AID: TMethodID; Func: TFunc<Boolean>);
+procedure TRouter<TID>.Handler(AID: TID; Func: TFunc<Boolean>);
 begin
   if FExcuteList.ContainsKey(AID) then
     raise ERouterMethodIDAlreadyExists.CreateFmt(FMT_METHOD_ID_ALREADY_EXISTS, [RouterKeyToStr(AID)]);
@@ -126,7 +126,7 @@ begin
   FExcuteList.Add(AID, Func);
 end;
 
-procedure TRouter<TMethodID>.Feed<TResult>(AID: TMethodID; Func: TFunc<TResult>);
+procedure TRouter<TID>.Feed<T>(AID: TID; Func: TFunc<T>);
 begin
   if FGenericList.ContainsKey(AID) then
     raise ERouterMethodIDAlreadyExists .CreateFmt(FMT_METHOD_ID_ALREADY_EXISTS, [RouterKeyToStr(AID)]);
@@ -137,19 +137,19 @@ begin
   FGenericList.Add(AID,
     function: TValue
     begin
-      Result := TValue.From<TResult>(Func);
+      Result := TValue.From<T>(Func);
     end);
 end;
 
-procedure TRouter<TMethodID>.Handler(enArray: array of TMethodID; Proc: TProc);
+procedure TRouter<TID>.Handler(enArray: array of TID; Proc: TProc);
 var
-  Len: TMethodID;
+  Len: TID;
 begin
   for Len in enArray do
     Handler(Len, Proc);
 end;
 
-procedure TRouter<TMethodID>.Notify(AID: TMethodID);
+procedure TRouter<TID>.Notify(AID: TID);
 var
   LList: TList<TProc>;
   LProc: TProc;
@@ -160,20 +160,20 @@ begin
         LProc();
 end;
 
-procedure TRouter<TMethodID>.Notify<T, T2>(AID: TMethodID; const Data: T; Data2: T2);
+procedure TRouter<TID>.Notify<T, T2>(AID: TID; const Data: T; Data2: T2);
 begin
   FValue := TValue.From<T>(Data);
   FValue2 := TValue.From<T2>(Data2);
   Notify(AID);
 end;
 
-procedure TRouter<TMethodID>.Notify<T>(AID: TMethodID; const Data: T);
+procedure TRouter<TID>.Notify<T>(AID: TID; const Data: T);
 begin
   FValue := TValue.From<T>(Data);
   Notify(AID);
 end;
 
-function TRouter<TMethodID>.Excute(AID: TMethodID): Boolean;
+function TRouter<TID>.Excute(AID: TID): Boolean;
 var
   LFunc: TFunc<Boolean>;
 begin
@@ -184,44 +184,44 @@ begin
       Result := LFunc();
 end;
 
-function TRouter<TMethodID>.Excute<T>(AID: TMethodID; const Data: T): Boolean;
+function TRouter<TID>.Excute<T>(AID: TID; const Data: T): Boolean;
 begin
   FValue := TValue.From<T>(Data);
   Result := Excute(AID);
 end;
 
-procedure TRouter<TMethodID>.RemoveHandler(AID: TMethodID);
+procedure TRouter<TID>.RemoveHandler(AID: TID);
 begin
   if FExcuteList.ContainsKey(AID) then
     FExcuteList.Remove(AID);
 end;
 
-function TRouter<TMethodID>.RouterKeyToStr(AID: TMethodID): String;
+function TRouter<TID>.RouterKeyToStr(AID: TID): String;
 begin
-  Result := TValue.From<TMethodID>(AID).ToString
+  Result := TValue.From<TID>(AID).ToString
 end;
 
-procedure TRouter<TMethodID>.OnNotify(Sender: TObject; const Item: TList<TProc>;
+procedure TRouter<TID>.OnNotify(Sender: TObject; const Item: TList<TProc>;
   Action: TCollectionNotification);
 begin
   if Action = cnRemoved then
     Item.Free;
 end;
 
-function TRouter<TMethodID>.Query<TResult>(AID: TMethodID): TResult;
+function TRouter<TID>.Query<T>(AID: TID): T;
 var
   LFunc: TFunc<TValue>;
 begin
   if FGenericList.TryGetValue(AID, LFunc) then
   begin
     if Assigned(LFunc) then
-      Result := LFunc.AsType<TResult>
+      Result := LFunc.AsType<T>
   end
   else
     raise ERouterMethodIDNotExists.CreateFmt(FMT_METHOD_ID_NOT_EXISTS, [RouterKeyToStr(AID)]);
 end;
 
-function TRouter<TMethodID>.Query<TResult>(AID: TMethodID; var Value: TResult): Boolean;
+function TRouter<TID>.Query<T>(AID: TID; var Value: T): Boolean;
 var
   LFunc: TFunc<TValue>;
 begin
@@ -229,12 +229,12 @@ begin
   if FGenericList.TryGetValue(AID, LFunc) then
     if Assigned(LFunc) then
     begin
-      Value := LFunc.AsType<TResult>;
+      Value := LFunc.AsType<T>;
       Result := True;
     end;
 end;
 
-procedure TRouter<TMethodID>.RemoveHandler(AID: TMethodID; Proc: TProc);
+procedure TRouter<TID>.RemoveHandler(AID: TID; Proc: TProc);
 var
   LList: TList<TProc>;
 begin
