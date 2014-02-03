@@ -1,4 +1,4 @@
-program mBitFlagTest;
+program mgs2libTest;
 {
 
   Delphi DUnit Test Project
@@ -17,7 +17,10 @@ program mBitFlagTest;
 uses
   DUnitTestRunner,
   mBitMask in '..\source\utils\mBitMask.pas',
-  TestmBitMask in 'TestmBitMask.pas';
+  TestmBitMask in 'TestmBitMask.pas',
+  TestmIntervalCounter in 'TestmIntervalCounter.pas',
+  mSysUtilsEx in '..\source\utils\mSysUtilsEx.pas',
+  mIntervalCounter in '..\source\utils\mIntervalCounter.pas';
 
 {R *.RES}
 

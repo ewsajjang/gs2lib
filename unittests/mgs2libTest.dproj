@@ -8,7 +8,7 @@
         <Platform Condition="'$(Platform)'==''">Win32</Platform>
         <TargetedPlatforms>1</TargetedPlatforms>
         <AppType>Console</AppType>
-        <MainSource>mBitFlagTest.dpr</MainSource>
+        <MainSource>mgs2libTest.dpr</MainSource>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
         <Base>true</Base>
@@ -101,6 +101,9 @@
         </DelphiCompile>
         <DCCReference Include="..\source\utils\mBitMask.pas"/>
         <DCCReference Include="TestmBitMask.pas"/>
+        <DCCReference Include="TestmIntervalCounter.pas"/>
+        <DCCReference Include="..\source\utils\mSysUtilsEx.pas"/>
+        <DCCReference Include="..\source\utils\mIntervalCounter.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -154,7 +157,7 @@
                     <VersionInfoKeys Name="CFBundleExecutable"/>
                 </VersionInfoKeys>
                 <Source>
-                    <Source Name="MainSource">mBitFlagTest.dpr</Source>
+                    <Source Name="MainSource">mgs2libTest.dpr</Source>
                 </Source>
             </Delphi.Personality>
             <Deployment/>

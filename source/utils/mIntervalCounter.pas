@@ -14,7 +14,7 @@ type
     function GetEndIdx(Interval: Integer): Integer;
     function GetIntervalRange(Interval: Integer): Integer;
 
-    procedure Init(const AMin, AMax, AInterval: Integer);
+    procedure Init(const ABegin, AEnd, AInterval: Integer);
 
     property Range: Integer read GetRange;
     property Count: Integer read GetCount;
@@ -23,7 +23,12 @@ type
     property IntervalRange[Interval: Integer]: Integer read GetIntervalRange;
   end;
 
-  EIntervalIndexer = Exception;
+  EIntervalCounter = class(Exception);
+    EIntervalAssignedByZero = class(EIntervalCounter);
+    EIntervalAssignedByNegative = class(EIntervalCounter);
+    ERangeParamsAssignedByZero = class(EIntervalCounter);
+    ERangeParamsAssignedByNegative = class(EIntervalCounter);
+    ERangeParamsOutOfRange = class(EIntervalCounter);
   TIntervalCounter = class(TInterfacedObject, IIntervalCounter)
   private
     FGetIntervalCnt: Integer;
@@ -35,7 +40,7 @@ type
     function GetEndIdx(Interval: Integer): Integer;
     function GetIntervalRange(Interval: Integer): Integer;
   public
-    procedure Init(const AMin, AMax, AInterval: Integer);
+    procedure Init(const ABegin, AEnd, AInterval: Integer);
 
     property Range: Integer read GetRange;
     property Count: Integer read GetCount;
@@ -84,12 +89,23 @@ begin
     Result := FMin + (FInterval * Interval);
 end;
 
-procedure TIntervalCounter.Init(const AMin, AMax, AInterval: Integer);
+procedure TIntervalCounter.Init(const ABegin, AEnd, AInterval: Integer);
 begin
+  if (ABegin = 0) or (AEnd = 0) then
+    raise ERangeParamsAssignedByZero.Create('ABegin or AEnd params can not assigned by zero');
+  if (ABegin < 0) or (AEnd < 0) then
+    raise ERangeParamsAssignedByNegative.Create('ABegin or AEnd params can not assigned by negative');
+  if ABegin > AEnd then
+    raise ERangeParamsOutOfRange.Create('AEnd parameter is always greater then or equal to ABegin parameter');
+  if AInterval = 0 then
+    raise EIntervalAssignedByZero.Create('AInterval can not assigned by zero');
+  if AInterval < 0 then
+    raise EIntervalAssignedByNegative.Create('AInterval cannot assigned by negative');
+
   FInterval := AInterval;
-  FMin := AMin;
-  FMax := AMax;
-  FGetIntervalCnt := MinimumCount(AMax - AMin + 1, AInterval);
+  FMin := ABegin;
+  FMax := AEnd;
+  FGetIntervalCnt := MinimumCount(AEnd - ABegin + 1, AInterval);
 end;
 
 end.
