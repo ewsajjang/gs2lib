@@ -29,7 +29,8 @@ type
     procedure TestLoadAllowedType;
     procedure TestLoadExceptedByObject;
     procedure TestLoadExceptedByRecord;
-    procedure TestSize;
+    procedure TestSizeBitCnt;
+    procedure TestByte;
   end;
 
 implementation
@@ -98,7 +99,7 @@ begin
   LRecordFlag.Load(TPair<Integer, Integer>.Create(0, 0));
 end;
 
-procedure TestTBitMask.TestSize;
+procedure TestTBitMask.TestSizeBitCnt;
 const
   LInteger : Integer  = 255;
   LCardinal: Cardinal = 255;
@@ -132,6 +133,7 @@ begin
   LWordFlag.Load    (LWord    );
   LLongWordFlag.Load(LLongWord);
   LUInt64Flag.Load  (LUInt64  );
+
   CheckEquals(SizeOf(Integer ), LIntegerFlag .Size);
   CheckEquals(SizeOf(Cardinal), LCardinalFlag.Size);
   CheckEquals(SizeOf(ShortInt), LShortIntFlag.Size);
@@ -142,6 +144,120 @@ begin
   CheckEquals(SizeOf(Word    ), LWordFlag    .Size);
   CheckEquals(SizeOf(LongWord), LLongWordFlag.Size);
   CheckEquals(SizeOf(UInt64  ), LUInt64Flag  .Size);
+
+  CheckEquals(SizeOf(Integer ) * 8, LIntegerFlag .BitCnt);
+  CheckEquals(SizeOf(Cardinal) * 8, LCardinalFlag.BitCnt);
+  CheckEquals(SizeOf(ShortInt) * 8, LShortIntFlag.BitCnt);
+  CheckEquals(SizeOf(SmallInt) * 8, LSmallIntFlag.BitCnt);
+  CheckEquals(SizeOf(LongInt ) * 8, LLongIntFlag .BitCnt);
+  CheckEquals(SizeOf(Int64   ) * 8, LInt64Flag   .BitCnt);
+  CheckEquals(SizeOf(Byte    ) * 8, LByteFlag    .BitCnt);
+  CheckEquals(SizeOf(Word    ) * 8, LWordFlag    .BitCnt);
+  CheckEquals(SizeOf(LongWord) * 8, LLongWordFlag.BitCnt);
+  CheckEquals(SizeOf(UInt64  ) * 8, LUInt64Flag  .BitCnt);
+end;
+
+procedure TestTBitMask.TestByte;
+var
+  LValue: TBitMask<Byte>;
+begin
+  LValue.Load(0);
+  CheckFalse(LValue[0]);
+  CheckFalse(LValue[1]);
+  CheckFalse(LValue[2]);
+  CheckFalse(LValue[3]);
+  CheckFalse(LValue[4]);
+  CheckFalse(LValue[5]);
+  CheckFalse(LValue[6]);
+  CheckFalse(LValue[7]);
+
+  CheckEquals(0, LValue.I[0]);
+  CheckEquals(0, LValue.I[1]);
+  CheckEquals(0, LValue.I[2]);
+  CheckEquals(0, LValue.I[3]);
+  CheckEquals(0, LValue.I[4]);
+  CheckEquals(0, LValue.I[5]);
+  CheckEquals(0, LValue.I[6]);
+  CheckEquals(0, LValue.I[7]);
+  CheckEquals('00000000', LValue.Str);
+
+  LValue.Load(1);
+  CheckTrue(LValue[0]);
+  CheckFalse(LValue[1]);
+  CheckFalse(LValue[2]);
+  CheckFalse(LValue[3]);
+  CheckFalse(LValue[4]);
+  CheckFalse(LValue[5]);
+  CheckFalse(LValue[6]);
+  CheckFalse(LValue[7]);
+  CheckEquals(1, LValue.I[0]);
+  CheckEquals(0, LValue.I[1]);
+  CheckEquals(0, LValue.I[2]);
+  CheckEquals(0, LValue.I[3]);
+  CheckEquals(0, LValue.I[4]);
+  CheckEquals(0, LValue.I[5]);
+  CheckEquals(0, LValue.I[6]);
+  CheckEquals(0, LValue.I[7]);
+  CheckEquals('00000001', LValue.Str);
+
+  LValue.Load(7);
+  CheckTrue(LValue[0]);
+  CheckTrue(LValue[1]);
+  CheckTrue(LValue[2]);
+  CheckFalse(LValue[3]);
+  CheckEquals(1, LValue.I[0]);
+  CheckEquals(1, LValue.I[1]);
+  CheckEquals(1, LValue.I[2]);
+  CheckEquals(0, LValue.I[3]);
+  CheckEquals(0, LValue.I[4]);
+  CheckEquals(0, LValue.I[5]);
+  CheckEquals(0, LValue.I[6]);
+  CheckEquals(0, LValue.I[7]);
+  CheckEquals('00000111', LValue.Str);
+
+  LValue.Load(5);
+  CheckTrue(LValue[0]);
+  CheckFalse(LValue[1]);
+  CheckTrue(LValue[2]);
+  CheckEquals('00000101', LValue.Str);
+
+  LValue.Load(128);
+  CheckFalse(LValue[0]);
+  CheckFalse(LValue[1]);
+  CheckFalse(LValue[2]);
+  CheckFalse(LValue[3]);
+  CheckFalse(LValue[4]);
+  CheckFalse(LValue[5]);
+  CheckFalse(LValue[6]);
+  CheckTrue(LValue[7]);
+  CheckEquals(0, LValue.I[0]);
+  CheckEquals(0, LValue.I[1]);
+  CheckEquals(0, LValue.I[2]);
+  CheckEquals(0, LValue.I[3]);
+  CheckEquals(0, LValue.I[4]);
+  CheckEquals(0, LValue.I[5]);
+  CheckEquals(0, LValue.I[6]);
+  CheckEquals(1, LValue.I[7]);
+  CheckEquals('10000000', LValue.Str);
+
+  LValue.Load(255);
+  CheckTrue(LValue[0]);
+  CheckTrue(LValue[1]);
+  CheckTrue(LValue[2]);
+  CheckTrue(LValue[3]);
+  CheckTrue(LValue[4]);
+  CheckTrue(LValue[5]);
+  CheckTrue(LValue[6]);
+  CheckTrue(LValue[7]);
+  CheckEquals(1, LValue.I[0]);
+  CheckEquals(1, LValue.I[1]);
+  CheckEquals(1, LValue.I[2]);
+  CheckEquals(1, LValue.I[3]);
+  CheckEquals(1, LValue.I[4]);
+  CheckEquals(1, LValue.I[5]);
+  CheckEquals(1, LValue.I[6]);
+  CheckEquals(1, LValue.I[7]);
+  CheckEquals('11111111', LValue.Str);
 end;
 
 initialization
