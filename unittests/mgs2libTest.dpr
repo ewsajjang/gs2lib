@@ -20,7 +20,9 @@ uses
   TestmBitMask in 'TestmBitMask.pas',
   TestmIntervalCounter in 'TestmIntervalCounter.pas',
   mSysUtilsEx in '..\source\utils\mSysUtilsEx.pas',
-  mIntervalCounter in '..\source\utils\mIntervalCounter.pas';
+  mIntervalCounter in '..\source\utils\mIntervalCounter.pas',
+  mGenericClassList in '..\source\utils\mGenericClassList.pas',
+  TestmGenericClassList in 'TestmGenericClassList.pas';
 
 {R *.RES}
 

@@ -104,6 +104,8 @@
         <DCCReference Include="TestmIntervalCounter.pas"/>
         <DCCReference Include="..\source\utils\mSysUtilsEx.pas"/>
         <DCCReference Include="..\source\utils\mIntervalCounter.pas"/>
+        <DCCReference Include="..\source\utils\mGenericClassList.pas"/>
+        <DCCReference Include="TestmGenericClassList.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
