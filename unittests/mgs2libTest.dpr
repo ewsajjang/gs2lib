@@ -22,7 +22,9 @@ uses
   mSysUtilsEx in '..\source\utils\mSysUtilsEx.pas',
   mIntervalCounter in '..\source\utils\mIntervalCounter.pas',
   mGenericClassList in '..\source\utils\mGenericClassList.pas',
-  TestmGenericClassList in 'TestmGenericClassList.pas';
+  TestmGenericClassList in 'TestmGenericClassList.pas',
+  mRouter in '..\source\utils\mRouter.pas',
+  TestmRouter in 'TestmRouter.pas';
 
 {R *.RES}
 

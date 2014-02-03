@@ -20,8 +20,8 @@ type
   private
     FValue: TValue;
     FValue2: TValue;
-    FList: TDictionary<TMethodID, TList<TProc>>;
-    FBoolList: TDictionary<TMethodID, TFunc<Boolean>>;
+    FNotifyList: TDictionary<TMethodID, TList<TProc>>;
+    FExcuteList: TDictionary<TMethodID, TFunc<Boolean>>;
     FGenericList: TDictionary<TMethodID, TFunc<TValue>>;
 
     procedure OnNotify(Sender: TObject; const Item: TList<TProc>; Action: TCollectionNotification);
@@ -65,9 +65,9 @@ procedure TRouter<TMethodID>.Handler(AID: TMethodID; Proc: TProc);
 var
   LList: TList<TProc>;
 begin
-  if not FList.ContainsKey(AID) then
-    FList.Add(AID, TList<TProc>.Create);
-  LList := FList.Items[AID];
+  if not FNotifyList.ContainsKey(AID) then
+    FNotifyList.Add(AID, TList<TProc>.Create);
+  LList := FNotifyList.Items[AID];
   if LList.IndexOf(Proc) = -1 then
     LList.Add(Proc);
 end;
@@ -75,16 +75,16 @@ end;
 procedure TRouter<TMethodID>.Clear;
 begin
   FGenericList.Clear;
-  FBoolList.Clear;
-  FList.Clear;
+  FExcuteList.Clear;
+  FNotifyList.Clear;
 end;
 
 constructor TRouter<TMethodID>.Create;
 begin
-  FList := TDictionary<TMethodID, TList<TProc>>.Create;
-  FList.OnValueNotify := OnNotify;
+  FNotifyList := TDictionary<TMethodID, TList<TProc>>.Create;
+  FNotifyList.OnValueNotify := OnNotify;
 
-  FBoolList := TDictionary<TMethodID, TFunc<Boolean>>.Create;
+  FExcuteList := TDictionary<TMethodID, TFunc<Boolean>>.Create;
 
   FGenericList := TDictionary<TMethodID, TFunc<TValue>>.Create;
 end;
@@ -112,18 +112,18 @@ end;
 destructor TRouter<TMethodID>.Destroy;
 begin
   FreeAndNil(FGenericList);
-  FreeAndNil(FBoolList);
-  FreeAndNil(FList);
+  FreeAndNil(FExcuteList);
+  FreeAndNil(FNotifyList);
 
   inherited;
 end;
 
 procedure TRouter<TMethodID>.Handler(AID: TMethodID; Func: TFunc<Boolean>);
 begin
-  if FBoolList.ContainsKey(AID) then
+  if FExcuteList.ContainsKey(AID) then
     raise ERouterMethodIDAlreadyExists.CreateFmt(FMT_METHOD_ID_ALREADY_EXISTS, [RouterKeyToStr(AID)]);
 
-  FBoolList.Add(AID, Func);
+  FExcuteList.Add(AID, Func);
 end;
 
 procedure TRouter<TMethodID>.Feed<TResult>(AID: TMethodID; Func: TFunc<TResult>);
@@ -154,7 +154,7 @@ var
   LList: TList<TProc>;
   LProc: TProc;
 begin
-  if FList.TryGetValue(AID, LList) then
+  if FNotifyList.TryGetValue(AID, LList) then
     for LProc in LList do
       if Assigned(LProc) then
         LProc();
@@ -179,7 +179,7 @@ var
 begin
   Result := False;
 
-  if FBoolList.TryGetValue(AID, LFunc) then
+  if FExcuteList.TryGetValue(AID, LFunc) then
     if Assigned(LFunc) then
       Result := LFunc();
 end;
@@ -192,8 +192,8 @@ end;
 
 procedure TRouter<TMethodID>.RemoveHandler(AID: TMethodID);
 begin
-  if FBoolList.ContainsKey(AID) then
-    FBoolList.Remove(AID);
+  if FExcuteList.ContainsKey(AID) then
+    FExcuteList.Remove(AID);
 end;
 
 function TRouter<TMethodID>.RouterKeyToStr(AID: TMethodID): String;
@@ -238,7 +238,7 @@ procedure TRouter<TMethodID>.RemoveHandler(AID: TMethodID; Proc: TProc);
 var
   LList: TList<TProc>;
 begin
-  if FList.TryGetValue(AID, LList) then
+  if FNotifyList.TryGetValue(AID, LList) then
     LList.Remove(Proc);
 end;
 
