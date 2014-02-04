@@ -25,7 +25,7 @@ uses
 
 procedure TvFormHelper.TabOrderAlign;
 begin
-  mFormUtils.TaborderAlign(Self);
+  mFormUtils.TabOrderAlign(Self);
 end;
 
 procedure TvFormHelper.FontAssign(const AFontName: String);

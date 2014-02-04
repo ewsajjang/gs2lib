@@ -6,7 +6,7 @@ uses
   System.Classes, System.SysUtils, System.Generics.Collections,
   Vcl.Forms, Vcl.Controls, Vcl.StdCtrls, Vcl.Graphics;
 
-procedure TaborderAlign(const Parent: TWinControl) ;
+procedure TabOrderAlign(const Parent: TWinControl) ;
 procedure FontAssign(ACtrl: TWinControl; const AFontName: String);
 
 implementation
@@ -14,8 +14,8 @@ implementation
 uses
   System.TypInfo;
 
-procedure TaborderAlign(const Parent: TWinControl) ;
-  procedure TabOrderFix(const Parent: TWinControl) ;
+procedure TabOrderAlign(const Parent: TWinControl) ;
+  procedure _TabOrderAlign(const Parent: TWinControl) ;
   var
     i, j: Integer;
     LFixCtrls: TList<TControl>;
@@ -42,7 +42,7 @@ procedure TaborderAlign(const Parent: TWinControl) ;
           end;
         end;
         LFixCtrls.Insert(j, Parent.Controls[i]) ;
-        TabOrderFix(TWinControl(Parent.Controls[i])) ;
+        _TabOrderAlign(TWinControl(Parent.Controls[i])) ;
       end;
       for i := 0 to LFixCtrls.Count - 1 do
         TWinControl(LFixCtrls[i]).TabOrder := i;
@@ -51,7 +51,7 @@ procedure TaborderAlign(const Parent: TWinControl) ;
     end;
   end;
 begin
-  TabOrderFix(Parent);
+  _TabOrderAlign(Parent);
 end;
 
 procedure FontAssign(ACtrl: TWinControl; const AFontName: String);
