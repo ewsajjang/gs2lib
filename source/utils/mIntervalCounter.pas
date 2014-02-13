@@ -13,13 +13,16 @@ type
     function GetStrIdx(Interval: Integer): Integer;
     function GetEndIdx(Interval: Integer): Integer;
     function GetIntervalRange(Interval: Integer): Integer;
+    function GetInterval: Integer;
+    procedure SetInterval(const Value: Integer);
 
-    procedure Init(const ABegin, AEnd, AInterval: Integer);
+    procedure Init(const ABegin, AEnd: Integer);
 
     property Range: Integer read GetRange;
     property Count: Integer read GetCount;
     property StrIdx[Interval: Integer]: Integer read GetStrIdx;
     property EndIdx[Interval: Integer]: Integer read GetEndIdx;
+    property Interval: Integer read GetInterval write SetInterval;
     property IntervalRange[Interval: Integer]: Integer read GetIntervalRange;
   end;
 
@@ -39,14 +42,17 @@ type
     function GetStrIdx(Interval: Integer): Integer;
     function GetEndIdx(Interval: Integer): Integer;
     function GetIntervalRange(Interval: Integer): Integer;
+    function GetInterval: Integer;
+    procedure SetInterval(const Value: Integer);
   public
-    procedure Init(const ABegin, AEnd, AInterval: Integer);
+    procedure Init(const ABegin, AEnd: Integer);
 
     property Range: Integer read GetRange;
     property Count: Integer read GetCount;
     property StrIdx[Interval: Integer]: Integer read GetStrIdx;
     property EndIdx[Interval: Integer]: Integer read GetEndIdx;
     property IntervalRange[Interval: Integer]: Integer read GetIntervalRange;
+    property Interval: Integer read GetInterval write SetInterval;
   end;
 
 implementation
@@ -55,6 +61,11 @@ uses
   mSysUtilsEx;
 
 { TIntervalIndexer }
+
+function TIntervalCounter.GetInterval: Integer;
+begin
+  Result := FInterval;
+end;
 
 function TIntervalCounter.GetIntervalRange(Interval: Integer): Integer;
 begin
@@ -89,7 +100,7 @@ begin
     Result := FMin + (FInterval * Interval);
 end;
 
-procedure TIntervalCounter.Init(const ABegin, AEnd, AInterval: Integer);
+procedure TIntervalCounter.Init(const ABegin, AEnd: Integer);
 begin
   if (ABegin = 0) or (AEnd = 0) then
     raise ERangeParamsAssignedByZero.Create('ABegin or AEnd params can not assigned by zero');
@@ -97,15 +108,22 @@ begin
     raise ERangeParamsAssignedByNegative.Create('ABegin or AEnd params can not assigned by negative');
   if ABegin > AEnd then
     raise ERangeParamsOutOfRange.Create('AEnd parameter is always greater then or equal to ABegin parameter');
-  if AInterval = 0 then
+  if FInterval = 0 then
     raise EIntervalAssignedByZero.Create('AInterval can not assigned by zero');
-  if AInterval < 0 then
-    raise EIntervalAssignedByNegative.Create('AInterval cannot assigned by negative');
 
-  FInterval := AInterval;
   FMin := ABegin;
   FMax := AEnd;
-  FGetIntervalCnt := MinimumCount(AEnd - ABegin + 1, AInterval);
+  FGetIntervalCnt := MinimumCount(AEnd - ABegin + 1, FInterval);
+end;
+
+procedure TIntervalCounter.SetInterval(const Value: Integer);
+begin
+  if Value = 0 then
+    raise EIntervalAssignedByZero.Create('AInterval can not assigned by zero');
+  if Value < 0 then
+    raise EIntervalAssignedByNegative.Create('AInterval cannot assigned by negative');
+
+  FInterval := Value;
 end;
 
 end.
