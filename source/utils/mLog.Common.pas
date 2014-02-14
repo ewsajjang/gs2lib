@@ -10,8 +10,8 @@ type
   TLogKindHelper = record helper for TLogKind
   private const
     LOG_HEADERS: array[lkEnter..lkErr] of String = (
-      '>> ',
-      '<< ',
+      '-->> ',
+      '<<-- ',
       'snd',
       'rcv',
       'msg',
