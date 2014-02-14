@@ -3,63 +3,55 @@ unit mLog.CodeSite;
 interface
 
 uses
+  mLog,
   CodeSiteLogging,
   System.Classes, System.SysUtils;
 
 type
-  TLogCodeSite = class
+  TLogCodeSite = class(TLog)
   private
     FCodeSiteDest: TCodeSiteDestination;
   public
     constructor Create;
     destructor Destroy; override;
 
-    procedure Clear;
+    procedure Clear; override;
 
-    procedure Enter(const AValue: String);
-    procedure Exit(const AValue: String);
+    procedure Enter(const AValue: String); override;
+    procedure Exit(const AValue: String); override;
 
-    procedure BeginUpdate;
-    procedure EndUpdate;
+    procedure BeginUpdate; override;
+    procedure EndUpdate; override;
 
-    procedure Snd(const APacket: TBytes); overload;
-    procedure Snd(const AMsg: String; const APacket: TBytes); overload;
-    procedure Snd(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
-    procedure Snd(const AErCondition: Boolean; const APacket: TBytes); overload;
-    procedure Snd(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); overload;
-    procedure Snd(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
+    procedure Snd(const APacket: TBytes); override;
+    procedure Snd(const AMsg: String; const APacket: TBytes); override;
+    procedure Snd(const AErCondition: Boolean; const APacket: TBytes); override;
+    procedure Snd(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); override;
+    procedure Snd(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); override;
 
-    procedure Rcv(const APacket: TBytes); overload;
-    procedure Rcv(const AMsg: String; const APacket: TBytes); overload;
-    procedure Rcv(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
-    procedure Rcv(const AErCondition: Boolean; const APacket: TBytes); overload;
-    procedure Rcv(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); overload;
-    procedure Rcv(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
+    procedure Rcv(const APacket: TBytes); override;
+    procedure Rcv(const AMsg: String; const APacket: TBytes); override;
+    procedure Rcv(const AErCondition: Boolean; const APacket: TBytes); override;
+    procedure Rcv(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); override;
+    procedure Rcv(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); override;
 
-    procedure Msg(const AMsg: String); overload;
-    procedure Msg(const AMsg: String; const Args: array of const); overload;
-    procedure Msg(const APacket: TBytes); overload;
-    procedure Msg(const AMsg: String; const APacket: TBytes); overload;
-    procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
+    procedure Msg(const AMsg: String); override;
+    procedure Msg(const APacket: TBytes); override;
+    procedure Msg(const AMsg: String; const APacket: TBytes); override;
+    procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes); override;
+    procedure Msg(const AErCondition: Boolean; const AMsg: String); override;
 
-    procedure Msg(const AErCondition: Boolean; const AMsg: String); overload;
-    procedure Msg(const AErCondition: Boolean; const AMsg: String; const Args: array of const); overload;
-
-    procedure Error(const AMsg: String); overload;
-    procedure Error(const AMsg: String; const Args: array of const); overload;
-    procedure Error(const AMsg: String; const APacket: TBytes); overload;
-    procedure Error(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
-
-    procedure Error(const Sender: TObject; const AMsg: String); overload;
-    procedure Error(const Sender: TObject; const AMsg: String; const Args: array of const); overload;
-    procedure Error(const Sender: TObject; const AMsg: String; const APacket: TBytes); overload;
-    procedure Error(const Sender: TObject; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
+    procedure Error(const AMsg: String); override;
+    procedure Error(const AMsg: String; const APacket: TBytes); override;
+    procedure Error(const Sender: TObject; const AMsg: String); override;
+    procedure Error(const Sender: TObject; const AMsg: String; const Args: array of const); override;
+    procedure Error(const Sender: TObject; const AMsg: String; const APacket: TBytes); override;
   end;
 
 {IFDEF DEBUG}
 
 var
-  Log: TLogCodeSite = nil;
+  Log: ILog;
 
 {ENDIF DEBUG}
 
@@ -118,12 +110,6 @@ begin
   inherited;
 end;
 
-procedure TLogCodeSite.Error(const AMsg: String; const Args: array of const;
-  const APacket: TBytes);
-begin
-  Error(Format(AMsg, Args), APacket);
-end;
-
 procedure TLogCodeSite.Error(const Sender: TObject; const AMsg: String);
 begin
   CodeSite.Send(csmError, AMsg, Sender);
@@ -140,11 +126,6 @@ begin
   CodeSite.Send(csmError, AMsg);
 end;
 
-procedure TLogCodeSite.Error(const AMsg: String; const Args: array of const);
-begin
-  Error(Format(AMsg, Args));
-end;
-
 procedure TLogCodeSite.EndUpdate;
 begin
   FCodeSiteDest.EndUpdate;
@@ -153,12 +134,6 @@ end;
 procedure TLogCodeSite.Enter(const AValue: String);
 begin
   CodeSite.EnterMethod(AValue);
-end;
-
-procedure TLogCodeSite.Error(const Sender: TObject; const AMsg: String;
-  const Args: array of const; const APacket: TBytes);
-begin
-  Error(Sender, Format(AMsg, Args), APacket);
 end;
 
 procedure TLogCodeSite.Exit(const AValue: String);
@@ -185,12 +160,6 @@ begin
     CodeSite.SendMsg(cmsSuccess, AMsg)
   else
     CodeSite.SendMsg(csmMsgError, AMsg);
-end;
-
-procedure TLogCodeSite.Msg(const AErCondition: Boolean; const AMsg: String;
-  const Args: array of const);
-begin
-  Msg(AErCondition, Format(AMsg, Args));
 end;
 
 procedure TLogCodeSite.Msg(const AMsg: String; const APacket: TBytes);
@@ -240,17 +209,6 @@ begin
   CodeSite.SendMsg(AMsg);
 end;
 
-procedure TLogCodeSite.Msg(const AMsg: String; const Args: array of const);
-begin
-  Msg(Format(AMsg, Args));
-end;
-
-procedure TLogCodeSite.Rcv(const AMsg: String; const Args: array of const;
-  const APacket: TBytes);
-begin
-  Rcv(Format(AMsg, Args), APacket);
-end;
-
 procedure TLogCodeSite.Rcv(const AMsg: String; const APacket: TBytes);
 begin
   CodeSite.Send(csmRcv, '[%s]%s', [AMsg, BytesToHexStr(APacket)]);
@@ -271,12 +229,6 @@ begin
   CodeSite.Send(csmSnd, '[%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
-procedure TLogCodeSite.Snd(const AMsg: String; const Args: array of const;
-  const APacket: TBytes);
-begin
-  Snd(Format(AMsg, Args), APacket);
-end;
-
 {IFDEF DEBUG}
 
 procedure TLogCodeSite.Snd(const AErCondition: Boolean; const APacket: TBytes);
@@ -293,7 +245,7 @@ begin
   if AErCondition then
     Snd(AMsg, APacket)
   else
-    CodeSite.Send(csmError, '[%s]%s', ['Snd', BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[%s.%s]%s', ['Snd', AMsg, BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Snd(const AErCondition: Boolean; const AMsg: String;
@@ -310,8 +262,6 @@ initialization
     Log := TLogCodeSite.Create;
 
 finalization
-  if Assigned(Log) then
-    FreeAndNil(Log);
 
 {ENDIF DEBUG}
 
