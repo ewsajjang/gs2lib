@@ -13,9 +13,13 @@ type
   private const
     MAX_MEMO_LINE_COUNT = MaxInt;
   private
-    FMemo: TMemo;
     FQueue: TLogStringThreadQueue;
+    procedure OnMemoChange(Sender: TObject);
+  private
+    FMemo: TMemo;
+    FAutoScroll: Boolean;
     procedure SetMemo(const Value: TMemo);
+    procedure SetAutoScroll(const Value: Boolean);
   public
     constructor Create;
     destructor Destroy; override;
@@ -53,16 +57,17 @@ type
     procedure Error(const Sender: TObject; const AMsg: String; const APacket: TBytes); override;
 
     property Memo: TMemo read FMemo write SetMemo;
+    property AutoScroll: Boolean read FAutoScroll write SetAutoScroll;
   end;
 
 var
-  Log: ILog;
+  Log: TLogMemo;
 
 implementation
 
 uses
   mSysUtilsEx,
-  Vcl.Forms;
+  Vcl.Forms, Winapi.Windows, Winapi.Messages;
 
 type
   TFontHelper = class
@@ -120,6 +125,8 @@ end;
 
 constructor TLogMemo.Create;
 begin
+  FAutoScroll := True;
+
   FQueue := TLogStringThreadQueue.Create;
   FQueue.OnData := procedure(ALog: String)
   begin
@@ -139,6 +146,9 @@ end;
 
 destructor TLogMemo.Destroy;
 begin
+  if Assigned(FMemo) then
+    FMemo.OnChange := nil;
+
   FreeAndNil(FQueue);
 
   inherited;
@@ -201,6 +211,12 @@ begin
     FQueue.Add('%s', [lkMsgEr.Str(AMsg)]);
 end;
 
+procedure TLogMemo.OnMemoChange(Sender: TObject);
+begin
+  if FAutoScroll then
+    PostMessage(FMemo.Handle, EM_LINESCROLL, 0, FMemo.Lines.Count);
+end;
+
 procedure TLogMemo.Msg(const AMsg: String);
 begin
   FQueue.Add('%s', [lkMsg.Str(AMsg)]);
@@ -257,9 +273,16 @@ begin
   FQueue.Add('%s', [lkSnd.Str(APacket)]);
 end;
 
+procedure TLogMemo.SetAutoScroll(const Value: Boolean);
+begin
+  if FAutoScroll <> Value then
+    FAutoScroll := Value;
+end;
+
 procedure TLogMemo.SetMemo(const Value: TMemo);
 begin
   FMemo := Value;
+  FMemo.OnChange := OnMemoChange;
   if not TFontHelper.IsFixedWidthFont(FMemo.Font.Name) then
     FMemo.Font.Name := TFontHelper.SystemFixedWidthFontName;
 end;
@@ -298,5 +321,12 @@ end;
 initialization
   if not Assigned(Log) then
     Log := TLogMemo.Create;
+
+finalization
+  if Assigned(Log) then
+  begin
+    Log.Free;
+    Log := nil;
+  end;
 
 end.
