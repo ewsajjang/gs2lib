@@ -56,7 +56,8 @@ begin
   AEnd := 25;
   AInterval := 12;
 
-  FIntervalCnt.Init(AStart, AEnd, AInterval);
+  FIntervalCnt.Interval := AInterval;
+  FIntervalCnt.Init(AStart, AEnd);
 
   CheckEquals(25,  FIntervalCnt.Range);
   CheckEquals( 3,  FIntervalCnt.Count); //1~12, 13~24, 25~25
@@ -76,31 +77,36 @@ end;
 procedure TestTIntervalCounter.TestInit_ERangeParamsAssignedByNegative;
 begin
   ExpectedException := ERangeParamsAssignedByNegative;
-  FIntervalCnt.Init(-1, 1, 0);
+  FIntervalCnt.Interval := 1;
+  FIntervalCnt.Init(-1, 1);
 end;
 
 procedure TestTIntervalCounter.TestInit_EIntervalAssignedByNegative;
 begin
   ExpectedException := EIntervalAssignedByNegative;
-  FIntervalCnt.Init(1, 1, -1);
+  FIntervalCnt.Interval := -1;
+  FIntervalCnt.Init(1, 1);
 end;
 
 procedure TestTIntervalCounter.TestInit_EIntervalAssignedByZero;
 begin
   ExpectedException := EIntervalAssignedByZero;
-  FIntervalCnt.Init(1, 1, 0);
+  FIntervalCnt.Interval := 0;
+  FIntervalCnt.Init(1, 1);
 end;
 
 procedure TestTIntervalCounter.TestInit_ERangeParamsAssignedByZero;
 begin
   ExpectedException := ERangeParamsAssignedByZero;
-  FIntervalCnt.Init(0, 1, 0);
+  FIntervalCnt.Interval := 1;
+  FIntervalCnt.Init(0, 1);
 end;
 
 procedure TestTIntervalCounter.TestInit_ERangeParamsOutOfRange;
 begin
   ExpectedException := ERangeParamsOutOfRange;
-  FIntervalCnt.Init(2, 1, 0);
+  FIntervalCnt.Interval := 1;
+  FIntervalCnt.Init(2, 1);
 end;
 
 procedure TestTIntervalCounter.TestInit_Rnage_01_01;
@@ -113,7 +119,8 @@ begin
   AEnd := 1;
   AInterval := 12;
 
-  FIntervalCnt.Init(AStart, AEnd, AInterval);
+  FIntervalCnt.Interval := AInterval;
+  FIntervalCnt.Init(AStart, AEnd);
 
   CheckEquals(1,  FIntervalCnt.Range);
   CheckEquals(1,  FIntervalCnt.Count);
@@ -134,7 +141,8 @@ begin
   AEnd := 2;
   AInterval := 12;
 
-  FIntervalCnt.Init(AStart, AEnd, AInterval);
+  FIntervalCnt.Interval := AInterval;
+  FIntervalCnt.Init(AStart, AEnd);
 
   CheckEquals(2,  FIntervalCnt.Range);
   CheckEquals(1,  FIntervalCnt.Count);
@@ -155,7 +163,8 @@ begin
   AEnd := 25;
   AInterval := 12;
 
-  FIntervalCnt.Init(AStart, AEnd, AInterval);
+  FIntervalCnt.Interval := AInterval;
+  FIntervalCnt.Init(AStart, AEnd);
 
   CheckEquals(23,  FIntervalCnt.Range);
   CheckEquals(2,  FIntervalCnt.Count);
