@@ -90,6 +90,7 @@ const
   cmsSuccess = csmYellow;
   csmSnd = csmViolet;
   csmRcv = csmGreen;
+  csmMsgError = csmRed;
 
 procedure TLogCodeSite.BeginUpdate;
 begin
@@ -183,7 +184,7 @@ begin
   if AErCondition then
     CodeSite.SendMsg(cmsSuccess, AMsg)
   else
-    Error(AMsg);
+    CodeSite.SendMsg(csmMsgError, AMsg);
 end;
 
 procedure TLogCodeSite.Msg(const AErCondition: Boolean; const AMsg: String;
