@@ -23,6 +23,7 @@ type
     procedure Add(const AValue: String); overload;
     procedure Add(const AValue: String; Args: array of const); overload;
     procedure Clear;
+    procedure DoShutDown;
 
     property OnData: TProc<String> read FOnData write FOnData;
   end;
@@ -54,14 +55,19 @@ begin
   inherited Create(False);
 
   FQueue := TThreadedQueue<String>.Create(MAX_QUEUE_DEPTH);
+  FreeOnTerminate := False;
 end;
 
 destructor TLogStringThreadQueue.Destroy;
 begin
-  FQueue.DoShutDown;
   FreeAndNil(FQueue);
 
   inherited;
+end;
+
+procedure TLogStringThreadQueue.DoShutDown;
+begin
+  FQueue.DoShutDown;
 end;
 
 procedure TLogStringThreadQueue.Execute;
@@ -72,7 +78,7 @@ begin
   while not Terminated do
   begin
     LLog := FQueue.PopItem;
-    if Assigned(FOnData) then
+    if not Terminated  and Assigned(FOnData) then
       Synchronize(procedure begin FOnData(LLog) end);
   end;
 end;

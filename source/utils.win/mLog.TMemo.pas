@@ -110,7 +110,8 @@ end;
 
 procedure TLogMemo.BeginUpdate;
 begin
-  FMemo.Lines.BeginUpdate;
+  if Assigned(FMemo) then
+    FMemo.Lines.BeginUpdate;
 end;
 
 procedure TLogMemo.Clear;
@@ -130,10 +131,10 @@ begin
   FQueue := TLogStringThreadQueue.Create;
   FQueue.OnData := procedure(ALog: String)
   begin
-    if FMemo.Lines.Count = MAX_MEMO_LINE_COUNT - 1 then
-      Clear;
     if Assigned(FMemo) then
     begin
+      if FMemo.Lines.Count = MAX_MEMO_LINE_COUNT - 1 then
+        Clear;
       BeginUpdate;
       try
         FMemo.Lines.Add(ALog);
@@ -149,6 +150,9 @@ begin
   if Assigned(FMemo) then
     FMemo.OnChange := nil;
 
+  FQueue.Terminate;
+  FQueue.DoShutDown;
+  FQueue.WaitFor;
   FreeAndNil(FQueue);
 
   inherited;
@@ -156,7 +160,8 @@ end;
 
 procedure TLogMemo.EndUpdate;
 begin
-  FMemo.Lines.EndUpdate;
+  if Assigned(FMemo) then
+    FMemo.Lines.EndUpdate;
 end;
 
 procedure TLogMemo.Enter(const AValue: String);
