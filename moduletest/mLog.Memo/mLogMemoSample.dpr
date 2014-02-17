@@ -3,7 +3,6 @@ program mLogMemoSample;
 uses
   Vcl.Forms,
   _vMain in '_vMain.pas' {vMain},
-  mLog.CodeSite in '..\..\source\utils\mLog.CodeSite.pas',
   mLog.TMemo in '..\..\source\utils.win\mLog.TMemo.pas',
   mLog in '..\..\source\utils\mLog.pas',
   mSysUtilsEx in '..\..\source\utils\mSysUtilsEx.pas',

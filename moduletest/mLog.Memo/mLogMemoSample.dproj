@@ -86,7 +86,6 @@
             <Form>vMain</Form>
             <FormType>dfm</FormType>
         </DCCReference>
-        <DCCReference Include="..\..\source\utils\mLog.CodeSite.pas"/>
         <DCCReference Include="..\..\source\utils.win\mLog.TMemo.pas"/>
         <DCCReference Include="..\..\source\utils\mLog.pas"/>
         <DCCReference Include="..\..\source\utils\mSysUtilsEx.pas"/>
