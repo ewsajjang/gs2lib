@@ -84,6 +84,9 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <Manifest_File>None</Manifest_File>
+        <DCC_UnitSearchPath>..\source\utils\;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -99,15 +102,16 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="..\source\utils\mBitMask.pas"/>
         <DCCReference Include="TestmBitMask.pas"/>
         <DCCReference Include="TestmIntervalCounter.pas"/>
-        <DCCReference Include="..\source\utils\mSysUtilsEx.pas"/>
-        <DCCReference Include="..\source\utils\mIntervalCounter.pas"/>
-        <DCCReference Include="..\source\utils\mGenericClassList.pas"/>
         <DCCReference Include="TestmGenericClassList.pas"/>
-        <DCCReference Include="..\source\utils\mRouter.pas"/>
         <DCCReference Include="TestmRouter.pas"/>
+        <DCCReference Include="TestmRepeatorRecord.pas"/>
+        <DCCReference Include="..\source\utils\mBitMask.pas"/>
+        <DCCReference Include="..\source\utils\mGenericClassList.pas"/>
+        <DCCReference Include="..\source\utils\mIntervalCounter.pas"/>
+        <DCCReference Include="..\source\utils\mRepeator.pas"/>
+        <DCCReference Include="..\source\utils\mRouter.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -163,6 +167,12 @@
                 <Source>
                     <Source Name="MainSource">mgs2libTest.dpr</Source>
                 </Source>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="C:\realgridplus\WTGrids.XE3.eval.bpl">File C:\realgridplus\WTGrids.XE3.eval.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="C:\realgridplus\WTGrids.XE3.eval.release.bpl">File C:\realgridplus\WTGrids.XE3.eval.release.bpl not found</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k170.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp170.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
             </Delphi.Personality>
             <Deployment/>
             <Platforms>

@@ -16,15 +16,16 @@ program mgs2libTest;
 
 uses
   DUnitTestRunner,
-  mBitMask in '..\source\utils\mBitMask.pas',
   TestmBitMask in 'TestmBitMask.pas',
   TestmIntervalCounter in 'TestmIntervalCounter.pas',
-  mSysUtilsEx in '..\source\utils\mSysUtilsEx.pas',
-  mIntervalCounter in '..\source\utils\mIntervalCounter.pas',
-  mGenericClassList in '..\source\utils\mGenericClassList.pas',
   TestmGenericClassList in 'TestmGenericClassList.pas',
-  mRouter in '..\source\utils\mRouter.pas',
-  TestmRouter in 'TestmRouter.pas';
+  TestmRouter in 'TestmRouter.pas',
+  TestmRepeatorRecord in 'TestmRepeatorRecord.pas',
+  mBitMask in '..\source\utils\mBitMask.pas',
+  mGenericClassList in '..\source\utils\mGenericClassList.pas',
+  mIntervalCounter in '..\source\utils\mIntervalCounter.pas',
+  mRepeator in '..\source\utils\mRepeator.pas',
+  mRouter in '..\source\utils\mRouter.pas';
 
 {R *.RES}
 
