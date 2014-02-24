@@ -51,7 +51,7 @@ type
 
     function Query<T>(AID: TID; var Value: T): Boolean; overload;
     function Query<T>(AID: TID): T; overload;
-    procedure Feed<T>(AID: TID; Func: TFunc<T>); overload;
+    procedure Handler<T>(AID: TID; Func: TFunc<T>); overload;
   end;
 
 implementation
@@ -126,7 +126,7 @@ begin
   FExcuteList.Add(AID, Func);
 end;
 
-procedure TRouter<TID>.Feed<T>(AID: TID; Func: TFunc<T>);
+procedure TRouter<TID>.Handler<T>(AID: TID; Func: TFunc<T>);
 begin
   if FGenericList.ContainsKey(AID) then
     raise ERouterMethodIDAlreadyExists .CreateFmt(FMT_METHOD_ID_ALREADY_EXISTS, [RouterKeyToStr(AID)]);
