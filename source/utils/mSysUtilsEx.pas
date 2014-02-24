@@ -49,20 +49,27 @@ begin
 end;
 
 procedure HexStrToBytes(const Source: String; var Dest: TBytes);
+const
+  SOURCE_LEN_MIN = 2;
 var
   i, LIdxOfDest, LBytesLen: Integer;
 begin
-  LBytesLen := Length(Source) div 2;
-  SetLength(Dest, LBytesLen);
-
-  LIdxOfDest := 0;
-  for i := 0 to Length(Source) - 1 do
+  if Source.Length < SOURCE_LEN_MIN then
+    SetLength(Dest, 0)
+  else
   begin
-    if i mod 2 = 0 then
-      Continue;
+    LBytesLen := Source.Length div 2;
+    SetLength(Dest, LBytesLen);
 
-    Dest[LIdxOfDest] := Byte(Char(StrToInt('$' + Source[i] + Source[i+1])));
-    Inc(LIdxOfDest);
+    LIdxOfDest := 0;
+    for i := 0 to Source.Length - 1 do
+    begin
+      if i mod 2 = 0 then
+        Continue;
+
+      Dest[LIdxOfDest] := Byte(Char(StrToInt('$' + Source[i] + Source[i+1])));
+      Inc(LIdxOfDest);
+    end;
   end;
 end;
 
