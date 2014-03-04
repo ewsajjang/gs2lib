@@ -25,7 +25,7 @@ uses
   mGenericClassList in '..\source\utils\mGenericClassList.pas',
   mIntervalCounter in '..\source\utils\mIntervalCounter.pas',
   mRepeator in '..\source\utils\mRepeator.pas',
-  mRouter in '..\source\utils\mRouter.pas';
+  mMsgRouter in '..\source\utils\mMsgRouter.pas';
 
 {R *.RES}
 

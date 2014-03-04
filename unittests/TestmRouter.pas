@@ -12,7 +12,7 @@ unit TestmRouter;
 interface
 
 uses
-  mRouter,
+  mMsgRouter,
   TestFramework, System.SysUtils, System.Generics.Collections,
   System.Classes, System.Rtti;
 
@@ -21,7 +21,7 @@ type
 
   TestTRouter = class(TTestCase)
   strict private
-    FRouter: TRouter<Integer>;
+    FRouter: TMsgRouter<Integer>;
   public
     procedure SetUp; override;
     procedure TearDown; override;
@@ -55,7 +55,7 @@ end;
 
 procedure TestTRouter.SetUp;
 begin
-  FRouter := TRouter<Integer>.Create;
+  FRouter := TMsgRouter<Integer>.Create;
   FRouter.Clear;
 end;
 
@@ -70,7 +70,7 @@ var
   LExcute: Boolean;
 begin
   LExcute := False;
-  FRouter.Handler(0,
+  FRouter.On(0,
     procedure
     begin
       LExcute := True
@@ -85,7 +85,7 @@ var
 begin
   Data := TObj.Create;
   try
-    FRouter.Handler(0,
+    FRouter.On(0,
       procedure
       begin
         FRouter.Data<TObj>.Excute := True;
@@ -102,7 +102,7 @@ procedure TestTRouter.TestWithDatas;
 var
   Data, Data2: TObj;
 begin
-  FRouter.Handler(0,
+  FRouter.On(0,
     procedure
     begin
         FRouter.Data<TObj>.Excute := True;
@@ -130,7 +130,7 @@ begin
     begin
       LExcute := True
     end;
-  FRouter.Handler(0, Proc);
+  FRouter.On(0, Proc);
   FRouter.Notify(0);
   CheckTrue(LExcute);
 
@@ -142,22 +142,22 @@ end;
 procedure TestTRouter.TestERouterMethodIDAlreadyExists;
 begin
   ExpectedException := ERouterMethodIDAlreadyExists;
-  FRouter.Handler(0, function: Boolean begin Result := True end);
-  FRouter.Handler(0, function: Boolean begin Result := False end);
+  FRouter.On(0, function: Boolean begin Result := True end);
+  FRouter.On(0, function: Boolean begin Result := False end);
 end;
 
 procedure TestTRouter.TestExcute;
 var
   LExcute: Boolean;
 begin
-  FRouter.Handler(0, function: Boolean begin Result := True end);
+  FRouter.On(0, function: Boolean begin Result := True end);
   LExcute := False;
   CheckFalse(LExcute);
   LExcute := FRouter.Excute(0);
   CheckTrue(LExcute);
 
   FRouter.RemoveHandler(0);
-  FRouter.Handler(0, function: Boolean begin Result := False end);
+  FRouter.On(0, function: Boolean begin Result := False end);
   LExcute := FRouter.Excute(0);
   CheckFalse(LExcute);
 end;
@@ -168,7 +168,7 @@ var
 begin
   Data := TObj.Create;
   try
-    FRouter.Handler(0,
+    FRouter.On(0,
       function: Boolean
       begin
         Result := True;
@@ -179,7 +179,7 @@ begin
     CheckTrue(Data.Excute);
 
     FRouter.RemoveHandler(0);
-    FRouter.Handler(0,
+    FRouter.On(0,
       function: Boolean
       begin
         Result := False;
@@ -213,7 +213,7 @@ procedure TestTRouter.TestQueryResultObj;
 var
   LObj: TObj;
 begin
-  FRouter.Feed<TObj>(0,
+  FRouter.On<TObj>(0,
     function: TObj
     begin
       Result := TObj.Create;
@@ -229,7 +229,7 @@ var
   LObj: TObj;
 begin
   CheckFalse(FRouter.Query<TObj>(0, LObj));
-  FRouter.Feed<TObj>(0,
+  FRouter.On<TObj>(0,
     function: TObj
     begin
       Result := TObj.Create;
