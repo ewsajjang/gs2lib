@@ -3,11 +3,11 @@ unit mvw.Services;
 interface
 
 uses
-  mGenericClassList, mRouter,
+  mGenericClassList, mMsgRouter,
   System.Classes, System.SysUtils;
 
 var
-  router: TRouter<String> = nil;
+  msgRouter: TMsgRouter<String> = nil;
   vmList: TGenericClassList = nil;
   svcList: TGenericClassList = nil;
 
@@ -15,8 +15,8 @@ implementation
 
 initialization
 
-  if not Assigned(router) then
-    router := TRouter<String>.Create;
+  if not Assigned(msgRouter) then
+    msgRouter := TMsgRouter<String>.Create;
 
   if not Assigned(vmList) then
     vmList := TGenericClassList.Create;
@@ -37,10 +37,10 @@ finalization
     vmList := nil;
   end;
 
-  if Assigned(router) then
+  if Assigned(msgRouter) then
   begin
-    router.Free;
-    router := nil;
+    msgRouter.Free;
+    msgRouter := nil;
   end;
 
 end.
