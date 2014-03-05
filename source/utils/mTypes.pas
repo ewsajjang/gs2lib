@@ -15,19 +15,20 @@ type
   TNotifyInteger = procedure(Sender: TObject; Value: Integer) of object;
   TNotifyString  = procedure(Sender: TObject; Value: String) of object;
 
-  TProcBoolean = reference to procedure(Value: Boolean);
-  TProcPointer = reference to procedure(Sender: TObject; Value: Pointer; Length: Int64);
-  TProcBytes = reference to procedure(Value: TBytes);
-  TProcError = reference to procedure(Sender: TObject; ErCode: Integer; ErMsg: String);
-  TProcProgress= reference to procedure(Total: Boolean; Value: Int64);
-  TProcInteger = reference to procedure(Sender: TObject; Value: Integer);
-  TProcStr = reference to procedure(Value: String);
+  TProcBoolean = reference to procedure(const Value: Boolean);
+  TProcPointer = reference to procedure(const Sender: TObject; const Value: Pointer; const Length: Int64);
+  TProcBytes = reference to procedure(const Value: TBytes);
+  TProcError = reference to procedure(const Sender: TObject; const ErCode: Integer; const ErMsg: String);
+  TProcProgress= reference to procedure(const Total: Boolean; const Value: Int64);
+  TProcInteger = reference to procedure(const Sender: TObject; const Value: Integer);
+  TProcStr = reference to procedure(const Value: String);
 
   TBytesList = TList<TBytes>;
 
   TProgressInfo = record
     Total: Boolean;
     Value: Int64;
+    constructor Create(const ATotal: Boolean; AValue: Int64);
   end;
 
   TPeriod = record
@@ -41,6 +42,14 @@ implementation
 
 uses
   mDateTimeHelper;
+
+{ TProgressInfo }
+
+constructor TProgressInfo.Create(const ATotal: Boolean; AValue: Int64);
+begin
+  Total := ATotal;
+  Value := Value;
+end;
 
 { TPeriod }
 
