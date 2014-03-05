@@ -9,7 +9,7 @@ uses
 type
   TSimpleRepeator<T> = class
   private
-    FPosition: Integer;
+    FPosByIdx: Integer;
     FItemIsClass: Boolean;
     FItemClass: TClass;
     FList: TList<T>;
@@ -17,8 +17,10 @@ type
   private
     FOwnsObjects: Boolean;
     function GetCount: Integer;
-    procedure SetPosition(const Value: Integer);
+    procedure SetPosByIdx(const Value: Integer);
     function GetCurrent: T;
+    function GetPosBy: T;
+    procedure SetPosBy(const Value: T);
   public
     constructor Create(AOwnsObjects: Boolean = True);
     destructor Destroy; override;
@@ -29,7 +31,8 @@ type
 
     property Count: Integer read GetCount;
     property Current: T read GetCurrent;
-    property Position: Integer read FPosition write SetPosition;
+    property PosByIdx: Integer read FPosByIdx write SetPosByIdx;
+    property PosBy: T read GetPosBy write SetPosBy;
 
     property OwnsObjects: Boolean read FOwnsObjects write FOwnsObjects;
   end;
@@ -38,7 +41,7 @@ implementation
 
 uses
   mConsts,
-  System.RTTI, System.TypInfo;
+  System.RTTI, System.TypInfo, System.Math;
 
 { TSimpleRepeator<T> }
 
@@ -59,7 +62,7 @@ end;
 
 function TSimpleRepeator<T>.Eof: Boolean;
 begin
-  Result := FPosition = Count - 1;
+  Result := FPosByIdx = Count - 1;
 end;
 
 function TSimpleRepeator<T>.GetCount: Integer;
@@ -69,7 +72,12 @@ end;
 
 function TSimpleRepeator<T>.GetCurrent: T;
 begin
-  Result := FList[FPosition];
+  Result := FList[FPosByIdx];
+end;
+
+function TSimpleRepeator<T>.GetPosBy: T;
+begin
+  Result := Current;
 end;
 
 procedure TSimpleRepeator<T>.Init(AItems: array of T);
@@ -77,6 +85,7 @@ var
   LInfo: PTypeInfo;
   LItem: T;
 begin
+  FList.Clear;
   if FOwnsObjects then
   begin
     LInfo := TypeInfo(T);
@@ -88,15 +97,15 @@ begin
   for LItem in AItems do
     FList.Add(LItem);
 
-  FPosition := 0;
+  FPosByIdx := 0;
 end;
 
 function TSimpleRepeator<T>.Next: T;
 begin
-  if FPosition < Count then
-    Inc(FPosition);
+  if FPosByIdx < Count then
+    Inc(FPosByIdx);
 
-  Result := FList[FPosition];
+  Result := FList[FPosByIdx];
 end;
 
 procedure TSimpleRepeator<T>.OnNotify(Sender: TObject; const Item: T;
@@ -107,10 +116,19 @@ begin
       (Item as FItemClass).Free;
 end;
 
-procedure TSimpleRepeator<T>.SetPosition(const Value: Integer);
+procedure TSimpleRepeator<T>.SetPosBy(const Value: T);
+var
+  LIdx: Integer;
+begin
+  LIdx := FList.IndexOf(Value);
+  if InRange(LIdx, 0, FList.Count - 1) then
+    FPosByIdx := LIdx;
+end;
+
+procedure TSimpleRepeator<T>.SetPosByIdx(const Value: Integer);
 begin
   if Value < Count then
-    FPosition := Value;
+    FPosByIdx := Value;
 end;
 
 end.
