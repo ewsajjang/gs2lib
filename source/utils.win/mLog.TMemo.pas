@@ -242,7 +242,7 @@ begin
   if AErCondition then
     Rcv(APacket)
   else
-    FQueue.Add('%s', [lkErr.Str(APacket)]);
+    FQueue.Add('%s', [lkRcvEr.Str(APacket)]);
 end;
 
 procedure TLogMemo.Rcv(const AMsg: String; const APacket: TBytes);
@@ -261,7 +261,7 @@ begin
   if AErCondition then
     Snd(AMsg, Args, APacket)
   else
-    FQueue.Add('%s', [lkErr.Str(AMsg, Args, APacket)]);
+    FQueue.Add('%s', [lkRcvEr.Str(AMsg, Args, APacket)]);
 end;
 
 procedure TLogMemo.Rcv(const AErCondition: Boolean; const AMsg: String;
@@ -270,7 +270,7 @@ begin
   if AErCondition then
     Rcv(AMsg, APacket)
   else
-    FQueue.Add('%s', [lkErr.Str(AMsg, APacket)]);
+    FQueue.Add('%s', [lkRcvEr.Str(AMsg, APacket)]);
 end;
 
 procedure TLogMemo.Snd(const APacket: TBytes);
@@ -298,7 +298,7 @@ begin
   if AErCondition then
     Snd(AMsg, Args, APacket)
   else
-    FQueue.Add('%s', [lkErr.Str(AMsg, Args, APacket)]);
+    FQueue.Add('%s', [lkSndEr.Str(AMsg, Args, APacket)]);
 end;
 
 procedure TLogMemo.Snd(const AErCondition: Boolean; const AMsg: String;
@@ -307,7 +307,7 @@ begin
   if AErCondition then
     Snd(AMsg, APacket)
   else
-    FQueue.Add('%s', [lkErr.Str(AMsg, APacket)]);
+    FQueue.Add('%s', [lkSndEr.Str(AMsg, APacket)]);
 end;
 
 procedure TLogMemo.Snd(const AMsg: String; const APacket: TBytes);
@@ -320,7 +320,7 @@ begin
   if AErCondition then
     Snd(APacket)
   else
-    FQueue.Add('%s', [lkErr.Str(APacket)]);
+    FQueue.Add('%s', [lkSndEr.Str(APacket)]);
 end;
 
 initialization

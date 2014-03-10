@@ -6,17 +6,19 @@ uses
   System.SysUtils;
 
 type
-  TLogKind = (lkEnter, lkExit, lkSnd, lkRcv, lkMsg, lkMsgEr, lkErr);
+  TLogKind = (lkEnter, lkExit, lkSnd, lkRcv, lkMsg, lkMsgEr, lkErr, lkSndEr, lkRcvEr);
   TLogKindHelper = record helper for TLogKind
   private const
-    LOG_HEADERS: array[lkEnter..lkErr] of String = (
+    LOG_HEADERS: array[lkEnter..lkRcvEr] of String = (
       '-->> ',
       '<<-- ',
       'snd',
       'rcv',
       'msg',
       'ErMsg',
-      'Error'
+      'Error',
+      'sndEr',
+      'rcvEr'
     );
   private
     class var MAX_STR_LEN: Integer;

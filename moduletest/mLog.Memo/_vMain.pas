@@ -52,6 +52,7 @@ begin
   Log.Rcv(True, 'FontSize: %s', [Memo1.Font.Name], LBytes);
   Log.Exit('FontSize');
   Log.Rcv(True, LBytes);
+  Log.Rcv(False, LBytes);
   Log.Error('error log', LBytes);
 end;
 
