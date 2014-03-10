@@ -183,7 +183,7 @@ begin
   if AErCondition then
     Rcv(APacket)
   else
-    CodeSite.Send(csmError, '[%s]%s', ['RCV', BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[rcv]%s', [BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Rcv(const AErCondition: Boolean; const AMsg: String;
@@ -192,7 +192,7 @@ begin
   if AErCondition then
     Rcv(AMsg, APacket)
   else
-    CodeSite.Send(csmError, '[%s]%s', ['RCV', BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[rcv.%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Rcv(const AErCondition: Boolean; const AMsg: String;
@@ -201,7 +201,7 @@ begin
   if AErCondition then
     Rcv(AMsg, Args, APacket)
   else
-    CodeSite.Send(csmError, '[%s%s]%s', ['RCV', Format(AMsg, Args), BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[rcv.%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Msg(const AMsg: String);
@@ -211,22 +211,22 @@ end;
 
 procedure TLogCodeSite.Rcv(const AMsg: String; const APacket: TBytes);
 begin
-  CodeSite.Send(csmRcv, '[%s]%s', [AMsg, BytesToHexStr(APacket)]);
+  CodeSite.Send(csmRcv, '[rcv.%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Rcv(const APacket: TBytes);
 begin
-  CodeSite.Send(csmRcv, '[%s]%s', ['RCV', BytesToHexStr(APacket)]);
+  CodeSite.Send(csmRcv, '[rcv]%s', [BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Snd(const APacket: TBytes);
 begin
-  CodeSite.Send(csmSnd, '[%s]%s', ['SND', BytesToHexStr(APacket)]);
+  CodeSite.Send(csmSnd, '[snd]%s', [BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Snd(const AMsg: String; const APacket: TBytes);
 begin
-  CodeSite.Send(csmSnd, '[%s]%s', [AMsg, BytesToHexStr(APacket)]);
+  CodeSite.Send(csmSnd, '[snd.%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
 {IFDEF DEBUG}
@@ -236,7 +236,7 @@ begin
   if AErCondition then
     Snd(APacket)
   else
-    CodeSite.Send(csmError, '[%s]%s', ['Snd', BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[snd]%s', [BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Snd(const AErCondition: Boolean; const AMsg: String;
@@ -245,7 +245,7 @@ begin
   if AErCondition then
     Snd(AMsg, APacket)
   else
-    CodeSite.Send(csmError, '[%s.%s]%s', ['Snd', AMsg, BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[snd.%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Snd(const AErCondition: Boolean; const AMsg: String;
@@ -254,7 +254,7 @@ begin
   if AErCondition then
     Snd(AMsg, Args, APacket)
   else
-    CodeSite.Send(csmError, '[%s%s]%s', ['Snd', Format(AMsg, Args), BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[snd.%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)]);
 end;
 
 initialization
