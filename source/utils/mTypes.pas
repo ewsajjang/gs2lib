@@ -55,7 +55,7 @@ end;
 
 function TPeriod.Contain(const AValue: TDateTime): Boolean;
 begin
-  Result := AValue.InRange(Min, Max);
+  Result := AValue.InRange(Min.StartOfDay, Max.EndOfDay);
 end;
 
 class function TPeriod.Create(AMin, AMax: TDateTime): TPeriod;
