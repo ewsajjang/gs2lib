@@ -25,7 +25,10 @@ type
     constructor Create(AOwnsObjects: Boolean = True);
     destructor Destroy; override;
 
-    procedure Init(AItems: array of T);
+    procedure Init(const AItems: array of T);
+    function Add(const AItem: T): Integer;
+    function Remove(const AItem: T): Integer;
+    function Exists(const AItem: T): Boolean;
     function Next: T;
     function Eof: Boolean;
 
@@ -44,6 +47,14 @@ uses
   System.RTTI, System.TypInfo, System.Math;
 
 { TSimpleRepeator<T> }
+
+function TSimpleRepeator<T>.Add(const AItem: T): Integer;
+begin
+  if not Exists(AItem) then
+    Result := FList.Add(AItem)
+  else
+    Result := FList.Count - 1;
+end;
 
 constructor TSimpleRepeator<T>.Create(AOwnsObjects: Boolean);
 begin
@@ -65,6 +76,11 @@ begin
   Result := FPosByIdx = Count - 1;
 end;
 
+function TSimpleRepeator<T>.Exists(const AItem: T): Boolean;
+begin
+  Result := FList.IndexOf(AItem) > VAL_NOT_ASSIGNED;
+end;
+
 function TSimpleRepeator<T>.GetCount: Integer;
 begin
   Result := FList.Count;
@@ -80,7 +96,7 @@ begin
   Result := Current;
 end;
 
-procedure TSimpleRepeator<T>.Init(AItems: array of T);
+procedure TSimpleRepeator<T>.Init(const AItems: array of T);
 var
   LInfo: PTypeInfo;
   LItem: T;
@@ -114,6 +130,11 @@ begin
   if FOwnsObjects and (Action = cnRemoved) then
     if FItemIsClass then
       (Item as FItemClass).Free;
+end;
+
+function TSimpleRepeator<T>.Remove(const AItem: T): Integer;
+begin
+  Result := FList.Remove(AItem)
 end;
 
 procedure TSimpleRepeator<T>.SetPosBy(const Value: T);
