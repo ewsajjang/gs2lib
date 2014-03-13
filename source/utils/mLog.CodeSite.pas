@@ -97,7 +97,11 @@ end;
 constructor TLogCodeSite.Create;
 begin
   FCodeSiteDest := TCodeSiteDestination.Create(nil);
+{$IFDEF DEBUG}
   FCodeSiteDest.Viewer.Active := CodeSite.Installed;
+{$ELSE}
+  FCodeSiteDest.Viewer.Active := False;
+{$ENDIF}
   FCodeSiteDest.LogFile.Active := False;
   CodeSite.Destination := FCodeSiteDest;
   CodeSite.Clear;
