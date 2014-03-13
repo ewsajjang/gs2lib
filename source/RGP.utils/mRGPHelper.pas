@@ -68,6 +68,9 @@ end;
 
 function TWTRealGridHelper.Selected: Boolean;
 begin
+  if not Assigned(Current) then
+    Exit(False);
+
   Result := Current.ItemIndex > VAL_NOT_ASSIGNED;
 end;
 

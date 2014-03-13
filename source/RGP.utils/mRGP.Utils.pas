@@ -173,7 +173,7 @@ function TSimpleGridUtil.IdxFormMouse(const X, Y: Integer;
   var AIdx: TWTGridCellIndex): Boolean;
 begin
   Result := False;
-  if not FGrid.Selected then
+  if not FGrid.Selected or not FGrid.IsFocused then
     Exit;
 
   AIdx := FGrid.MouseToIndex(X, Y);
