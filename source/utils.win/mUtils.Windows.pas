@@ -13,6 +13,7 @@ function WriteRegString(const AKey: HKEY; const ARegKey, AName, AValue: String):
 function AppDataPath(AOrgName: String = ''): String;
 function GetSpecialFolder(CSIDL_VALUE: Integer): string;
 function ShellExecuteFile(const FileName: String; Parameters: String = ''; Directory: String = ''): Integer;
+procedure SelectFileInExplorer(const AFileName: string);
 
 function ComObjExists(ClassName: string): Boolean;
 function ComObjRunning(ClassName: string): Boolean;
@@ -42,7 +43,7 @@ const
 implementation
 
 uses
-  System.Win.ComObj, System.Variants, Winapi.ActiveX, Winapi.ShellAPI;
+  System.Win.ComObj, System.Variants, Winapi.ActiveX, Winapi.ShellAPI, Vcl.Forms;
 
 function ComObjExists(ClassName: string): Boolean;
 var
@@ -144,6 +145,12 @@ function ShellExecuteFile(const FileName: String; Parameters: String = ''; Direc
 begin
   Result := ShellExecute(0, 'open', PChar(FileName), PChar(Parameters),
     PChar(Directory), SW_SHOWNORMAL);
+end;
+
+procedure SelectFileInExplorer(const AFileName: string);
+begin
+  ShellExecute(0, 'open', 'explorer.exe',
+    PChar('/select,"' + AFileName+'"'), nil, SW_NORMAL);
 end;
 
 function MakeUniqueFileName(const APath, AFileName: string): string;
