@@ -12,35 +12,55 @@ unit TestmRepeatorRecord;
 interface
 
 uses
-  TestFramework, System.Classes, System.SysUtils, mRepeator,
-  System.Generics.Collections;
+  mRepeator,
+  System.Classes, System.SysUtils, System.Generics.Collections,
+  DUnitX.TestFramework;
 
 type
   // Test methods for class TSimpleRepeator
   TOrder = (oOne = 0, oTwo, oThree, oFour);
 
-  TestTSimpleRepeator = class(TTestCase)
+  [TestFixture]
+  TestTSimpleRepeator = class
   strict private
     FRepeator: TSimpleRepeator<TOrder>;
   public
-    procedure SetUp; override;
-    procedure TearDown; override;
+    [SetUp]
+    procedure SetUp;
+    [TearDown]
+    procedure TearDown;
   published
+    [test]
     procedure TestInitAndCheckCount;
+    [test]
     procedure TestInitAndCurrentValue;
+    [test]
     procedure TestNext;
+    [test]
     procedure TestNextAndCheckPostion;
+    [test]
     procedure TestMovePosByIdx;
+    [test]
     procedure TestMovePosBy;
+    [test]
     procedure TestCurrentByPosition;
+    [test]
     procedure TestEof;
+    [test]
     procedure TestEofBySetPosition;
+    [test]
     procedure TestEofByCallNext;
+    [test]
     procedure TestAdd;
+    [test]
     procedure TestAddSameItem;
+    [test]
     procedure TestRemove;
+    [test]
     procedure TestRemoveNotExists;
+    [test]
     procedure TestExist;
+    [test]
     procedure TestNotExist;
   end;
 
@@ -62,7 +82,7 @@ var
   AItems: TOrder;
 begin
   FRepeator.Init([oOne, oTwo, oThree]);
-  CheckEquals(3, FRepeator.Count);
+  Assert.AreEqual(3, FRepeator.Count);
 end;
 
 procedure TestTSimpleRepeator.TestMovePosBy;
@@ -75,7 +95,7 @@ begin
   begin
     FRepeator.PosBy := TOrder(i);
     ReturnValue := FRepeator.Current;
-    CheckTrue(TOrder(i) = ReturnValue);
+    Assert.IsTrue(TOrder(i) = ReturnValue);
   end;
 end;
 
@@ -89,7 +109,7 @@ begin
   begin
     FRepeator.PosByIdx := i;
     ReturnValue := FRepeator.Current;
-    CheckTrue(TOrder(i) = ReturnValue);
+    Assert.IsTrue(TOrder(i) = ReturnValue);
   end;
 end;
 
@@ -99,7 +119,7 @@ var
 begin
   FRepeator.Init([oOne, oTwo, oThree]);
   ReturnValue := FRepeator.Next;
-  CheckTrue(oTwo = ReturnValue);
+  Assert.IsTrue(oTwo = ReturnValue);
 end;
 
 procedure TestTSimpleRepeator.TestNextAndCheckPostion;
@@ -111,8 +131,8 @@ begin
 
   LItem := FRepeator.Next;
   ReturnValue := FRepeator.PosByIdx;
-  CheckEquals(Integer(LItem), ReturnValue);
-  CheckEquals(1, ReturnValue);
+  Assert.AreEqual(Integer(LItem), ReturnValue);
+  Assert.AreEqual(1, ReturnValue);
 end;
 
 procedure TestTSimpleRepeator.TestNotExist;
@@ -121,7 +141,7 @@ var
 begin
   FRepeator.Init([oOne, oTwo, oThree]);
   LExists := FRepeator.Exists(oFour);
-  CheckEquals(False, LExists);
+  Assert.AreEqual<Boolean>(False, LExists);
 end;
 
 procedure TestTSimpleRepeator.TestRemove;
@@ -130,7 +150,7 @@ var
 begin
   FRepeator.Init([oOne, oTwo, oThree]);
   LIdx := FRepeator.Remove(oThree);
-  CheckEquals(2, LIdx);
+  Assert.AreEqual(2, LIdx);
 end;
 
 procedure TestTSimpleRepeator.TestRemoveNotExists;
@@ -139,7 +159,7 @@ var
 begin
   FRepeator.Init([oOne, oTwo, oThree]);
   LIdx := FRepeator.Remove(oFour);
-  CheckEquals(-1, LIdx);
+  Assert.AreEqual(-1, LIdx);
 end;
 
 procedure TestTSimpleRepeator.TestInitAndCurrentValue;
@@ -148,7 +168,7 @@ var
 begin
   FRepeator.Init([oOne, oTwo, oThree]);
   Return := FRepeator.Current;
-  CheckTrue(oOne = Return);
+  Assert.IsTrue(oOne = Return);
 end;
 
 procedure TestTSimpleRepeator.TestAdd;
@@ -157,7 +177,7 @@ var
 begin
   FRepeator.Init([oOne, oTwo]);
   LCnt := FRepeator.Add(oThree);
-  CheckEquals(2, LCnt);
+  Assert.AreEqual(2, LCnt);
 end;
 
 procedure TestTSimpleRepeator.TestAddSameItem;
@@ -166,7 +186,7 @@ var
 begin
   FRepeator.Init([oOne, oTwo]);
   LCnt := FRepeator.Add(oTwo);
-  CheckEquals(1, LCnt);
+  Assert.AreEqual(1, LCnt);
 end;
 
 procedure TestTSimpleRepeator.TestCurrentByPosition;
@@ -178,7 +198,7 @@ begin
   for i := 0 to FRepeator.Count - 1 do
   begin
     FRepeator.PosByIdx := i;
-    CheckTrue(TOrder(i) = FRepeator.Current);
+    Assert.IsTrue(TOrder(i) = FRepeator.Current);
   end;
 end;
 
@@ -188,7 +208,7 @@ var
 begin
   FRepeator.Init([oOne, oTwo, oThree]);
   ReturnValue := FRepeator.Eof;
-  CheckFalse(ReturnValue);
+  Assert.IsFalse(ReturnValue);
 end;
 
 procedure TestTSimpleRepeator.TestEofByCallNext;
@@ -199,7 +219,7 @@ begin
   FRepeator.Next;
   FRepeator.Next;
   ReturnValue := FRepeator.Eof;
-  CheckTrue(ReturnValue);
+  Assert.IsTrue(ReturnValue);
 end;
 
 procedure TestTSimpleRepeator.TestEofBySetPosition;
@@ -209,7 +229,7 @@ begin
   FRepeator.Init([oOne, oTwo, oThree]);
   FRepeator.PosByIdx := FRepeator.Count - 1;
   ReturnValue := FRepeator.Eof;
-  CheckTrue(ReturnValue);
+  Assert.IsTrue(ReturnValue);
 end;
 
 procedure TestTSimpleRepeator.TestExist;
@@ -218,10 +238,9 @@ var
 begin
   FRepeator.Init([oOne, oTwo, oThree]);
   LExists := FRepeator.Exists(oOne);
-  CheckEquals(True, LExists);
+  Assert.AreEqual<Boolean>(True, LExists);
 end;
 
 initialization
-  // Register any test cases with the test runner
-  RegisterTest(TestTSimpleRepeator.Suite);
+  TDUnitX.RegisterTestFixture(TestTSimpleRepeator);
 end.

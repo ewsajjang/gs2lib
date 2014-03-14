@@ -13,28 +13,40 @@ interface
 
 uses
   mMsgRouter,
-  TestFramework, System.SysUtils, System.Generics.Collections,
-  System.Classes, System.Rtti;
+  System.SysUtils,
+  DUnitX.TestFramework;
 
 type
   // Test methods for class TRouter
-
-  TestTRouter = class(TTestCase)
+  [TestFixture]
+  TestTRouter = class
   strict private
     FRouter: TMsgRouter<Integer>;
   public
-    procedure SetUp; override;
-    procedure TearDown; override;
+    [Setup]
+    procedure SetUp;
+    [TearDown]
+    procedure TearDown;
   published
+    [Test]
     procedure TestNotify;
+    [Test]
     procedure TestNotifyWithData;
+    [Test]
     procedure TestWithDatas;
+    [Test]
     procedure TestRemoveHandler;
+    [Test]
     procedure TestERouterMethodIDAlreadyExists;
+    [Test]
     procedure TestExcute;
+    [Test]
     procedure TestExcuteWithData;
+    [Test]
     procedure TestData;
+    [Test]
     procedure TestQueryResultObj;
+    [Test]
     procedure TestQueryVarObj;
   end;
 
@@ -76,7 +88,7 @@ begin
       LExcute := True
     end);
   FRouter.Notify(0);
-  CheckTrue(LExcute);
+  Assert.IsTrue(LExcute);
 end;
 
 procedure TestTRouter.TestNotifyWithData;
@@ -90,9 +102,9 @@ begin
       begin
         FRouter.Data<TObj>.Excute := True;
       end);
-    CheckFalse(Data.Excute);
+    Assert.IsFalse(Data.Excute);
     FRouter.Notify(0, Data);
-    CheckTrue(Data.Excute);
+    Assert.IsTrue(Data.Excute);
   finally
     Data.Free;
   end;
@@ -112,7 +124,7 @@ begin
   Data2 := TObj.Create;
   try
     FRouter.Notify(0, Data, Data2);
-    CheckTrue(Data.Excute and Data2.Excute);
+    Assert.IsTrue(Data.Excute and Data2.Excute);
   finally
     Data.Free;
     Data2.Free;
@@ -132,18 +144,22 @@ begin
     end;
   FRouter.On(0, Proc);
   FRouter.Notify(0);
-  CheckTrue(LExcute);
+  Assert.IsTrue(LExcute);
 
   LExcute := False;
   FRouter.RemoveHandler(0, Proc);
-  CheckFalse(LExcute);
+  Assert.IsFalse(LExcute);
 end;
 
 procedure TestTRouter.TestERouterMethodIDAlreadyExists;
 begin
-  ExpectedException := ERouterMethodIDAlreadyExists;
   FRouter.On(0, function: Boolean begin Result := True end);
-  FRouter.On(0, function: Boolean begin Result := False end);
+  Assert.WillRaise(
+    procedure
+    begin
+      FRouter.On(0, function: Boolean begin Result := False end);
+    end,
+    ERouterMethodIDAlreadyExists);
 end;
 
 procedure TestTRouter.TestExcute;
@@ -152,14 +168,14 @@ var
 begin
   FRouter.On(0, function: Boolean begin Result := True end);
   LExcute := False;
-  CheckFalse(LExcute);
+  Assert.IsFalse(LExcute);
   LExcute := FRouter.Excute(0);
-  CheckTrue(LExcute);
+  Assert.IsTrue(LExcute);
 
   FRouter.RemoveHandler(0);
   FRouter.On(0, function: Boolean begin Result := False end);
   LExcute := FRouter.Excute(0);
-  CheckFalse(LExcute);
+  Assert.IsFalse(LExcute);
 end;
 
 procedure TestTRouter.TestExcuteWithData;
@@ -174,9 +190,9 @@ begin
         Result := True;
         FRouter.Data<TObj>.Excute := Result;
       end);
-    CheckFalse(Data.Excute);
-    CheckTrue(FRouter.Excute(0, Data));
-    CheckTrue(Data.Excute);
+    Assert.IsFalse(Data.Excute);
+    Assert.IsTrue(FRouter.Excute(0, Data));
+    Assert.IsTrue(Data.Excute);
 
     FRouter.RemoveHandler(0);
     FRouter.On(0,
@@ -185,8 +201,8 @@ begin
         Result := False;
         FRouter.Data<TObj>.Excute := Result;
       end);
-    CheckFalse(FRouter.Excute(0, Data));
-    CheckFalse(Data.Excute);
+    Assert.IsFalse(FRouter.Excute(0, Data));
+    Assert.IsFalse(Data.Excute);
   finally
     Data.Free;
   end;
@@ -198,15 +214,15 @@ var
 begin
   FRouter.Data<TObj>(TObj.Create);
   LObj := FRouter.Data<TObj>;
-  CheckFalse(LObj.Excute);
+  Assert.IsFalse(LObj.Excute);
   FRouter.Data<TObj>.Excute := True;
-  CheckTrue(LObj.Excute);
+  Assert.IsTrue(LObj.Excute);
 
   FRouter.Data2<TObj>(TObj.Create);
   LObj2 := FRouter.Data2<TObj>;
-  CheckFalse(LObj2.Excute);
+  Assert.IsFalse(LObj2.Excute);
   FRouter.Data2<TObj>.Excute := True;
-  CheckTrue(LObj2.Excute);
+  Assert.IsTrue(LObj2.Excute);
 end;
 
 procedure TestTRouter.TestQueryResultObj;
@@ -220,29 +236,28 @@ begin
       Result.Excute := True;
     end);
   LObj := FRouter.Query<TObj>(0);
-  CheckNotNull(LObj);
-  CheckTrue(LObj.Excute);
+  Assert.IsNotNull(LObj);
+  Assert.IsTrue(LObj.Excute);
 end;
 
 procedure TestTRouter.TestQueryVarObj;
 var
   LObj: TObj;
 begin
-  CheckFalse(FRouter.Query<TObj>(0, LObj));
+  Assert.IsFalse(FRouter.Query<TObj>(0, LObj));
   FRouter.On<TObj>(0,
     function: TObj
     begin
       Result := TObj.Create;
       Result.Excute := True;
     end);
-  CheckTrue(FRouter.Query<TObj>(0, LObj));
-  CheckNotNull(LObj);
-  CheckTrue(LObj.Excute);
+  Assert.IsTrue(FRouter.Query<TObj>(0, LObj));
+  Assert.IsNotNull(LObj);
+  Assert.IsTrue(LObj.Excute);
 end;
 
 
 initialization
-  // Register any test cases with the test runner
-  RegisterTest(TestTRouter.Suite);
+  TDUnitX.RegisterTestFixture(TestTRouter);
 
 end.

@@ -1,21 +1,16 @@
 program mgs2libTest;
-{
 
-  Delphi DUnit Test Project
-  -------------------------
-  This project contains the DUnit test framework and the GUI/Console test runners.
-  Add "CONSOLE_TESTRUNNER" to the conditional defines entry in the project options
-  to use the console test runner.  Otherwise the GUI test runner will be used by
-  default.
 
-}
-
-{$IFDEF CONSOLE_TESTRUNNER}
 {$APPTYPE CONSOLE}
-{$ENDIF}
 
 uses
-  DUnitTestRunner,
+  SysUtils,
+  DUnitX.AutoDetect.Console,
+  DUnitX.Loggers.Console,
+  DUnitX.Loggers.Xml.NUnit,
+  DUnitX.TestRunner,
+  DUnitX.TestFramework,
+
   TestmBitMask in 'TestmBitMask.pas',
   TestmIntervalCounter in 'TestmIntervalCounter.pas',
   TestmGenericClassList in 'TestmGenericClassList.pas',
@@ -29,7 +24,33 @@ uses
 
 {R *.RES}
 
+var
+  runner : ITestRunner;
+  results : IRunResults;
+  logger : ITestLogger;
+  nunitLogger : ITestLogger;
 begin
-  DUnitTestRunner.RunRegisteredTests;
+  try
+    //Create the runner
+    runner := TDUnitX.CreateRunner;
+    runner.UseRTTI := True;
+    //tell the runner how we will log things
+    logger := TDUnitXConsoleLogger.Create(true);
+    nunitLogger := TDUnitXXMLNUnitFileLogger.Create;
+    runner.AddLogger(logger);
+    runner.AddLogger(nunitLogger);
+
+    //Run tests
+    results := runner.Execute;
+
+    {$IFNDEF CI}
+      //We don't want this happening when running under CI.
+      System.Write('Done.. press <Enter> key to quit.');
+      System.Readln;
+    {$ENDIF}
+  except
+    on E: Exception do
+      System.Writeln(E.ClassName, ': ', E.Message);
+  end;
 end.
 

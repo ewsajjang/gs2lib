@@ -13,25 +13,37 @@ interface
 
 uses
   mIntervalCounter,
-  TestFramework, System.Classes, System.Math, System.SysUtils;
+  System.Classes, System.Math, System.SysUtils,
+  DUnitX.TestFramework;
 
 type
   // Test methods for class TIntervalCounter
-  TestTIntervalCounter = class(TTestCase)
+  TestTIntervalCounter = class
   strict private
     FIntervalCnt: IIntervalCounter;
   public
-    procedure SetUp; override;
-    procedure TearDown; override;
+    [SetUp]
+    procedure SetUp;
+    [TearDown]
+    procedure TearDown;
   published
+    [Test]
     procedure TestInit_Rnage_01_25;
+    [Test]
     procedure TestInit_Rnage_01_01;
+    [Test]
     procedure TestInit_Rnage_01_02;
+    [Test]
     procedure TestInit_Rnage_03_25;
+    [Test]
     procedure TestInit_EIntervalAssignedByZero;
+    [Test]
     procedure TestInit_EIntervalAssignedByNegative;
+    [Test]
     procedure TestInit_ERangeParamsAssignedByZero;
+    [Test]
     procedure TestInit_ERangeParamsAssignedByNegative;
+    [Test]
     procedure TestInit_ERangeParamsOutOfRange;
   end;
 
@@ -59,54 +71,74 @@ begin
   FIntervalCnt.Interval := AInterval;
   FIntervalCnt.Init(AStart, AEnd);
 
-  CheckEquals(25,  FIntervalCnt.Range);
-  CheckEquals( 3,  FIntervalCnt.Count); //1~12, 13~24, 25~25
+  Assert.AreEqual(25,  FIntervalCnt.Range);
+  Assert.AreEqual( 3,  FIntervalCnt.Count); //1~12, 13~24, 25~25
 
-  CheckEquals(12,  FIntervalCnt.IntervalRange[0]);
-  CheckEquals(12,  FIntervalCnt.IntervalRange[1]);
-  CheckEquals( 1,  FIntervalCnt.IntervalRange[2]);
+  Assert.AreEqual(12,  FIntervalCnt.IntervalRange[0]);
+  Assert.AreEqual(12,  FIntervalCnt.IntervalRange[1]);
+  Assert.AreEqual( 1,  FIntervalCnt.IntervalRange[2]);
 
-  CheckEquals( 1,  FIntervalCnt.StrIdx[0]);
-  CheckEquals(12,  FIntervalCnt.EndIdx[0]);
-  CheckEquals(13,  FIntervalCnt.StrIdx[1]);
-  CheckEquals(24,  FIntervalCnt.EndIdx[1]);
-  CheckEquals(25,  FIntervalCnt.StrIdx[2]);
-  CheckEquals(25,  FIntervalCnt.EndIdx[2]);
+  Assert.AreEqual( 1,  FIntervalCnt.StrIdx[0]);
+  Assert.AreEqual(12,  FIntervalCnt.EndIdx[0]);
+  Assert.AreEqual(13,  FIntervalCnt.StrIdx[1]);
+  Assert.AreEqual(24,  FIntervalCnt.EndIdx[1]);
+  Assert.AreEqual(25,  FIntervalCnt.StrIdx[2]);
+  Assert.AreEqual(25,  FIntervalCnt.EndIdx[2]);
 end;
 
 procedure TestTIntervalCounter.TestInit_ERangeParamsAssignedByNegative;
 begin
-  ExpectedException := ERangeParamsAssignedByNegative;
   FIntervalCnt.Interval := 1;
-  FIntervalCnt.Init(-1, 1);
+  Assert.WillRaise(
+    procedure
+    begin
+      FIntervalCnt.Init(-1, 1);
+    end,
+    ERangeParamsAssignedByNegative);
 end;
 
 procedure TestTIntervalCounter.TestInit_EIntervalAssignedByNegative;
 begin
-  ExpectedException := EIntervalAssignedByNegative;
-  FIntervalCnt.Interval := -1;
-  FIntervalCnt.Init(1, 1);
+  Assert.WillRaise(procedure
+    begin
+      FIntervalCnt.Interval := -1;
+    end,
+    EIntervalAssignedByNegative);
+//  FIntervalCnt.Init(1, 1);
 end;
 
 procedure TestTIntervalCounter.TestInit_EIntervalAssignedByZero;
 begin
-  ExpectedException := EIntervalAssignedByZero;
-  FIntervalCnt.Interval := 0;
-  FIntervalCnt.Init(1, 1);
+  Assert.WillRaise(
+    procedure
+    begin
+      FIntervalCnt.Interval := 0;
+    end,
+    EIntervalAssignedByZero);
+
+//  FIntervalCnt.Init(1, 1);
 end;
 
 procedure TestTIntervalCounter.TestInit_ERangeParamsAssignedByZero;
 begin
-  ExpectedException := ERangeParamsAssignedByZero;
   FIntervalCnt.Interval := 1;
-  FIntervalCnt.Init(0, 1);
+  Assert.WillRaise(
+    procedure
+    begin
+      FIntervalCnt.Init(0, 1);
+    end,
+    ERangeParamsAssignedByZero);
 end;
 
 procedure TestTIntervalCounter.TestInit_ERangeParamsOutOfRange;
 begin
-  ExpectedException := ERangeParamsOutOfRange;
   FIntervalCnt.Interval := 1;
-  FIntervalCnt.Init(2, 1);
+  Assert.WillRaise(
+    procedure
+    begin
+      FIntervalCnt.Init(2, 1);
+    end,
+    ERangeParamsOutOfRange);
 end;
 
 procedure TestTIntervalCounter.TestInit_Rnage_01_01;
@@ -122,13 +154,13 @@ begin
   FIntervalCnt.Interval := AInterval;
   FIntervalCnt.Init(AStart, AEnd);
 
-  CheckEquals(1,  FIntervalCnt.Range);
-  CheckEquals(1,  FIntervalCnt.Count);
+  Assert.AreEqual(1,  FIntervalCnt.Range);
+  Assert.AreEqual(1,  FIntervalCnt.Count);
 
-  CheckEquals(1,  FIntervalCnt.IntervalRange[0]);
+  Assert.AreEqual(1,  FIntervalCnt.IntervalRange[0]);
 
-  CheckEquals(1,  FIntervalCnt.StrIdx[0]);
-  CheckEquals(1,  FIntervalCnt.EndIdx[0]);
+  Assert.AreEqual(1,  FIntervalCnt.StrIdx[0]);
+  Assert.AreEqual(1,  FIntervalCnt.EndIdx[0]);
 end;
 
 procedure TestTIntervalCounter.TestInit_Rnage_01_02;
@@ -144,13 +176,13 @@ begin
   FIntervalCnt.Interval := AInterval;
   FIntervalCnt.Init(AStart, AEnd);
 
-  CheckEquals(2,  FIntervalCnt.Range);
-  CheckEquals(1,  FIntervalCnt.Count);
+  Assert.AreEqual(2,  FIntervalCnt.Range);
+  Assert.AreEqual(1,  FIntervalCnt.Count);
 
-  CheckEquals(2,  FIntervalCnt.IntervalRange[0]);
+  Assert.AreEqual(2,  FIntervalCnt.IntervalRange[0]);
 
-  CheckEquals(1,  FIntervalCnt.StrIdx[0]);
-  CheckEquals(2,  FIntervalCnt.EndIdx[0]);
+  Assert.AreEqual(1,  FIntervalCnt.StrIdx[0]);
+  Assert.AreEqual(2,  FIntervalCnt.EndIdx[0]);
 end;
 
 procedure TestTIntervalCounter.TestInit_Rnage_03_25;
@@ -166,20 +198,20 @@ begin
   FIntervalCnt.Interval := AInterval;
   FIntervalCnt.Init(AStart, AEnd);
 
-  CheckEquals(23,  FIntervalCnt.Range);
-  CheckEquals(2,  FIntervalCnt.Count);
+  Assert.AreEqual(23,  FIntervalCnt.Range);
+  Assert.AreEqual(2,  FIntervalCnt.Count);
 
-  CheckEquals(12,  FIntervalCnt.IntervalRange[0]);
-  CheckEquals(11,  FIntervalCnt.IntervalRange[1]);
+  Assert.AreEqual(12,  FIntervalCnt.IntervalRange[0]);
+  Assert.AreEqual(11,  FIntervalCnt.IntervalRange[1]);
 
-  CheckEquals(3,  FIntervalCnt.StrIdx[0]);
-  CheckEquals(14,  FIntervalCnt.EndIdx[0]);
-  CheckEquals(15,  FIntervalCnt.StrIdx[1]);
-  CheckEquals(25,  FIntervalCnt.EndIdx[1]);
+  Assert.AreEqual(3,  FIntervalCnt.StrIdx[0]);
+  Assert.AreEqual(14,  FIntervalCnt.EndIdx[0]);
+  Assert.AreEqual(15,  FIntervalCnt.StrIdx[1]);
+  Assert.AreEqual(25,  FIntervalCnt.EndIdx[1]);
 end;
 
 initialization
   // Register any test cases with the test runner
-  RegisterTest(TestTIntervalCounter.Suite);
+  TDUnitX.RegisterTestFixture(TestTIntervalCounter);
 end.
 
