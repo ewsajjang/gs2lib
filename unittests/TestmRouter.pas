@@ -217,12 +217,14 @@ begin
   Assert.IsFalse(LObj.Excute);
   FRouter.Data<TObj>.Excute := True;
   Assert.IsTrue(LObj.Excute);
+  FreeAndNil(LObj);
 
   FRouter.Data2<TObj>(TObj.Create);
   LObj2 := FRouter.Data2<TObj>;
   Assert.IsFalse(LObj2.Excute);
   FRouter.Data2<TObj>.Excute := True;
   Assert.IsTrue(LObj2.Excute);
+  FreeAndNil(LObj2);
 end;
 
 procedure TestTRouter.TestQueryResultObj;
@@ -238,6 +240,7 @@ begin
   LObj := FRouter.Query<TObj>(0);
   Assert.IsNotNull(LObj);
   Assert.IsTrue(LObj.Excute);
+  FreeAndNil(LObj);
 end;
 
 procedure TestTRouter.TestQueryVarObj;
@@ -254,6 +257,7 @@ begin
   Assert.IsTrue(FRouter.Query<TObj>(0, LObj));
   Assert.IsNotNull(LObj);
   Assert.IsTrue(LObj.Excute);
+  FreeAndNil(LObj);
 end;
 
 
