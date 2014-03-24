@@ -10,7 +10,6 @@ uses
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestRunner,
   DUnitX.TestFramework,
-
   TestmBitMask in 'TestmBitMask.pas',
   TestmIntervalCounter in 'TestmIntervalCounter.pas',
   TestmGenericClassList in 'TestmGenericClassList.pas',
@@ -20,7 +19,9 @@ uses
   mGenericClassList in '..\source\utils\mGenericClassList.pas',
   mIntervalCounter in '..\source\utils\mIntervalCounter.pas',
   mRepeator in '..\source\utils\mRepeator.pas',
-  mMsgRouter in '..\source\utils\mMsgRouter.pas';
+  mMsgRouter in '..\source\utils\mMsgRouter.pas',
+  TestmGenericValueList in 'TestmGenericValueList.pas',
+  mGenericValueList in '..\source\utils\mGenericValueList.pas';
 
 {R *.RES}
 
@@ -30,6 +31,7 @@ var
   logger : ITestLogger;
   nunitLogger : ITestLogger;
 begin
+  ReportMemoryLeaksOnShutdown := True;
   try
     //Create the runner
     runner := TDUnitX.CreateRunner;
