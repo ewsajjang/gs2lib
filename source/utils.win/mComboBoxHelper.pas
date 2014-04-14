@@ -9,6 +9,7 @@ uses
 type
   TComboBoxHelper = class helper for TComboBox
     procedure IndexBy(const AValue: String);
+    function ItemSelected: Boolean;
   end;
 
 implementation
@@ -33,6 +34,11 @@ begin
 
   if not LSuccess then
     ItemIndex := -1;
+end;
+
+function TComboBoxHelper.ItemSelected: Boolean;
+begin
+  Result := ItemIndex > -1;
 end;
 
 end.
