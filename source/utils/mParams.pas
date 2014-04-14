@@ -10,6 +10,7 @@ type
   public
     class function ExePath: String;
     class function ExeName: String;
+    class function FullPath: String;
 
     class property Items[Index: Integer]: String read GetItems;
     class property Count: Integer read GetCount;
@@ -30,6 +31,11 @@ end;
 class function TParams.ExePath: String;
 begin
   Result := IncludeTrailingPathDelimiter(ExtractFilePath(ParamStr(0)));
+end;
+
+class function TParams.FullPath: String;
+begin
+  Result := Items[0]
 end;
 
 class function TParams.GetCount: Integer;
