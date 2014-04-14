@@ -22,7 +22,6 @@ type
     procedure SetS(Name: String; const Value: String);
     function GetC(Name: String): TColor;
     procedure SetC(Name: String; const Value: TColor);
-
   public
     procedure TryDelete(const AValue: String);
     procedure PriorityS(const AName, AValue: String);
@@ -36,8 +35,8 @@ type
     function KeysExists(const AKeys: array of String): Boolean; overload;
     function KeyExists(const AKey: String): Boolean; overload;
 
-//    procedure O(Index: Integer; AObj: TObject); overload;
-//    function O<T: class>(Index: Integer): T; overload;
+    function O(const AName: String; AObj: TObject): Integer; overload;
+    function O<T: Class>(const AName: String): T; overload;
 
     property S[Name: String]: String read GetS write SetS;
     property I[Name: String]: Integer read GetI write SetI;
@@ -142,6 +141,16 @@ begin
   Result := EmptyStr;
   for i := 0 to Count - 1 do
     Result := Result + Strings[i];
+end;
+
+function TStringListHelper.O(const AName: String; AObj: TObject): Integer;
+begin
+  Result := AddObject(AName, AObj);
+end;
+
+function TStringListHelper.O<T>(const AName: String): T;
+begin
+  Result := Self.Objects[IndexOf(AName)] as T
 end;
 
 function TStringListHelper.SequentialIdx(S: String;
