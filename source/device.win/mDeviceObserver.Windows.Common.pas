@@ -114,6 +114,7 @@ type
   TDeviceTypeHelper = record helper for TDeviceType
     function Equals(const AValue: TDeviceType): Boolean;
     function ToString: String;
+    function GUID: TGUID;
   end;
 
   TDbDiTo = record
@@ -199,8 +200,13 @@ const
 
 function CompareRegClassGUID(AKey: HKEY; const AGUID: TGUID;
   const ARegKey, AName: String): Boolean;
+var
+  LGUID: String;
 begin
-  Result := AGUID = StringToGUID(ReadRegNameString(AKey, ARegKey, AName));
+  Result := False;
+  LGUID := ReadRegNameString(AKey, ARegKey, AName);
+  if not LGUID.IsEmpty then
+    Result := AGUID = StringToGUID(LGUID);
 end;
 
 { TGUIDHelper }
@@ -310,6 +316,15 @@ end;
 function TDeviceTypeHelper.Equals(const AValue: TDeviceType): Boolean;
 begin
   Result := Self = AValue;
+end;
+
+function TDeviceTypeHelper.GUID: TGUID;
+begin
+  case Self of
+    dtNone: Result := TGUID.Empty;
+    dtComport: Result := GUID_Ports;
+    dtUSB: Result := GUID_USB;
+  end;
 end;
 
 function TDeviceTypeHelper.ToString: String;
