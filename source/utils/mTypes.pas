@@ -3,7 +3,7 @@ unit mTypes;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.DateUtils,
+  System.SysUtils, System.Classes, System.DateUtils, System.Types, System.Rtti,
   System.Generics.Collections;
 
 type
@@ -23,7 +23,9 @@ type
   TProcInteger = reference to procedure(const Sender: TObject; const Value: Integer);
   TProcStr = reference to procedure(const Value: String);
 
-  TBytesList = TList<TBytes>;
+  TBytesList = class(TList<TBytes>)
+    function Copy: TBytesList;
+  end;
 
   TProgressInfo = record
     Total: Boolean;
@@ -38,6 +40,23 @@ type
     class function Create(AMin, AMax: TDateTime): TPeriod; static;
   end;
 
+  TPopupDlgAlign = (pdaLeft, pdaRight);
+  TCellDlgInfo = record
+  private
+    FResult: TValue;
+  public
+    Rect: TRect;
+    Point: TPoint;
+    ProviderIdx: Integer;
+    Align: TPopupDlgAlign;
+    Event: String;
+    CloseProc: TProc;
+    function ResultAssigned: Boolean;
+    procedure ResultClear;
+    procedure ResultAssign<T>(AValue: T); overload;
+    function ResultAssign<T>: T; overload;
+  end;
+
 implementation
 
 uses
@@ -48,7 +67,7 @@ uses
 constructor TProgressInfo.Create(const ATotal: Boolean; AValue: Int64);
 begin
   Total := ATotal;
-  Value := Value;
+  Value := AValue;
 end;
 
 { TPeriod }
@@ -68,6 +87,47 @@ function TPeriod.Equal(const AValue: TPeriod): Boolean;
 begin
   Result := Self.Min.Equals(AValue.Min) and
     Self.Max.Equals(AValue.Max)
+end;
+
+{ TCellInfo }
+
+procedure TCellDlgInfo.ResultAssign<T>(AValue: T);
+begin
+  FResult := TValue.From<T>(AValue);
+end;
+
+procedure TCellDlgInfo.ResultClear;
+begin
+  FResult := TValue.Empty;
+end;
+
+function TCellDlgInfo.ResultAssign<T>: T;
+begin
+  Result := FResult.AsType<T>;
+end;
+
+function TCellDlgInfo.ResultAssigned: Boolean;
+begin
+  Result := not FResult.IsEmpty;
+end;
+
+{ TBytesList }
+
+function TBytesList.Copy: TBytesList;
+var
+  i: Integer;
+  LItem: TBytes;
+  j: Integer;
+begin
+  Result := TBytesList.Create;
+  for i := 0 to Count - 1 do
+  begin
+    SetLength(LItem, Length(Items[i]));
+    for j := Low(Items[i]) to High(Items[i]) do
+      LItem[j] := ITems[i][j];
+    //CopyArray(@LItem[0], @(Items[i][0]), TypeInfo(TBytes), Length(Items[i]));
+    Result.Add(LItem);
+  end;
 end;
 
 end.
