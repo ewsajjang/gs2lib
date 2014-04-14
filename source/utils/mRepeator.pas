@@ -29,6 +29,7 @@ type
     function Add(const AItem: T): Integer;
     function Remove(const AItem: T): Integer;
     function Exists(const AItem: T): Boolean;
+    function TryPosBy(const AItem: T): Boolean;
     function Next: T;
     function Eof: Boolean;
 
@@ -150,6 +151,13 @@ procedure TSimpleRepeator<T>.SetPosByIdx(const Value: Integer);
 begin
   if Value < Count then
     FPosByIdx := Value;
+end;
+
+function TSimpleRepeator<T>.TryPosBy(const AItem: T): Boolean;
+begin
+  Result := Exists(AItem);
+  if Result then
+    PosBy := AItem
 end;
 
 end.
