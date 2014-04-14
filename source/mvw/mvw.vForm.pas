@@ -3,16 +3,19 @@ unit mvw.vForm;
 interface
 
 uses
-  System.Classes, System.SysUtils
+  System.Classes, System.SysUtils,
 
-  , Vcl.ActnList, vcl.Forms, Vcl.Menus, Vcl.Controls, Vcl.StdCtrls
-  , System.Generics.Collections
+  Vcl.ActnList, vcl.Forms, Vcl.Menus, Vcl.Controls,
+  System.Generics.Collections
   ;
 
 type
+
+  TvFormClass = class of TvForm;
   TvForm = class(TForm)
   private
-    class var FDic: TDictionary<String, TvForm>;
+    class var
+      FDic: TDictionary<String, TvForm>;
   protected
   public
   end;
@@ -22,13 +25,20 @@ type
     function Getvm: Tvm;
   protected
     function Query<Tv: class>: TvForm;
-
-    procedure OnEditDoubleKey(Sender: TObject; var Key: Char);
-    procedure OnEditIntegerKey(Sender: TObject; var Key: Char);
   public
     constructor Create(AOwner: TComponent); override;
 
     property vm: Tvm read Getvm;
+  end;
+
+  TvModule<Tvm: class> = class(Tv<Tvm>)
+  private
+    class var
+      FPlacedForm: TvForm;
+  public
+    destructor Destroy; override;
+
+    class procedure PlaceOnTarget(const AOwner: TComponent; ATarget: TWinControl);
   end;
 
   TvDlg<Tvm: class> = class(Tv<Tvm>)
@@ -40,12 +50,19 @@ type
     constructor Create(AOwner: TComponent); override;
   end;
 
+  TvDlgModule<Tvm: class> = class(Tv<Tvm>)
+  private
+  public
+  end;
+
 implementation
 
 uses
   mvw.Services, mvw.vForm.Helper,
   System.Actions
   ;
+
+{ TvForm }
 
 { Tfm<Tvm> }
 
@@ -67,29 +84,28 @@ begin
   Result := vmList.Get<Tvm>;
 end;
 
-procedure Tv<Tvm>.OnEditDoubleKey(Sender: TObject; var Key: Char);
-var
-  LText: String;
-begin
-  LText := (Sender as TEdit).Text;
-  if (not CharInSet(Key, [#8, '0'..'9', FormatSettings.DecimalSeparator])) or
-     (Key = FormatSettings.DecimalSeparator) and LText.Contains(FormatSettings.DecimalSeparator) then
-    Key := #0;
-end;
-
-procedure Tv<Tvm>.OnEditIntegerKey(Sender: TObject; var Key: Char);
-var
-  LText: String;
-begin
-  LText := (Sender as TEdit).Text;
-  if (not CharInSet(Key, [#8, '0'..'9'])) or
-     (Key = FormatSettings.DecimalSeparator) and LText.Contains(FormatSettings.DecimalSeparator) then
-    Key := #0;
-end;
-
 function Tv<Tvm>.Query<Tv>: TvForm;
 begin
   Result := FDic.Items[Tv.ClassName];
+end;
+
+{ TvModule<Tvm> }
+
+destructor TvModule<Tvm>.Destroy;
+begin
+  inherited;
+
+  FPlacedForm := nil;
+end;
+
+class procedure TvModule<Tvm>.PlaceOnTarget(const AOwner: TComponent;
+  ATarget: TWinControl);
+begin
+  if not Assigned(FPlacedForm) then
+  begin
+    FPlacedForm := Create(AOwner);
+  end;
+  PlaceOn(FPlacedForm, ATarget);
 end;
 
 { TvDlg<Tvm> }
