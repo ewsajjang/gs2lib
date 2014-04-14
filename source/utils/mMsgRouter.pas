@@ -21,8 +21,11 @@ type
     FValue: TValue;
     FValue2: TValue;
     FNotifyList: TDictionary<TID, TList<TProc>>;
+    FNotifyBeforeList: TDictionary<TID, TList<TProc>>;
     FExcuteList: TDictionary<TID, TFunc<Boolean>>;
+    FExcuteBeforeList: TDictionary<TID, TFunc<Boolean>>;
     FGenericList: TDictionary<TID, TFunc<TValue>>;
+    FGenericBeforeList: TDictionary<TID, TFunc<TValue>>;
 
     procedure OnNotify(Sender: TObject; const Item: TList<TProc>; Action: TCollectionNotification);
     function RouterKeyToStr(AID: TID): String;
@@ -35,13 +38,15 @@ type
     procedure Notify(AID: TID); overload;
     procedure Notify<T>(AID: TID; const Data: T); overload;
     procedure Notify<T, T2>(AID: TID; const Data: T; Data2: T2); overload;
-    procedure On(AID: TID; Proc: TProc); overload;
-    procedure On(enArray: array of TID; Proc: TProc); overload;
+    procedure &On(AID: TID; Proc: TProc); overload;
+    procedure OnBefore(AID: TID; Proc: TProc); overload;
+    procedure &On(enArray: array of TID; Proc: TProc); overload;
     procedure RemoveHandler(AID: TID; Proc: TProc); overload;
 
     function Excute(AID: TID): Boolean; overload;
     function Excute<T>(AID: TID; const Data: T): Boolean; overload;
-    procedure On(AID: TID; Func: TFunc<Boolean>); overload;
+    procedure &On(AID: TID; Func: TFunc<Boolean>); overload;
+    procedure OnBefore(AID: TID; Func: TFunc<Boolean>); overload;
     procedure RemoveHandler(AID: TID); overload;
 
     function Data<T>: T; overload;
@@ -51,7 +56,8 @@ type
 
     function Query<T>(AID: TID; var Value: T): Boolean; overload;
     function Query<T>(AID: TID): T; overload;
-    procedure On<T>(AID: TID; Func: TFunc<T>); overload;
+    procedure &On<T>(AID: TID; Func: TFunc<T>); overload;
+    procedure OnBefore<T>(AID: TID; Func: TFunc<T>); overload;
   end;
 
 implementation
@@ -83,10 +89,14 @@ constructor TMsgRouter<TID>.Create;
 begin
   FNotifyList := TDictionary<TID, TList<TProc>>.Create;
   FNotifyList.OnValueNotify := OnNotify;
+  FNotifyBeforeList := TDictionary<TID, TList<TProc>>.Create;
+  FNotifyList.OnValueNotify := OnNotify;
 
   FExcuteList := TDictionary<TID, TFunc<Boolean>>.Create;
+  FExcuteBeforeList := TDictionary<TID, TFunc<Boolean>>.Create;
 
   FGenericList := TDictionary<TID, TFunc<TValue>>.Create;
+  FGenericBeforeList := TDictionary<TID, TFunc<TValue>>.Create;
 end;
 
 function TMsgRouter<TID>.Data<T>: T;
@@ -111,6 +121,10 @@ end;
 
 destructor TMsgRouter<TID>.Destroy;
 begin
+  FreeAndNil(FNotifyBeforeList);
+  FreeAndNil(FExcuteBeforeList);
+  FreeAndNil(FGenericBeforeList);
+
   FreeAndNil(FGenericList);
   FreeAndNil(FExcuteList);
   FreeAndNil(FNotifyList);
@@ -141,6 +155,40 @@ begin
     end);
 end;
 
+procedure TMsgRouter<TID>.OnBefore(AID: TID; Proc: TProc);
+var
+  LList: TList<TProc>;
+begin
+  if not FNotifyBeforeList.ContainsKey(AID) then
+    FNotifyBeforeList.Add(AID, TList<TProc>.Create);
+  LList := FNotifyBeforeList.Items[AID];
+  if LList.IndexOf(Proc) = -1 then
+    LList.Add(Proc);
+end;
+
+procedure TMsgRouter<TID>.OnBefore(AID: TID; Func: TFunc<Boolean>);
+begin
+  if FExcuteBeforeList.ContainsKey(AID) then
+    raise ERouterMethodIDAlreadyExists.CreateFmt(FMT_METHOD_ID_ALREADY_EXISTS, [RouterKeyToStr(AID)]);
+
+  FExcuteBeforeList.Add(AID, Func);
+end;
+
+procedure TMsgRouter<TID>.OnBefore<T>(AID: TID; Func: TFunc<T>);
+begin
+  if FGenericBeforeList.ContainsKey(AID) then
+    raise ERouterMethodIDAlreadyExists .CreateFmt(FMT_METHOD_ID_ALREADY_EXISTS, [RouterKeyToStr(AID)]);
+
+  if not Assigned(Func) then
+    raise ERouterMethodNotAssigned.CreateFmt(FMT_METHOD_NOT_ASSIGNED, [RouterKeyToStr(AID)]);
+
+  FGenericBeforeList.Add(AID,
+    function: TValue
+    begin
+      Result := TValue.From<T>(Func);
+    end);
+end;
+
 procedure TMsgRouter<TID>.On(enArray: array of TID; Proc: TProc);
 var
   Len: TID;
@@ -154,10 +202,19 @@ var
   LList: TList<TProc>;
   LProc: TProc;
 begin
-  if FNotifyList.TryGetValue(AID, LList) then
+  if FNotifyBeforeList.TryGetValue(AID, LList) then
     for LProc in LList do
+    begin
       if Assigned(LProc) then
         LProc();
+    end;
+
+  if FNotifyList.TryGetValue(AID, LList) then
+    for LProc in LList do
+    begin
+      if Assigned(LProc) then
+        LProc();
+    end;
 end;
 
 procedure TMsgRouter<TID>.Notify<T, T2>(AID: TID; const Data: T; Data2: T2);
@@ -176,12 +233,23 @@ end;
 function TMsgRouter<TID>.Excute(AID: TID): Boolean;
 var
   LFunc: TFunc<Boolean>;
+  LBefore, LOn: Boolean;
 begin
   Result := False;
 
+  if FExcuteBeforeList.TryGetValue(AID, LFunc) then
+  begin
+    if Assigned(LFunc) then
+      LBefore := LFunc();
+  end
+  else
+    LBefore := True;
+
   if FExcuteList.TryGetValue(AID, LFunc) then
     if Assigned(LFunc) then
-      Result := LFunc();
+      LOn := LFunc();
+
+  Result := LBefore and LOn
 end;
 
 function TMsgRouter<TID>.Excute<T>(AID: TID; const Data: T): Boolean;
@@ -224,14 +292,29 @@ end;
 function TMsgRouter<TID>.Query<T>(AID: TID; var Value: T): Boolean;
 var
   LFunc: TFunc<TValue>;
+  LBefore, LOn: Boolean;
 begin
   Result := False;
+
+  if FGenericBeforeList.TryGetValue(AID, LFunc) then
+  begin
+    if Assigned(LFunc) then
+    begin
+      Value := LFunc.AsType<T>;
+      LBefore := True;
+    end;
+  end
+  else
+    LBefore := True;
+
   if FGenericList.TryGetValue(AID, LFunc) then
     if Assigned(LFunc) then
     begin
       Value := LFunc.AsType<T>;
-      Result := True;
+      LOn := True;
     end;
+
+  Result := LBefore and LOn;
 end;
 
 procedure TMsgRouter<TID>.RemoveHandler(AID: TID; Proc: TProc);
