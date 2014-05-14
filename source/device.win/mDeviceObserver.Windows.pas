@@ -15,13 +15,14 @@ uses
 type
   TWinDeviceObserver = class(TComponent)
   private
-    FRegHandles: TList<PHandle>;
+    FRegHandles: TDictionary<TGUID, PHandle>;
     FHandle: THandle;
-    FOnArrive: TNotifyDevBroadcastDeviceInterface;
+    FOnArrived: TNotifyDevBroadcastDeviceInterface;
     FOnRemoved: TNotifyDevBroadcastDeviceInterface;
     FOnNodeChange: TNotifyInteger;
+    FOnArrivedProc: TNotifyDevBroadcastDeviceInterfaceProc;
+    FOnRemovedProc: TNotifyDevBroadcastDeviceInterfaceProc;
     procedure WmDeviceChange(var Msg : TMessage); message WM_DEVICECHANGE;
-    procedure UnRegGUID;
   protected
     procedure do_WndProc(var Message:TMessage); virtual;
   public
@@ -29,10 +30,13 @@ type
     destructor Destroy; override;
 
     function AddNotifycation(const ADeviceInterface: TGUID): Boolean;
+    procedure RemoveNotification(const ADeviceInterface: TGUID);
 
     property OnNodeChange: TNotifyInteger read FOnNodeChange write FOnNodeChange;
-    property OnArrived: TNotifyDevBroadcastDeviceInterface read FOnArrive write FOnArrive;
+    property OnArrived: TNotifyDevBroadcastDeviceInterface read FOnArrived write FOnArrived;
+    property OnArrivedProc: TNotifyDevBroadcastDeviceInterfaceProc read FOnArrivedProc write FOnArrivedProc;
     property OnRemoved: TNotifyDevBroadcastDeviceInterface read FOnRemoved write FOnRemoved;
+    property OnRemovedProc: TNotifyDevBroadcastDeviceInterfaceProc read FOnRemovedProc write FOnRemovedProc;
   end;
 
 implementation
@@ -44,12 +48,15 @@ begin
   inherited Create(AOwner);
 
   FHandle := AllocateHWND(do_WndProc);
-  FRegHandles := TList<PHandle>.Create;
+  FRegHandles := TDictionary<TGUID, PHandle>.Create;
 end;
 
 destructor TWinDeviceObserver.Destroy;
+var
+  LHandle: PHandle;
 begin
-  UnRegGUID;
+  for LHandle in FRegHandles.Values do
+    UnRegDeviceNotification(LHandle);
   DeAllocateHWND(FHandle);
   FreeAndNil(FRegHandles);
 
@@ -61,6 +68,16 @@ begin
   Dispatch(Message);
 end;
 
+procedure TWinDeviceObserver.RemoveNotification(
+  const ADeviceInterface: TGUID);
+var
+  LHandle: PHandle;
+begin
+  if FRegHandles.TryGetValue(ADeviceInterface, LHandle) then
+    if UnRegDeviceNotification(LHandle) then
+      FRegHandles.Remove(ADeviceInterface);
+end;
+
 function TWinDeviceObserver.AddNotifycation(const ADeviceInterface: TGUID): Boolean;
 var
   LHandle: PHandle;
@@ -68,15 +85,7 @@ begin
   LHandle := RegDeviceNotification(FHandle, ADeviceInterface);
   Result := Assigned(LHandle) and (LHandle^ <> INVALID_HANDLE_VALUE);
   if Result then
-    FRegHandles.Add(LHandle);
-end;
-
-procedure TWinDeviceObserver.UnRegGUID;
-var
-  LHandle: PHandle;
-begin
-  for LHandle in FRegHandles do
-    UnRegDeviceNotification(LHandle);
+    FRegHandles.Add(ADeviceInterface, LHandle);
 end;
 
 procedure TWinDeviceObserver.WmDeviceChange(var Msg: TMessage);
@@ -93,12 +102,20 @@ begin
         LDbDi := Pointer(Msg.LParam);
         case Msg.WParam of
           DBT_DEVICEARRIVAL:
-            if Assigned(FOnArrive) then
-              FOnArrive(Self, LDbDi);
+          begin
+            if Assigned(FOnArrived) then
+              FOnArrived(Self, LDbDi);
+            if Assigned(FOnArrivedProc) then
+              FOnArrivedProc(LDbDi);
+          end;
 
           DBT_DEVICEREMOVECOMPLETE:
+          begin
             if Assigned(FOnRemoved) then
               FOnRemoved(Self, LDbDi);
+            if Assigned(FOnRemovedProc) then
+              FOnRemovedProc(LDbDi);
+          end;
         end;
       end;
 
