@@ -84,6 +84,7 @@ type
   PDEV_BROADCAST_DEVICEINTERFACE = ^TDEV_BROADCAST_DEVICEINTERFACE;
 
   TNotifyDevBroadcastDeviceInterface = procedure(Sender: TObject; Value: PDEV_BROADCAST_DEVICEINTERFACE) of object;
+  TNotifyDevBroadcastDeviceInterfaceProc = reference to procedure(Value: PDEV_BROADCAST_DEVICEINTERFACE);
 
   DEV_BROADCAST_DEVICEINTERFACE_Helper = record helper for DEV_BROADCAST_DEVICEINTERFACE
     function dbcc_nameToStr: String;
@@ -309,6 +310,7 @@ begin
   Result.S['DeviceType'] :=   DeviceType(Value).ToString;
   Result.S['DeviceDesc'] :=   DeviceDesc(Value);
   Result.S['FriendlyName'] := FriendlyName(Value);
+  Result.S['Comport'] := FriendlyNameToComport(Result.S['FriendlyName'])
 end;
 
 { TDeviceTypeHelper }
