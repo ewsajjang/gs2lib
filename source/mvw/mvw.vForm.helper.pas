@@ -14,7 +14,6 @@ type
     procedure OnEditDoubleKey(Sender: TObject; var Key: Char);
     procedure OnEditIntegerKey(Sender: TObject; var Key: Char);
   public
-    class procedure PlaceOn(const ASource: TForm; ATarget: TWinControl); overload;
     procedure TabOrderAlign;
     procedure FontAssign(const AFontName: String);
   end;
@@ -54,13 +53,6 @@ begin
   if (not CharInSet(Key, [#8, '0'..'9'])) or
      (Key = FormatSettings.DecimalSeparator) and LText.Contains(FormatSettings.DecimalSeparator) then
     Key := #0;
-end;
-
-class procedure TvFormHelper.PlaceOn(const ASource: TForm; ATarget: TWinControl);
-begin
-  ASource.Parent := ATarget;
-  ASource.Align := alClient;
-  ASource.Show;
 end;
 
 end.
