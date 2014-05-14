@@ -11,3 +11,6 @@ bin/*
 *.vlb
 *.log
 bin
+*.bak
+*.*~
+*.swp
