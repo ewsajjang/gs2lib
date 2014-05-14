@@ -47,10 +47,10 @@ end;
 
 destructor TDataQueue<TPush,TData>.Destroy;
 begin
-//  FQueue.Grow(0);
   FQueue.DoShutDown;
+  Terminate;
+  Waitfor;
   FreeAndNil(FQueue);
-  FQueue.Free;
 
   inherited;
 end;
@@ -65,14 +65,14 @@ begin
   while not Terminated do
   begin
     FQueue.PopItem(LSize, LItem);
-
-    if LSize = 0 then
-    begin
+    //if LSize = 0 then
       if not FQueue.ShutDown and Assigned(FPopItemProcessFunc) then
         LData := FPopItemProcessFunc(LItem);
       if not Terminated and Assigned(FOnData) then
-        Synchronize(procedure begin FOnData(LItem, LData); end);
-    end
+        Synchronize(procedure
+        begin
+          FOnData(LItem, LData);
+        end);
   end;
 end;
 
