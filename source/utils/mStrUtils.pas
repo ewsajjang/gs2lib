@@ -3,6 +3,8 @@ unit mStrUtils;
 interface
 
 function EmailValidate(const Value: String): Boolean;
+function FloatValidate(const AValue: String): Boolean;
+function IntegerValidate(const AValue: String): Boolean;
 
 implementation
 
@@ -17,5 +19,14 @@ begin
   Result := TRegEx.IsMatch(Value, REG_EXP_EMAIL);
 end;
 
+function FloatValidate(const AValue: String): Boolean;
+begin
+  Result := TRegEx.IsMatch(AValue, '[0-9]*\.?[0-9]+$')
+end;
+
+function IntegerValidate(const AValue: String): Boolean;
+begin
+  Result := TRegEx.IsMatch(AValue, '^\d+$')
+end;
 
 end.
