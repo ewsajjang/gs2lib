@@ -10,14 +10,26 @@ uses
   ;
 
 type
-
   TvFormClass = class of TvForm;
   TvForm = class(TForm)
+  private class var
+    FDic: TDictionary<String, TvForm>;
   private
-    class var
-      FDic: TDictionary<String, TvForm>;
+    function GetFormsFromClass(AClass: TvFormClass): TvForm;
+    function GetFormsFormName(Name: String): TvForm;
+    function GetFormsCnt: Integer;
   protected
+    FOnPlaceOn: TProc;
+    function FindTargetWinControl(const AName: String): TWinControl;
   public
+    class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl);
+
+    function ExistsForms(const AvFormName: String): Boolean; overload;
+    function ExistsForms(const AvFormClass: TvFormClass): Boolean; overload;
+
+    property vCnt: Integer read GetFormsCnt;
+    property vNames[Name: String]: TvForm read GetFormsFormName;
+    property vClasses[AClass: TvFormClass]: TvForm read GetFormsFromClass;
   end;
 
   Tv<Tvm: class> = class(TvForm)
@@ -31,14 +43,15 @@ type
     property vm: Tvm read Getvm;
   end;
 
-  TvModule<Tvm: class> = class(Tv<Tvm>)
-  private
-    class var
-      FPlacedForm: TvForm;
-  public
-    destructor Destroy; override;
-
-    class procedure PlaceOnTarget(const AOwner: TComponent; ATarget: TWinControl);
+  TvChild<Tvm: class> = class(Tv<Tvm>)
+  protected
+    FOnPlaceOnParent: TProc;
+    procedure OnPlaceOnParentNotify;
+  protected
+    procedure PlaceOnParent(const ATarget: TWinControl = nil); overload;
+    procedure PlaceOnParent(const AParent: TvForm); overload;
+    procedure PlaceOnParent(const AParent: TvFormClass); overload;
+    procedure PlaceOnParent(const AParent: String); overload;
   end;
 
   TvDlg<Tvm: class> = class(Tv<Tvm>)
@@ -50,25 +63,18 @@ type
     constructor Create(AOwner: TComponent); override;
   end;
 
-  TvDlgModule<Tvm: class> = class(Tv<Tvm>)
-  private
-  public
-  end;
-
 implementation
 
 uses
   mvw.Services, mvw.vForm.Helper,
-  System.Actions
+  System.Actions, System.Generics.Defaults
   ;
 
-{ TvForm }
-
-{ Tfm<Tvm> }
+{ Tv<Tvm> }
 
 constructor Tv<Tvm>.Create(AOwner: TComponent);
 begin
-  inherited;
+  inherited Create(AOwner);
 
   FDic.AddOrSetValue(Self.ClassName, Self);
 
@@ -89,25 +95,6 @@ begin
   Result := FDic.Items[Tv.ClassName];
 end;
 
-{ TvModule<Tvm> }
-
-destructor TvModule<Tvm>.Destroy;
-begin
-  inherited;
-
-  FPlacedForm := nil;
-end;
-
-class procedure TvModule<Tvm>.PlaceOnTarget(const AOwner: TComponent;
-  ATarget: TWinControl);
-begin
-  if not Assigned(FPlacedForm) then
-  begin
-    FPlacedForm := Create(AOwner);
-  end;
-  PlaceOn(FPlacedForm, ATarget);
-end;
-
 { TvDlg<Tvm> }
 
 constructor TvDlg<Tvm>.Create(AOwner: TComponent);
@@ -115,6 +102,7 @@ begin
   inherited;
 
   FActionList := TActionList.Create(Self);
+  FActionList.Name := '_ActionList_';
   FCloseAction := TACtion.Create(FActionList);
   FCloseAction.ShortCut := TextToShortCut('Esc');
   FCloseAction.OnExecute := OnCloseActionExecute;
@@ -126,13 +114,103 @@ begin
   Close;
 end;
 
-initialization
+{ TvForm }
 
+function TvForm.ExistsForms(const AvFormName: String): Boolean;
+begin
+  Result := FDic.ContainsKey(AvFormName);
+end;
+
+function TvForm.ExistsForms(const AvFormClass: TvFormClass): Boolean;
+begin
+  Result := ExistsForms(AvFormClass.ClassName);
+end;
+
+function TvForm.FindTargetWinControl(const AName: String): TWinControl;
+var
+  i: Integer;
+  LComponentName: String;
+begin
+  Result := nil;
+  for i := 0 to ComponentCount - 1 do
+    if Components[i] is TWinControl then
+    begin
+      LComponentName := Components[i].Name;
+      if LComponentName.EndsWith(AName) then
+      begin
+        Result := TWinControl(Components[i]);
+        Break;
+      end;
+    end;
+end;
+
+function TvForm.GetFormsFromClass(AClass: TvFormClass): TvForm;
+begin
+  Result := vNames[AClass.ClassName];
+end;
+
+class procedure TvForm.PlaceOn(const AChild: TvForm; ATarget: TWinControl);
+begin
+  AChild.Parent := ATarget;
+  AChild.Align := alClient;
+  AChild.Show;
+  AChild.BringToFront;
+  if Assigned(AChild.FOnPlaceOn) then
+    AChild.FOnPlaceOn();
+end;
+
+function TvForm.GetFormsCnt: Integer;
+begin
+  Result := FDic.Count;
+end;
+
+function TvForm.GetFormsFormName(Name: String): TvForm;
+begin
+  Result := FDic.Items[Name];
+end;
+
+{ TvChild<Tvm> }
+
+procedure TvChild<Tvm>.PlaceOnParent(const AParent: TvFormClass);
+begin
+  PlaceOnParent(vClasses[AParent]);
+end;
+
+procedure TvChild<Tvm>.OnPlaceOnParentNotify;
+begin
+  if Assigned(FOnPlaceOnParent) then
+    FOnPlaceOnParent;
+end;
+
+procedure TvChild<Tvm>.PlaceOnParent(const AParent: String);
+var
+  LParent: TvForm;
+begin
+  LParent := vNames[AParent];
+  if Assigned(LParent) then
+  begin
+    PlaceOn(Self, FindTargetWinControl(LParent.Name));
+    OnPlaceOnParentNotify;
+  end;
+end;
+
+procedure TvChild<Tvm>.PlaceOnParent(const ATarget: TWinControl);
+begin
+  PlaceOn(Self, ATarget);
+  OnPlaceOnParentNotify;
+end;
+
+procedure TvChild<Tvm>.PlaceOnParent(const AParent: TvForm);
+begin
+  PlaceOn(Self, FindTargetWinControl(AParent.Name));
+  OnPlaceOnParentNotify;
+end;
+
+initialization
   if not Assigned(TvForm.FDic) then
     TvForm.FDic := TDictionary<String, TvForm>.Create;
 
 finalization
-
   if Assigned(TvForm.FDic) then
     FreeAndNil(TvForm.FDic);
 
