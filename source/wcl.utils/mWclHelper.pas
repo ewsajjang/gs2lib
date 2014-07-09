@@ -15,6 +15,8 @@ type
     function _GetAddr: String;
     function _GetEnabled: Boolean;
   public
+    class function Clone(const ASrc: TwclBluetoothRadio): TwclBluetoothRadio; static;
+
     property Name: String read _GetName;
     property APIStr: String read _GetAPIStr;
     property Addr: String read _GetAddr;
@@ -29,6 +31,7 @@ type
     function Name(const ARadio: TwclBluetoothRadio): String;
     function Addr: String;
     function Paired(const ARadio: TwclBluetoothRadio): Boolean;
+    function COD(const ARadio: TwclBluetoothRadio): String;
   end;
 
   TwclBluetoothAPIHeper = record helper for TWclBluetoothAPI
@@ -47,6 +50,13 @@ uses
 function TwclBluetoothRadioHelper._GetEnabled: Boolean;
 begin
   Result := Connectable and Discoverable;
+end;
+
+class function TwclBluetoothRadioHelper.Clone(
+  const ASrc: TwclBluetoothRadio): TwclBluetoothRadio;
+begin
+  Result := TwclBluetoothRadio.Create;
+  Result.Assign(ASrc);
 end;
 
 function TwclBluetoothRadioHelper._GetAddr: String;
@@ -89,6 +99,16 @@ end;
 function TwclBluetoothDeviceHelper.Addr: String;
 begin
   Result := Address;
+end;
+
+function TwclBluetoothDeviceHelper.COD(
+  const ARadio: TwclBluetoothRadio): String;
+var
+  LCOD: Cardinal;
+begin
+  Result := EmptyStr;
+  if GetClassOfDevice(ARadio, LCOD) = WCL_E_SUCCESS then
+    Result := Format('%.6x', [LCOD]);
 end;
 
 function TwclBluetoothDeviceHelper.Name(const ARadio: TwclBluetoothRadio): String;

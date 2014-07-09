@@ -22,6 +22,8 @@ type
     procedure SetS(Name: String; const Value: String);
     function GetC(Name: String): TColor;
     procedure SetC(Name: String; const Value: TColor);
+    function GetGUID(Name: String): TGUID;
+    procedure SetGUID(Name: String; const Value: TGUID);
   public
     procedure TryDelete(const AValue: String);
     procedure PriorityS(const AName, AValue: String);
@@ -44,6 +46,7 @@ type
     property D[Name: String]: Double read GetD write SetD;
     property DT[Name: String]: TDateTime read GetDT write SetDT;
     property C[Name: String]: TColor read GetC write SetC;
+    property GUID[Name: String]: TGUID read GetGUID write SetGUID;
   end;
 
 implementation
@@ -82,6 +85,15 @@ end;
 function TStringListHelper.GetDT(Name: String): TDateTime;
 begin
   Result := TDateTime.FmtISO8601(Values[Name]);
+end;
+
+function TStringListHelper.GetGUID(Name: String): TGUID;
+begin
+  try
+    Result := StringToGUID(Values[Name]);
+  except on E: Exception do
+    Result := TGUID.Empty;
+  end;
 end;
 
 function TStringListHelper.GetI(Name: String): Integer;
@@ -208,6 +220,11 @@ end;
 procedure TStringListHelper.SetDT(Name: String; const Value: TDateTime);
 begin
   Values[Name] := Value.ToISO8601Str;
+end;
+
+procedure TStringListHelper.SetGUID(Name: String; const Value: TGUID);
+begin
+  Values[NAME] := Value.ToString;
 end;
 
 procedure TStringListHelper.SetI(Name: String; const Value: Integer);

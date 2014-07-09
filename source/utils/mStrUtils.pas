@@ -5,11 +5,12 @@ interface
 function EmailValidate(const Value: String): Boolean;
 function FloatValidate(const AValue: String): Boolean;
 function IntegerValidate(const AValue: String): Boolean;
+function NonEmptyStr(const AValue1, AValue2: String): String;
 
 implementation
 
 uses
-  System.TypInfo, System.RegularExpressions
+  System.SysUtils, System.TypInfo, System.RegularExpressions
   ;
 
 function EmailValidate(const Value: String): Boolean;
@@ -27,6 +28,14 @@ end;
 function IntegerValidate(const AValue: String): Boolean;
 begin
   Result := TRegEx.IsMatch(AValue, '^\d+$')
+end;
+
+function NonEmptyStr(const AValue1, AValue2: String): String;
+begin
+  if AValue1.IsEmpty then
+    Result := AValue2
+  else
+    Result := AValue1
 end;
 
 end.

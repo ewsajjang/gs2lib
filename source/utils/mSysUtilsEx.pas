@@ -7,7 +7,8 @@ uses
 
 function BytesToHexStr(const AValue: TBytes): String; overload;
 function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
-function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): String;
+function AnsiBytesToStr(const AValue: TBytes): String; overload;
+function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
 
 function StrToHexStr(const Str: String): String;
 procedure HexStrToBytes(const Source: String; var Dest: TBytes);
@@ -115,6 +116,11 @@ type
 begin
   Bytes(Result)[0]:= Bytes(Value)[1];
   Bytes(Result)[1]:= Bytes(Value)[0];
+end;
+
+function AnsiBytesToStr(const AValue: TBytes): String; overload;
+begin
+  SetString(Result, PAnsiChar(@AValue[0]), Length(AValue));
 end;
 
 function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): String;
