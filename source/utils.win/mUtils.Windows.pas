@@ -13,6 +13,7 @@ function WriteRegString(const AKey: HKEY; const ARegKey, AName, AValue: String):
 function AppDataPath(AOrgName: String = ''): String;
 function GetSpecialFolder(CSIDL_VALUE: Integer): string;
 function ShellExecuteFile(const FileName: String; Parameters: String = ''; Directory: String = ''): Integer;
+function ControlPanelExcute(Handle: HWnd; const ACommand: WideString; AFuncCall: WideString = ''): Integer;
 procedure SelectFileInExplorer(const AFileName: string);
 
 function ComObjExists(ClassName: string): Boolean;
@@ -145,6 +146,27 @@ function ShellExecuteFile(const FileName: String; Parameters: String = ''; Direc
 begin
   Result := ShellExecute(0, 'open', PChar(FileName), PChar(Parameters),
     PChar(Directory), SW_SHOWNORMAL);
+end;
+
+function ControlPanelExcute(Handle: HWnd; const ACommand: WideString; AFuncCall: WideString = ''): Integer;
+const
+  CPL_STARTWPARMSW = 10;
+type
+  cplfunc = function (hWndCPL : hWnd; iMessage : integer; lParam1 : longint;
+         lParam2 : longint) : LongInt stdcall;
+var
+  LHandle: THandle;
+  LFunc: cplfunc;
+begin
+  Result := -1;
+  LHandle := LoadLibraryW(PWideChar(ACommand));
+  if LHandle <> 0 then
+    begin
+      @LFunc := GetProcAddress(LHandle, 'CPlApplet');
+      if @LFunc <> nil then
+        Result := LFunc(Handle, CPL_STARTWPARMSW, 0, LongInt(PWideString(AFuncCall)));
+      FreeLibrary(LHandle);
+    end;
 end;
 
 procedure SelectFileInExplorer(const AFileName: string);
