@@ -26,20 +26,20 @@ type
   end;
 
   HDEVINFO = THandle;
-  TKey = record
+  TWinDvcItemKey = record
     HDevList: HDEVINFO;
     IdxOfList: Integer;
     GUID: TGUID;
     constructor Create(const AHDevList: HDEVINFO; const AGUID: TGUID; const AIdxOfList: Integer);
   end;
 
-  TItem = TPair<TKey, String>;
+  TWinDvcItem = TPair<TWinDvcItemKey, String>;
 
 implementation
 
 { TKey }
 
-constructor TKey.Create(const AHDevList: HDEVINFO; const AGUID: TGUID; const AIdxOfList: Integer);
+constructor TWinDvcItemKey.Create(const AHDevList: HDEVINFO; const AGUID: TGUID; const AIdxOfList: Integer);
 begin
   HDevList := AHDevList;
   GUID := AGUID;

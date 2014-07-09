@@ -13,8 +13,7 @@ uses
 type
   TWinDeviceList = class(TInterfacedObject, IDeviceList)
   private
-    FGUIDs: array of TGUID;
-    FList: TList<TItem>;
+    FList: TList<TWinDvcItem>;
 
     FhDevice: HDEVINFO;
     FCurrentDevice: TWinDevice;
@@ -52,18 +51,19 @@ begin
     RaiseLastOSError;
 
   FCurrentDevice := TWinDevice.Create;
-
-  FList := TList<TItem>.Create;
-
+  FList := TList<TWinDvcItem>.Create;
   FhDevice := INVALID_HANDLE_VALUE;
 end;
 
 destructor TWinDeviceList.Destroy;
 begin
+  FreeAndNil(FCurrentDevice);
   FreeAndNil(FList);
-  FCurrentDevice.Free;
   if FhDevice <> INVALID_HANDLE_VALUE then
     SetupDiDestroyDeviceInfoList(FhDevice);
+
+  if IsSetupApiLoaded then
+    UnloadSetupApi;
 
   inherited;
 end;
@@ -123,15 +123,12 @@ var
   LIdx: DWORD;
   LDeviceInfoData: SP_DEVINFO_DATA;
   LDeviceName: String;
-  LKey: TKey;
+  LKey: TWinDvcItemKey;
 begin
   FList.Clear;
-  SetLength(FGUIDs, Length(AGuids));
   for i := Low(AGUIDs) to High(AGUIDs) do
   begin
-    FGUIDs[i] := AGUIDs[i];
-
-    FhDevice := SetupDiGetClassDevsEx(@FGUIDs[i], nil, 0, DIGCF_PRESENT, 0, nil, nil);
+    FhDevice := SetupDiGetClassDevsEx(@AGUIDs[i], nil, 0, DIGCF_PRESENT, 0, nil, nil);
     if FhDevice = INVALID_HANDLE_VALUE then
       RaiseLastOSError;
     FCurrentDevice.DeviceListHandle := FhDevice;
@@ -141,14 +138,13 @@ begin
     LDeviceInfoData.cbSize := SizeOf(SP_DEVINFO_DATA);
     while SetupDiEnumDeviceInfo(FhDevice, LIdx, LDeviceInfoData) do
     begin
-
       FCurrentDevice.DeviceInfoData := LDeviceInfoData;
       LDeviceName := FCurrentDevice.FriendlyName;
       if LDeviceName = EmptyStr then
         LDeviceName := FCurrentDevice.Description;
 
-      LKey := TKey.Create(FCurrentDevice.DeviceListHandle, FGUIDs[i], LIdx);
-      FList.Add(TItem.Create(LKey, LDeviceName));
+      LKey := TWinDvcItemKey.Create(FCurrentDevice.DeviceListHandle, AGUIDs[i], LIdx);
+      FList.Add(TWinDvcItem.Create(LKey, LDeviceName));
 
       Inc(LIdx);
     end;
