@@ -89,10 +89,15 @@ end;
 
 procedure TGenericClassList.OnValueNotify(Sender: TObject; const Item: TObject;
   Action: TCollectionNotification);
+var
+  LInf: IInterface;
 begin
   if Action = cnRemoved then
-    if Assigned(Item) and not(Item is TInterfacedObject) then
-      Item.Free;
+    if Assigned(Item) then
+      if Supports(Item, IInterface, LInf) then
+        LInf := nil
+      else
+        Item.Free;
 end;
 
 procedure TGenericClassList.Remove<T>;
