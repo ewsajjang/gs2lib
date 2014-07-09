@@ -143,7 +143,7 @@ uses
 
 function FriendlyNameToComport(const AFirendlyName: String): String;
 const
-  REG_EXP_COMPORT = '((COM|com|Com)(\d)*)';
+  REG_EXP_COMPORT = 'COM\d*';
 begin
   Result := EmptyStr;
 
@@ -286,12 +286,10 @@ const
 begin
   Result := dtNone;
   if Assigned(Value) and Value.dbcc_nameExist then
-  begin
     if CompareRegClassGUID(HKEY_LOCAL_MACHINE, GUID_Ports, Value.dbcc_nameToRegPath, REG_NAME_CLASS_GUID) then
       Result := dtComport
     else if CompareRegClassGUID(HKEY_LOCAL_MACHINE, GUID_USB, Value.dbcc_nameToRegPath, REG_NAME_CLASS_GUID) then
       Result := dtUSB;
-  end;
 end;
 
 class function TDbDiTo.FriendlyName(
@@ -307,6 +305,7 @@ class function TDbDiTo.Infos(
 begin
   Result := TStringList.Create;
 
+  Result.GUID['classguid'] := Value.dbcc_classguid;
   Result.S['DeviceType'] :=   DeviceType(Value).ToString;
   Result.S['DeviceDesc'] :=   DeviceDesc(Value);
   Result.S['FriendlyName'] := FriendlyName(Value);
