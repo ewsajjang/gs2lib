@@ -10,7 +10,7 @@ type
     EQueueDepthOverFlow = class(ELogStringThreadQueue);
   TLogStringThreadQueue = class(TThread)
   private const
-    MAX_QUEUE_DEPTH = 16;
+    MAX_QUEUE_DEPTH = 64;
   private
     FQueue: TThreadedQueue<String>;
     FOnData: TProc<String>;
@@ -37,7 +37,7 @@ begin
   if FQueue.QueueSize < MAX_QUEUE_DEPTH then
     FQueue.PushItem(AValue)
   else
-    raise EQueueDepthOverFlow.Create('The Queue max depth is overflowed.');
+    raise EQueueDepthOverFlow.Create('The Queue overflowes max depth.');
 end;
 
 procedure TLogStringThreadQueue.Add(const AValue: String; Args: array of const);
