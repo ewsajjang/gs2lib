@@ -74,9 +74,10 @@ uses
   
 function Log: TLogMemo;
 begin
-  Result := nil;
-  if Assigned(mLog.Log) then
-    Result := mLog.Log as TLogMemo;
+  if not Assigned(mLog.Log) then
+    mLog.Log := TLogMemo.Create;
+
+  Result := TLogMemo(mLog.Log);
 end;
 
 { TLogMemo }
