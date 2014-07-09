@@ -30,7 +30,7 @@ type
 
     function GetExists: Boolean;
   public
-    constructor Create(const ADvcType: TDeviceType; const ADvcName: String);
+    constructor Create(const ADvcType: TDeviceType; const ADvcName: String); reintroduce;
     destructor Destroy; override;
 
     property ComportName: String read FComportName;
@@ -57,6 +57,8 @@ end;
 
 constructor TdvcObserver.Create(const ADvcType: TDeviceType; const ADvcName: String);
 begin
+  inherited Create(nil);
+
   FDvcName := ADvcName;
   FDvcType := ADvcType;
 
