@@ -18,6 +18,8 @@ type
   private
     FMemo: TMemo;
     FAutoScroll: Boolean;
+    FShowDateTime: Boolean;
+    FDateTimeFmt: String;
     procedure SetMemo(const Value: TMemo);
     procedure SetAutoScroll(const Value: Boolean);
   public
@@ -58,52 +60,23 @@ type
 
     property Memo: TMemo read FMemo write SetMemo;
     property AutoScroll: Boolean read FAutoScroll write SetAutoScroll;
+    property ShowDateTime: Boolean read FShowDateTime write FShowDateTime;
+    property DateTimeFmt: String read FDateTimeFmt write FDateTimeFmt;
   end;
 
-var
-  Log: TLogMemo;
+function Log: TLogMemo;
 
 implementation
 
 uses
-  mSysUtilsEx,
+  mSysUtilsEx, mDateTimeHelper, mFontHelper,
   Vcl.Forms, Winapi.Windows, Winapi.Messages;
-
-type
-  TFontHelper = class
-  private const
-    FONTS_FIXED_WIDTH: array[0..5] of String = ('Consolas', 'Courier', 'Lucida Console', 'Terminal', 'FixedSys', 'Hyperfont');
-  public
-    class function IsFixedWidthFont(const AFontName: String): Boolean;
-    class function SystemFixedWidthFontName: String;
-  end;
-
-{ TFontHelper }
-
-class function TFontHelper.IsFixedWidthFont(const AFontName: String): Boolean;
-var
-  LName: String;
+  
+function Log: TLogMemo;
 begin
-  Result := False;
-  for LName in FONTS_FIXED_WIDTH do
-    if LName.Equals(AFontName) then
-    begin
-      Result := True;
-      Break;
-    end;
-end;
-
-class function TFontHelper.SystemFixedWidthFontName: String;
-var
-  LName: String;
-begin
-  Result := EmptyStr;
-  for LName in FONTS_FIXED_WIDTH do
-    if Screen.Fonts.IndexOf(LName) > -1 then
-    begin
-      Result := LName;
-      Break;
-    end;
+  Result := nil;
+  if Assigned(mLog.Log) then
+    Result := mLog.Log as TLogMemo;
 end;
 
 { TLogMemo }
@@ -137,7 +110,12 @@ begin
         Clear;
       BeginUpdate;
       try
-        FMemo.Lines.Add(ALog);
+        if not FShowDateTime then
+          FMemo.Lines.Add(ALog)
+        else if FDateTimeFmt.IsEmpty then
+          FMemo.Lines.Add(Now.ToISO8601Str + #9 + ALog)
+        else
+          FMemo.Lines.Add(Now.ToString(FDateTimeFmt) + #9 + ALog)
       finally
         EndUpdate;
       end;
@@ -288,8 +266,8 @@ procedure TLogMemo.SetMemo(const Value: TMemo);
 begin
   FMemo := Value;
   FMemo.OnChange := OnMemoChange;
-  if not TFontHelper.IsFixedWidthFont(FMemo.Font.Name) then
-    FMemo.Font.Name := TFontHelper.SystemFixedWidthFontName;
+  if not TFontUtil.IsFixedWidthFont(FMemo.Font.Name) then
+    FMemo.Font.Name := TFontUtil.SystemFixedWidthFontName;
 end;
 
 procedure TLogMemo.Snd(const AErCondition: Boolean; const AMsg: String;
@@ -324,14 +302,9 @@ begin
 end;
 
 initialization
-  if not Assigned(Log) then
-    Log := TLogMemo.Create;
 
 finalization
-  if Assigned(Log) then
-  begin
-    Log.Free;
-    Log := nil;
-  end;
+  if Assigned(mLog.Log) then
+    mLog.Log := nil;
 
 end.

@@ -30,6 +30,7 @@ type
     procedure Rcv(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); overload;
     procedure Rcv(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
 
+    procedure Msg(const AMsgs: TStringList); overload;
     procedure Msg(const AMsg: String); overload;
     procedure Msg(const AMsg: String; const Args: array of const); overload;
     procedure Msg(const APacket: TBytes); overload;
@@ -72,6 +73,7 @@ type
     procedure Rcv(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); overload; virtual; abstract;
     procedure Rcv(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); overload; virtual; abstract;
 
+    procedure Msg(const AMsgs: TStringList); overload;
     procedure Msg(const AMsg: String); overload; virtual; abstract;
     procedure Msg(const AMsg: String; const Args: array of const); overload;
     procedure Msg(const APacket: TBytes); overload; virtual; abstract;
@@ -91,6 +93,9 @@ type
     procedure Error(const Sender: TObject; const AMsg: String; const APacket: TBytes); overload; virtual; abstract;
     procedure Error(const Sender: TObject; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
   end;
+
+var
+  Log: ILog;
 
 implementation
 
@@ -128,6 +133,15 @@ procedure TLog.Error(const Sender: TObject; const AMsg: String;
   const Args: array of const; const APacket: TBytes);
 begin
   Error(Sender, Format(AMsg, Args), APacket);
+end;
+
+procedure TLog.Msg(const AMsgs: TStringList);
+var
+  LMsg: String;
+begin
+  if Assigned(AMsgs) and not AMsgs.Text.IsEmpty then
+    for LMsg in AMsgs do
+      Msg(#9+LMsg);
 end;
 
 procedure TLog.Msg(const AErCondition: Boolean; const AMsg: String;

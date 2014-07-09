@@ -11,6 +11,8 @@ type
   TLogCodeSite = class(TLog)
   private
     FCodeSiteDest: TCodeSiteDestination;
+    FViewActive: Boolean;
+    procedure SetViewActive(const Value: Boolean);
   public
     constructor Create;
     destructor Destroy; override;
@@ -46,14 +48,11 @@ type
     procedure Error(const Sender: TObject; const AMsg: String); override;
     procedure Error(const Sender: TObject; const AMsg: String; const Args: array of const); override;
     procedure Error(const Sender: TObject; const AMsg: String; const APacket: TBytes); override;
+
+    property ViewActivate: Boolean read FViewActive write SetViewActive;
   end;
 
-{IFDEF DEBUG}
-
-var
-  Log: ILog;
-
-{ENDIF DEBUG}
+function Log: TLogCodeSite;
 
 implementation
 
@@ -79,10 +78,17 @@ const
 //csmLevel5, csmBlue	  $1c
 //csmLevel6, csmIndigo	$1d
 //csmLevel7, csmViolet	$1e
-  cmsSuccess = csmYellow;
+  cmsSuccess = csmGreen;
   csmSnd = csmViolet;
-  csmRcv = csmGreen;
+  csmRcv = csmYellow;
   csmMsgError = csmRed;
+
+function Log: TLogCodeSite;
+begin
+  Result := nil;
+  if Assigned(mLog.Log) then
+    Result := mLog.Log as TLogCodeSite;
+end;
 
 procedure TLogCodeSite.BeginUpdate;
 begin
@@ -100,7 +106,7 @@ begin
 {$IFDEF DEBUG}
   FCodeSiteDest.Viewer.Active := CodeSite.Installed;
 {$ELSE}
-  FCodeSiteDest.Viewer.Active := False;
+  FCodeSiteDest.Viewer.Active := LogActivate and CodeSite.Installed;
 {$ENDIF}
   FCodeSiteDest.LogFile.Active := False;
   CodeSite.Destination := FCodeSiteDest;
@@ -233,8 +239,6 @@ begin
   CodeSite.Send(csmSnd, '[snd.%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
-{IFDEF DEBUG}
-
 procedure TLogCodeSite.Snd(const AErCondition: Boolean; const APacket: TBytes);
 begin
   if AErCondition then
@@ -252,6 +256,12 @@ begin
     CodeSite.Send(csmError, '[snd.%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
+procedure TLogCodeSite.SetViewActive(const Value: Boolean);
+begin
+  FViewActive := Value;
+  FCodeSiteDest.Viewer.Active := FViewActive and CodeSite.Installed;
+end;
+
 procedure TLogCodeSite.Snd(const AErCondition: Boolean; const AMsg: String;
   const Args: array of const; const APacket: TBytes);
 begin
@@ -262,11 +272,10 @@ begin
 end;
 
 initialization
-  if not Assigned(Log) then
-    Log := TLogCodeSite.Create;
+
 
 finalization
-
-{ENDIF DEBUG}
+  if Assigned(mLog.Log) then
+    mLog.Log := nil;
 
 end.
