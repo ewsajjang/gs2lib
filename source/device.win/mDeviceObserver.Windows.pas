@@ -85,7 +85,7 @@ begin
   LHandle := RegDeviceNotification(FHandle, ADeviceInterface);
   Result := Assigned(LHandle) and (LHandle^ <> INVALID_HANDLE_VALUE);
   if Result then
-    FRegHandles.Add(ADeviceInterface, LHandle);
+    FRegHandles.AddOrSetValue(ADeviceInterface, LHandle);
 end;
 
 procedure TWinDeviceObserver.WmDeviceChange(var Msg: TMessage);
