@@ -13,6 +13,7 @@ type
     FCodeSiteDest: TCodeSiteDestination;
     FViewActive: Boolean;
     procedure SetViewActive(const Value: Boolean);
+    function GetInstalled: Boolean;
   public
     constructor Create;
     destructor Destroy; override;
@@ -50,14 +51,18 @@ type
     procedure Error(const Sender: TObject; const AMsg: String; const APacket: TBytes); override;
 
     property ViewActivate: Boolean read FViewActive write SetViewActive;
+    property Installed: Boolean read GetInstalled;
   end;
 
 function Log: TLogCodeSite;
 
+var
+  ShowCodeSiteLogOnApplicationRun: Boolean = False;
+
 implementation
 
 uses
-  mSysUtilsEx;
+  mSysUtilsEx, Vcl.Dialogs;
 
 const
   STR_ERROR = 'ERROR';
@@ -85,9 +90,10 @@ const
 
 function Log: TLogCodeSite;
 begin
-  Result := nil;
-  if Assigned(mLog.Log) then
-    Result := mLog.Log as TLogCodeSite;
+  if not Assigned(mLog.Log) then
+    mLog.Log := TLogCodeSite.Create;
+
+  Result := mLog.Log as TLogCodeSite;
 end;
 
 procedure TLogCodeSite.BeginUpdate;
@@ -106,7 +112,7 @@ begin
 {$IFDEF DEBUG}
   FCodeSiteDest.Viewer.Active := CodeSite.Installed;
 {$ELSE}
-  FCodeSiteDest.Viewer.Active := LogActivate and CodeSite.Installed;
+  FCodeSiteDest.Viewer.Active := ShowCodeSiteLogOnApplicationRun and CodeSite.Installed;
 {$ENDIF}
   FCodeSiteDest.LogFile.Active := False;
   CodeSite.Destination := FCodeSiteDest;
@@ -149,6 +155,11 @@ end;
 procedure TLogCodeSite.Exit(const AValue: String);
 begin
   CodeSite.ExitMethod(AValue);
+end;
+
+function TLogCodeSite.GetInstalled: Boolean;
+begin
+  Result := CodeSite.Installed;
 end;
 
 procedure TLogCodeSite.Error(const Sender: TObject; const AMsg: String;
@@ -259,7 +270,7 @@ end;
 procedure TLogCodeSite.SetViewActive(const Value: Boolean);
 begin
   FViewActive := Value;
-  FCodeSiteDest.Viewer.Active := FViewActive and CodeSite.Installed;
+  CodeSite.Destination.Viewer.Active := FViewActive and CodeSite.Installed;
 end;
 
 procedure TLogCodeSite.Snd(const AErCondition: Boolean; const AMsg: String;
@@ -272,7 +283,9 @@ begin
 end;
 
 initialization
-
+  {$IFDEF DEBUG}
+    ShowCodeSiteLogOnApplicationRun := True;
+  {$ENDIF}
 
 finalization
   if Assigned(mLog.Log) then

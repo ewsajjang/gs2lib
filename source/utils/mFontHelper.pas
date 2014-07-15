@@ -8,15 +8,19 @@ uses
   ;
 
 type
-  TFontUtil = class
+  TFixedWidthFont = class
   private class var
-    FIXED_WIDTH_FONT_NAME: String;
+    FFIXED_WIDTH_FONT_NAME: String;
+    FFixedFontExists: Boolean;
+    class function SystemFixedWidthFontName: String;
   private const
     FONTS_FIXED_WIDTH: array[0..5] of String = ('Consolas', 'Courier', 'Lucida Console', 'Terminal', 'FixedSys', 'Hyperfont');
   public
     class function IsFixedWidthFont(const AFontName: String): Boolean;
-    class function SystemFixedWidthFontName: String;
-    class procedure FixedFontAssing(const ACtrl: TControl);
+    class procedure AssingToCtrl(const ACtrl: TControl);
+
+    class property Exists: Boolean read FFixedFontExists;
+    class property Name: String read FFIXED_WIDTH_FONT_NAME;
   end;
 
 implementation
@@ -44,16 +48,16 @@ end;
 
 { TFontUtil }
 
-class procedure TFontUtil.FixedFontAssing(const ACtrl: TControl);
+class procedure TFixedWidthFont.AssingToCtrl(const ACtrl: TControl);
 var
   LCtrl: TControltFontHelper;
 begin
   LCtrl := TControltFontHelper(ACtrl);
-  if not TFontUtil.IsFixedWidthFont(LCtrl.FontName) then
-    LCtrl.FontName := FIXED_WIDTH_FONT_NAME;
+  if not TFixedWidthFont.IsFixedWidthFont(LCtrl.FontName) then
+    LCtrl.FontName := FFIXED_WIDTH_FONT_NAME;
 end;
 
-class function TFontUtil.IsFixedWidthFont(const AFontName: String): Boolean;
+class function TFixedWidthFont.IsFixedWidthFont(const AFontName: String): Boolean;
 var
   LName: String;
 begin
@@ -66,7 +70,7 @@ begin
     end;
 end;
 
-class function TFontUtil.SystemFixedWidthFontName: String;
+class function TFixedWidthFont.SystemFixedWidthFontName: String;
 var
   LName: String;
 begin
@@ -81,7 +85,8 @@ end;
 
 
 initialization
-  TFontUtil.FIXED_WIDTH_FONT_NAME := TFontUtil.SystemFixedWidthFontName;
+  TFixedWidthFont.FFIXED_WIDTH_FONT_NAME := TFixedWidthFont.SystemFixedWidthFontName;
+  TFixedWidthFont.FFixedFontExists := not TFixedWidthFont.FFIXED_WIDTH_FONT_NAME.IsEmpty;
 
 finalization
 

@@ -39,6 +39,7 @@ type
 
     function O(const AName: String; AObj: TObject): Integer; overload;
     function O<T: Class>(const AName: String): T; overload;
+    function O<T: Class>(const AIdx: Integer): T; overload;
 
     property S[Name: String]: String read GetS write SetS;
     property I[Name: String]: Integer read GetI write SetI;
@@ -158,6 +159,11 @@ end;
 function TStringListHelper.O(const AName: String; AObj: TObject): Integer;
 begin
   Result := AddObject(AName, AObj);
+end;
+
+function TStringListHelper.O<T>(const AIdx: Integer): T;
+begin
+  Result := Self.Objects[AIdx] as T
 end;
 
 function TStringListHelper.O<T>(const AName: String): T;
