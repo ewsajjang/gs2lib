@@ -20,9 +20,16 @@ type
     function GetFormsCnt: Integer;
   protected
     FOnPlaceOn: TProc;
+    FOnPlaceOnParent: TProc;
+    procedure OnPlaceOnParentNotify;
+
     function FindTargetWinControl(const AName: String): TWinControl;
   public
     class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl);
+    procedure PlaceOnParent(const ATarget: TWinControl = nil); overload;
+    procedure PlaceOnParent(const AParent: TvForm); overload;
+    procedure PlaceOnParent(const AParent: TvFormClass); overload;
+    procedure PlaceOnParent(const AParent: String); overload;
 
     function ExistsForms(const AvFormName: String): Boolean; overload;
     function ExistsForms(const AvFormClass: TvFormClass): Boolean; overload;
@@ -41,17 +48,6 @@ type
     constructor Create(AOwner: TComponent); override;
 
     property vm: Tvm read Getvm;
-  end;
-
-  TvChild<Tvm: class> = class(Tv<Tvm>)
-  protected
-    FOnPlaceOnParent: TProc;
-    procedure OnPlaceOnParentNotify;
-  protected
-    procedure PlaceOnParent(const ATarget: TWinControl = nil); overload;
-    procedure PlaceOnParent(const AParent: TvForm); overload;
-    procedure PlaceOnParent(const AParent: TvFormClass); overload;
-    procedure PlaceOnParent(const AParent: String); overload;
   end;
 
   TvDlg<Tvm: class> = class(Tv<Tvm>)
@@ -169,20 +165,18 @@ begin
   Result := FDic.Items[Name];
 end;
 
-{ TvChild<Tvm> }
-
-procedure TvChild<Tvm>.PlaceOnParent(const AParent: TvFormClass);
+procedure TvForm.PlaceOnParent(const AParent: TvFormClass);
 begin
   PlaceOnParent(vClasses[AParent]);
 end;
 
-procedure TvChild<Tvm>.OnPlaceOnParentNotify;
+procedure TvForm.OnPlaceOnParentNotify;
 begin
   if Assigned(FOnPlaceOnParent) then
     FOnPlaceOnParent;
 end;
 
-procedure TvChild<Tvm>.PlaceOnParent(const AParent: String);
+procedure TvForm.PlaceOnParent(const AParent: String);
 var
   LParent: TvForm;
 begin
@@ -194,13 +188,13 @@ begin
   end;
 end;
 
-procedure TvChild<Tvm>.PlaceOnParent(const ATarget: TWinControl);
+procedure TvForm.PlaceOnParent(const ATarget: TWinControl);
 begin
   PlaceOn(Self, ATarget);
   OnPlaceOnParentNotify;
 end;
 
-procedure TvChild<Tvm>.PlaceOnParent(const AParent: TvForm);
+procedure TvForm.PlaceOnParent(const AParent: TvForm);
 begin
   PlaceOn(Self, FindTargetWinControl(AParent.Name));
   OnPlaceOnParentNotify;
