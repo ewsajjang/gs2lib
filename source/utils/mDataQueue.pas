@@ -4,12 +4,12 @@ interface
 
 uses
   System.Classes, System.SysUtils,
-  System.Generics.Collections
+  System.Generics.Defaults, System.Generics.Collections
   ;
 
 type
   TPopItemProcessFunc<T, T2> = reference to function(AItem: T): T2;
-  TDataQueue<TPush,TData> = class(TThread)
+  TDataQueue<TPush: Class; TData> = class(TThread)
   private const
     MAX_QUEUE_DEPTH = 64;
   private
@@ -64,15 +64,20 @@ begin
   NameThreadForDebugging(ClassName);
   while not Terminated do
   begin
-    FQueue.PopItem(LSize, LItem);
-    //if LSize = 0 then
-      if not FQueue.ShutDown and Assigned(FPopItemProcessFunc) then
+    LItem := FQueue.PopItem;
+    if not Terminated and not FQueue.ShutDown and Assigned(LItem) then
+    begin
+      if Assigned(FPopItemProcessFunc) and Assigned(FOnData) then
+      begin
         LData := FPopItemProcessFunc(LItem);
-      if not Terminated and Assigned(FOnData) then
-        Synchronize(procedure
-        begin
-          FOnData(LItem, LData);
-        end);
+        Synchronize(
+          procedure
+          begin
+            FOnData(LItem, LData);
+          end);
+      end;
+      FreeAndNil(LItem);
+    end;
   end;
 end;
 

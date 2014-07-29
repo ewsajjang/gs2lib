@@ -60,6 +60,7 @@ type
 
     class function FmtStr(const ADateStr, AFmt: String): TDateTime; static; inline;
     class function FmtSettingsStr(const ADateStr: String; AFmtSettings: TFormatSettings): TDateTime; static; inline;
+    class function FromDateStr(const ADateStr, AFmt: String): TDateTime; static;
 
     class function FmtYMDHN(const YYYYMMDDHHNN: String): TDateTime; overload; static; inline;
     class function FmtISO8601(const AValue: String): TDateTime; overload; static; inline;
@@ -83,7 +84,8 @@ type
     property Second: Word read GetSecond;
     property Millisecond: Word read GetMillisecond;
 
-    function ToString(const aFormatStr: string = ''): string; inline;
+    function ToString(const aFormatStr: string = ''): string; overload; inline;
+    function ToString(const AFmt: TFormatSettings; const aFormatStr: string = ''): string; overload; inline;
     function ToISO8601Str: String;
 
     function StartOfYear: TDateTime; inline;
@@ -224,6 +226,15 @@ end;
 function TDateTimeHelper.ToISO8601Str: String;
 begin
   Result := FormatDateTime(FMT_DATE_TIME_ISO_8601, Self);
+end;
+
+function TDateTimeHelper.ToString(const AFmt: TFormatSettings;
+  const aFormatStr: string): string;
+begin
+  if aFormatStr = '' then
+    Result := DateTimeToStr(Self, AFmt)
+  else
+    Result := FormatDateTime(aFormatStr, Self, AFmt);
 end;
 
 function TDateTimeHelper.GetDate: TDateTime;
@@ -462,6 +473,23 @@ begin
   N := StrToInt(Copy(YYYYMMDDHHNN, 11, 2));
 
   Result :=   EncodeDateTime(Y, M, D, H, N, 0, 0);
+end;
+
+class function TDateTimeHelper.FromDateStr(const ADateStr,
+  AFmt: String): TDateTime;
+const
+  YYYY = 'yyyy'; MM = 'MM'; DD = 'dd';
+var
+  LDate: String;
+  Y, M, D: Integer;
+begin
+  Y := AFmt.IndexOf(YYYY);
+  M := AFmt.IndexOf(MM);
+  D := AFmt.IndexOf(DD);
+  LDate := Format('%s%s%s0000', [ADateStr.Substring(Y, YYYY.Length)
+                                 , ADateStr.Substring(M, MM.Length)
+                                 , ADateStr.Substring(D, DD.Length)]);
+  Result := TDateTime.FmtYMDHN(LDate);
 end;
 
 class function TDateTimeHelper.FmtISO8601(const AValue: String): TDateTime;

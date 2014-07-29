@@ -213,7 +213,7 @@ begin
   if AErCondition then
     Rcv(AMsg, APacket)
   else
-    CodeSite.Send(csmError, '[rcv.%s]%s', [AMsg, BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[rcv|%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Rcv(const AErCondition: Boolean; const AMsg: String;
@@ -222,7 +222,7 @@ begin
   if AErCondition then
     Rcv(AMsg, Args, APacket)
   else
-    CodeSite.Send(csmError, '[rcv.%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[rcv|%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Msg(const AMsg: String);
@@ -232,7 +232,7 @@ end;
 
 procedure TLogCodeSite.Rcv(const AMsg: String; const APacket: TBytes);
 begin
-  CodeSite.Send(csmRcv, '[rcv.%s]%s', [AMsg, BytesToHexStr(APacket)]);
+  CodeSite.Send(csmRcv, '[rcv|%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Rcv(const APacket: TBytes);
@@ -247,7 +247,7 @@ end;
 
 procedure TLogCodeSite.Snd(const AMsg: String; const APacket: TBytes);
 begin
-  CodeSite.Send(csmSnd, '[snd.%s]%s', [AMsg, BytesToHexStr(APacket)]);
+  CodeSite.Send(csmSnd, '[snd|%s]%s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.Snd(const AErCondition: Boolean; const APacket: TBytes);
@@ -264,7 +264,7 @@ begin
   if AErCondition then
     Snd(AMsg, APacket)
   else
-    CodeSite.Send(csmError, '[snd.%s]%s', [AMsg, BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[snd|%s] %s', [AMsg, BytesToHexStr(APacket)]);
 end;
 
 procedure TLogCodeSite.SetViewActive(const Value: Boolean);
@@ -279,7 +279,7 @@ begin
   if AErCondition then
     Snd(AMsg, Args, APacket)
   else
-    CodeSite.Send(csmError, '[snd.%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)]);
+    CodeSite.Send(csmError, '[snd|%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)]);
 end;
 
 initialization

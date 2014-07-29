@@ -12,6 +12,7 @@ type
     function GetSelectedStr: String;
     procedure SetSelectedStr(const Value: String);
   public
+    procedure AddFmt(const AStr: String; const Arg: array of const);
     procedure IndexBy(const AValue: String);
     procedure ContainsBy(const AValue: String);
     function ItemSelected: Boolean;
@@ -28,6 +29,11 @@ uses
   Winapi.Windows, Winapi.Messages;
 
 { TComboBoxHelper }
+
+procedure TComboBoxHelper.AddFmt(const AStr: String; const Arg: array of const);
+begin
+  Items.Add(Format(AStr, Arg));
+end;
 
 procedure TComboBoxHelper.ClearItemsObjects;
 var
