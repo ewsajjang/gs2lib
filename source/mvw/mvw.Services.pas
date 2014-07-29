@@ -25,10 +25,10 @@ initialization
     svcList := TGenericClassList.Create;
 
 finalization
-  if Assigned(svcList) then
+  if Assigned(msgRouter) then
   begin
-    svcList.Free;
-    svcList := nil;
+    msgRouter.Free;
+    msgRouter := nil;
   end;
 
   if Assigned(vmList) then
@@ -37,10 +37,10 @@ finalization
     vmList := nil;
   end;
 
-  if Assigned(msgRouter) then
+  if Assigned(svcList) then
   begin
-    msgRouter.Free;
-    msgRouter := nil;
+    svcList.Free;
+    svcList := nil;
   end;
 
 end.
