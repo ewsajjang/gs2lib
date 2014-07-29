@@ -13,6 +13,7 @@ type
     class function ColumnExists(const ADBPath, ATable, ACol: String): Boolean;
     class function ColumnAdd(const ADBPath, ATable, ACol, AColType: String; IsNull: Boolean = True): Boolean;
     class function TableNames(const ADBPath: String; Contain_sqlite_: Boolean = False): TArray<String>; static;
+    class function IndexAdd(const ADBPath, AIdxName, ATableName, AColName: String; AUnique: Boolean = False; AAsc: Boolean = True): Boolean;
   end;
 
 implementation
@@ -67,6 +68,30 @@ begin
     finally
       FreeAndNil(Table);
     end;
+  finally
+    FreeAndNil(DB);
+  end;
+end;
+
+class function TSQLiteUtil.IndexAdd(const ADBPath, AIdxName, ATableName, AColName: String;
+  AUnique, AAsc: Boolean): Boolean;
+const
+  UNIQUE_STR: array[False..True] of String = ('', 'UNIQUE');
+  ORDER_DIRECTION: array[False..True] of String = ('DESC', 'ASC');
+var
+  DB: TSqliteDatabase;
+  LSQL: String;
+begin
+  DB := TSqliteDatabase.Create(ADBPath);
+  try
+    LSQL := Format('CREATE %s INDEX IF NOT EXISTS [%s] ON [%s] ([%s] %s)',
+      [UNIQUE_STR[AUnique], AIdxName, ATableName, AColName, ORDER_DIRECTION[AAsc]]);
+    try
+      DB.ExecSQL(LSQL);
+    except on E: Exception do
+      Result := False;
+    end;
+    Result := True;
   finally
     FreeAndNil(DB);
   end;
