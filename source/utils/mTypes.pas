@@ -40,23 +40,6 @@ type
     class function Create(AMin, AMax: TDateTime): TPeriod; static;
   end;
 
-  TPopupDlgAlign = (pdaLeft, pdaRight);
-  TCellDlgInfo = record
-  private
-    FResult: TValue;
-  public
-    Rect: TRect;
-    Point: TPoint;
-    ProviderIdx: Integer;
-    Align: TPopupDlgAlign;
-    Event: String;
-    CloseProc: TProc;
-    function ResultAssigned: Boolean;
-    procedure ResultClear;
-    procedure ResultAssign<T>(AValue: T); overload;
-    function ResultAssign<T>: T; overload;
-  end;
-
 implementation
 
 uses
@@ -87,28 +70,6 @@ function TPeriod.Equal(const AValue: TPeriod): Boolean;
 begin
   Result := Self.Min.Equals(AValue.Min) and
     Self.Max.Equals(AValue.Max)
-end;
-
-{ TCellInfo }
-
-procedure TCellDlgInfo.ResultAssign<T>(AValue: T);
-begin
-  FResult := TValue.From<T>(AValue);
-end;
-
-procedure TCellDlgInfo.ResultClear;
-begin
-  FResult := TValue.Empty;
-end;
-
-function TCellDlgInfo.ResultAssign<T>: T;
-begin
-  Result := FResult.AsType<T>;
-end;
-
-function TCellDlgInfo.ResultAssigned: Boolean;
-begin
-  Result := not FResult.IsEmpty;
 end;
 
 { TBytesList }

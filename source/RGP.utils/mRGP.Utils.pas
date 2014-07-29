@@ -3,7 +3,7 @@ unit mRGP.Utils;
 interface
 
 uses
-  System.Classes, System.SysUtils,
+  System.Classes, System.SysUtils, System.Types, System.Rtti,
 
   WTGrids.Common.Sprites, WTGrids.Common, WTGrids, WTGrids.RealGrid,
   WTGrids.Model, WTGrids.Data, WTGrids.Data.RealGrid, WTGrids.Loaders,
@@ -81,13 +81,31 @@ type
     property D[Row: Integer; Field: String]: TDateTime read GetD write SetD;
   end;
 
+  TwtrGridPopupAlign = (pdaLeft, pdaRight);
+  TwtRGridPopupInfos = record
+  private
+    FResult: TValue;
+  public
+    FieldName: String;
+    Rect: TRect;
+    Point: TPoint;
+    RowIndex: Integer;
+    Align: TwtrGridPopupAlign;
+    Event: String;
+    CloseProc: TProc;
+    function ResultAssigned: Boolean;
+    procedure ResultClear;
+    procedure ResultAssign<T>(AValue: T); overload;
+    function AssignedResult<T>: T; overload;
+  end;
+
 implementation
 
 uses
   mRGPHelper,
 
   mConsts, mDateTimeHelper,
-  System.DateUtils, System.Math
+  System.DateUtils, System.Math, mLog.CodeSite
   ;
 
 { TSimpleGrdUtil }
@@ -108,7 +126,6 @@ begin
   FIconFields := TStringList.Create;
 
   FActiveCell := TWTGridCellIndex.Empty;
-
 
   FGrid := TWTRealGrid(AGrid);
   if Assigned(FGrid.DataProvider) then
@@ -177,6 +194,10 @@ begin
     Exit;
 
   AIdx := FGrid.MouseToIndex(X, Y);
+//  Log.Msg('CellIndex: %d, DataRow: %d Selected: %s', [AIdx.ItemIndex, AIdx.DataRow, BoolToStr(AIdx.Selected, True)]);
+//  if AIdx.ItemIndex > VAL_NOT_ASSIGNED then
+//    if AIdx.DataRow > VAL_NOT_ASSIGNED then
+//      Result := FIconFields.IndexOf(AIdx.FieldName) > -1;
   if AIdx.Selected then
     Result := FIconFields.IndexOf(AIdx.FieldName) > -1;
 end;
@@ -185,17 +206,21 @@ procedure TSimpleGridUtil.MouseOver(const X, Y: Integer);
 var
   LIdx: TWTGridCellIndex;
 begin
-  if IdxFormMouse(X, Y, LIdx) then
+  if FGrid.CanFocus and not FGrid.Focused then
   begin
-    if FActiveCell.Selected then
+    FGrid.SetFocus;
+    if IdxFormMouse(X, Y, LIdx) then
+    begin
+      if FActiveCell.Selected then
+        I[FActiveCell.GetDataRow, FActiveCell.FieldName] := -1;
+      FActiveCell := LIdx;
+      I[FActiveCell.GetDataRow, FActiveCell.FieldName] := 0;
+    end
+    else if FActiveCell.Selected then
+    begin
       I[FActiveCell.GetDataRow, FActiveCell.FieldName] := -1;
-    FActiveCell := LIdx;
-    I[FActiveCell.GetDataRow, FActiveCell.FieldName] := 0;
-  end
-  else if FActiveCell.Selected then
-  begin
-    I[FActiveCell.GetDataRow, FActiveCell.FieldName] := -1;
-    FActiveCell := TWTGridCellIndex.Empty;
+      FActiveCell := TWTGridCellIndex.Empty;
+    end;
   end;
 end;
 
@@ -247,7 +272,7 @@ var
 begin
   LWidth := ScrollBar_Width;
   if FGrid.Indicator.Visible then
-    Inc(LWidth, 50);
+    Inc(LWidth, 35);
 
   LGroupCnt := Length(FGrid.GetGroupByFields);
   if LGroupCnt > 0 then
@@ -258,6 +283,28 @@ begin
       if AColumn <> FGrid.Columns[i] then
         Inc(LWidth, FGrid.Columns[i].Width);
   AColumn.Width := Max(AMinWidth, FGrid.Width - LWidth);
+end;
+
+{ TwtRGridPopupInfos }
+
+procedure TwtRGridPopupInfos.ResultAssign<T>(AValue: T);
+begin
+  FResult := TValue.From<T>(AValue);
+end;
+
+procedure TwtRGridPopupInfos.ResultClear;
+begin
+  FResult := TValue.Empty;
+end;
+
+function TwtRGridPopupInfos.AssignedResult<T>: T;
+begin
+  Result := FResult.AsType<T>;
+end;
+
+function TwtRGridPopupInfos.ResultAssigned: Boolean;
+begin
+  Result := not FResult.IsEmpty;
 end;
 
 end.
