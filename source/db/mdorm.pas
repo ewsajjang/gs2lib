@@ -41,13 +41,17 @@ type
     procedure Open;
     procedure Close;
     procedure ColumnAppend(const ADBName, ATable, AColName, AColType: String);
+    procedure IndexAppend(const ADBName, AIdxName, ATableName, AColName: String; AUnique: Boolean = False; AAsc: Boolean = True);
     procedure LogFileDelete(AFileName: String = '');
   public
     procedure Update(AValue: TDBModel);
     procedure Delete(AValue: TDBModel);
+    procedure Insert(AValue: TDBModel);
+    procedure UpdateList(AList: TObject);
 
     function Load<T: class>(const ADBId: Integer; ALoadRelations: Boolean = False): T;
-    function LoadList<T: class>(ALoadRelations: Boolean = False): TObjectList<T>;
+    function LoadList<T: class>(ALoadRelations: Boolean = False): TObjectList<T>; overload;
+    procedure LoadList<T: class>(AList: TObjectList<T>; ALoadRelations: Boolean = False); overload;
   end;
 
 implementation
@@ -84,6 +88,22 @@ begin
   end;
 end;
 
+procedure Tmdorm.IndexAppend(const ADBName, AIdxName, ATableName, AColName: String;
+  AUnique, AAsc: Boolean);
+begin
+  TSQLiteUtil.IndexAdd(ADBName, AIdxName, ATableName, AColName, AAsc, AUnique);
+end;
+
+procedure Tmdorm.Insert(AValue: TDBModel);
+begin
+  Open;
+  try
+    FSession.Insert(AValue);
+  finally
+    Close;
+  end;
+end;
+
 function Tmdorm.Load<T>(const ADBId: Integer; ALoadRelations: Boolean): T;
 begin
   Open;
@@ -91,6 +111,18 @@ begin
     Result := FSession.Load<T>(ADBId);
     if ALoadRelations then
       FSession.LoadRelations(Result);
+  finally
+    Close;
+  end;
+end;
+
+procedure Tmdorm.LoadList<T>(AList: TObjectList<T>; ALoadRelations: Boolean);
+begin
+  Open;
+  try
+    FSession.LoadList<T>(nil, AList);
+    if ALoadRelations then
+      FSession.LoadRelationsForEachElement(AList);
   finally
     Close;
   end;
@@ -142,6 +174,16 @@ begin
   try
     AValue.ObjStatus := osDirty;
     FSession.Persist(AValue);
+  finally
+    Close;
+  end;
+end;
+
+procedure Tmdorm.UpdateList(AList: TObject);
+begin
+  Open;
+  try
+    FSession.PersistCollection(AList)
   finally
     Close;
   end;
