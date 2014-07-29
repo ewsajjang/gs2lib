@@ -28,7 +28,7 @@ type
 implementation
 
 uses
-  System.Rtti, System.TypInfo;
+  System.Rtti, System.TypInfo, vcl.Forms;
 
 { TGenericClassList }
 
@@ -92,11 +92,13 @@ procedure TGenericClassList.OnValueNotify(Sender: TObject; const Item: TObject;
 var
   LInf: IInterface;
 begin
+  if Assigned(Self) then
+
   if Action = cnRemoved then
     if Assigned(Item) then
       if Supports(Item, IInterface, LInf) then
         LInf := nil
-      else
+      else if not (Item is TDataModule) then
         Item.Free;
 end;
 
