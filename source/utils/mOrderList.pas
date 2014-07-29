@@ -1,4 +1,4 @@
-unit mRepeator;
+unit mOrderList;
 
 interface
 
@@ -7,7 +7,7 @@ uses
   System.Generics.Collections;
 
 type
-  TSimpleRepeator<T> = class
+  TSimpleOrderList<T> = class
   private
     FPosByIdx: Integer;
     FItemIsClass: Boolean;
@@ -47,9 +47,9 @@ uses
   mConsts,
   System.RTTI, System.TypInfo, System.Math;
 
-{ TSimpleRepeator<T> }
+{ TSimpleOrderList<T> }
 
-function TSimpleRepeator<T>.Add(const AItem: T): Integer;
+function TSimpleOrderList<T>.Add(const AItem: T): Integer;
 begin
   if not Exists(AItem) then
     Result := FList.Add(AItem)
@@ -57,7 +57,7 @@ begin
     Result := FList.Count - 1;
 end;
 
-constructor TSimpleRepeator<T>.Create(AOwnsObjects: Boolean);
+constructor TSimpleOrderList<T>.Create(AOwnsObjects: Boolean);
 begin
   FOwnsObjects := AOwnsObjects;
 
@@ -65,39 +65,39 @@ begin
   FList.OnNotify := OnNotify;
 end;
 
-destructor TSimpleRepeator<T>.Destroy;
+destructor TSimpleOrderList<T>.Destroy;
 begin
   FreeAndNil(FList);
 
   inherited;
 end;
 
-function TSimpleRepeator<T>.Eof: Boolean;
+function TSimpleOrderList<T>.Eof: Boolean;
 begin
   Result := FPosByIdx = Count - 1;
 end;
 
-function TSimpleRepeator<T>.Exists(const AItem: T): Boolean;
+function TSimpleOrderList<T>.Exists(const AItem: T): Boolean;
 begin
   Result := FList.IndexOf(AItem) > VAL_NOT_ASSIGNED;
 end;
 
-function TSimpleRepeator<T>.GetCount: Integer;
+function TSimpleOrderList<T>.GetCount: Integer;
 begin
   Result := FList.Count;
 end;
 
-function TSimpleRepeator<T>.GetCurrent: T;
+function TSimpleOrderList<T>.GetCurrent: T;
 begin
   Result := FList[FPosByIdx];
 end;
 
-function TSimpleRepeator<T>.GetPosBy: T;
+function TSimpleOrderList<T>.GetPosBy: T;
 begin
   Result := Current;
 end;
 
-procedure TSimpleRepeator<T>.Init(const AItems: array of T);
+procedure TSimpleOrderList<T>.Init(const AItems: array of T);
 var
   LInfo: PTypeInfo;
   LItem: T;
@@ -117,7 +117,7 @@ begin
   FPosByIdx := 0;
 end;
 
-function TSimpleRepeator<T>.Next: T;
+function TSimpleOrderList<T>.Next: T;
 begin
   if FPosByIdx < Count then
     Inc(FPosByIdx);
@@ -125,7 +125,7 @@ begin
   Result := FList[FPosByIdx];
 end;
 
-procedure TSimpleRepeator<T>.OnNotify(Sender: TObject; const Item: T;
+procedure TSimpleOrderList<T>.OnNotify(Sender: TObject; const Item: T;
   Action: TCollectionNotification);
 begin
   if FOwnsObjects and (Action = cnRemoved) then
@@ -133,12 +133,12 @@ begin
       (Item as FItemClass).Free;
 end;
 
-function TSimpleRepeator<T>.Remove(const AItem: T): Integer;
+function TSimpleOrderList<T>.Remove(const AItem: T): Integer;
 begin
   Result := FList.Remove(AItem)
 end;
 
-procedure TSimpleRepeator<T>.SetPosBy(const Value: T);
+procedure TSimpleOrderList<T>.SetPosBy(const Value: T);
 var
   LIdx: Integer;
 begin
@@ -147,13 +147,13 @@ begin
     FPosByIdx := LIdx;
 end;
 
-procedure TSimpleRepeator<T>.SetPosByIdx(const Value: Integer);
+procedure TSimpleOrderList<T>.SetPosByIdx(const Value: Integer);
 begin
   if Value < Count then
     FPosByIdx := Value;
 end;
 
-function TSimpleRepeator<T>.TryPosBy(const AItem: T): Boolean;
+function TSimpleOrderList<T>.TryPosBy(const AItem: T): Boolean;
 begin
   Result := Exists(AItem);
   if Result then
