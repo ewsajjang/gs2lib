@@ -21,7 +21,7 @@ type
   protected
     FOnPlaceOn: TProc;
     FOnPlaceOnParent: TProc;
-    procedure OnPlaceOnParentNotify;
+    procedure OnPlaceOnParentNotify; virtual;
 
     function FindTargetWinControl(const AName: String): TWinControl;
   public
