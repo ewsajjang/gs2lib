@@ -8,7 +8,7 @@ uses
   System.Generics.Collections;
 
 type
-  TFuncExistDevice = reference to function(AInfo: TWinDevice; AFindIdx: Integer): Boolean;
+  TDvcExistFunc = reference to function(AInfo: TWinDevice; AFindIdx: Integer): Boolean;
   TNotifyDevice = procedure(Sender: TObject; GUID: TGUID) of object;
 
   IDeviceList = interface
@@ -16,8 +16,8 @@ type
     function GetDevices(Index: Integer): TWinDevice;
     function GetCount: Integer;
 
-    function Exists(AFunc: TFuncExistDevice): Boolean; overload;
-    function Exists(const AGUID: TGUID; AFunc: TFuncExistDevice): Boolean; overload;
+    function Exists(AFunc: TDvcExistFunc): Boolean; overload;
+    function Exists(const AGUID: TGUID; AFunc: TDvcExistFunc): Boolean; overload;
     procedure ClearAndSearch(const AGUIDs: array of TGUID);
     procedure Clear;
 

@@ -22,13 +22,13 @@ type
     function GetDevices(Index: Integer): TWinDevice;
     function GetCount: Integer;
   public
-    constructor Create;
+    constructor Create; virtual;
     destructor Destroy; override;
 
     { IDeviceList }
     procedure ClearAndSearch(const AGUIDs: array of TGUID);
-    function Exists(AFunc: TFuncExistDevice): Boolean; overload;
-    function Exists(const AGUID: TGUID; AFunc: TFuncExistDevice): Boolean; overload;
+    function Exists(AFunc: TDvcExistFunc): Boolean; overload;
+    function Exists(const AGUID: TGUID; AFunc: TDvcExistFunc): Boolean; overload;
     procedure Clear;
 
     { IDeviceList }
@@ -68,7 +68,7 @@ begin
   inherited;
 end;
 
-function TWinDeviceList.Exists(AFunc: TFuncExistDevice): Boolean;
+function TWinDeviceList.Exists(AFunc: TDvcExistFunc): Boolean;
 var
   i: Integer;
 begin
@@ -82,7 +82,7 @@ begin
   end;
 end;
 
-function TWinDeviceList.Exists(const AGUID: TGUID; AFunc: TFuncExistDevice): Boolean;
+function TWinDeviceList.Exists(const AGUID: TGUID; AFunc: TDvcExistFunc): Boolean;
 var
   i: Integer;
 begin
