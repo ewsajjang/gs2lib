@@ -15,7 +15,8 @@ type
     function _GetAddr: String;
     function _GetEnabled: Boolean;
   public
-    class function Clone(const ASrc: TwclBluetoothRadio): TwclBluetoothRadio; static;
+    class function Clone(const ASrc: TwclBluetoothRadio): TwclBluetoothRadio; overload; static;
+    function Clone: TwclBluetoothRadio; overload;
 
     property Name: String read _GetName;
     property APIStr: String read _GetAPIStr;
@@ -38,6 +39,8 @@ type
     function Str: String;
   end;
 
+
+
 implementation
 
 uses
@@ -57,6 +60,12 @@ class function TwclBluetoothRadioHelper.Clone(
 begin
   Result := TwclBluetoothRadio.Create;
   Result.Assign(ASrc);
+end;
+
+function TwclBluetoothRadioHelper.Clone: TwclBluetoothRadio;
+begin
+  Result := TwclBluetoothRadio.Create;
+  Result.Assign(Self);
 end;
 
 function TwclBluetoothRadioHelper._GetAddr: String;

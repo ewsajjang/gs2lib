@@ -18,6 +18,7 @@ type
   public
     class function IsFixedWidthFont(const AFontName: String): Boolean;
     class procedure AssingToCtrl(const ACtrl: TControl);
+    class procedure AssingToCtrls(const ACtrls: array of TControl);
 
     class property Exists: Boolean read FFixedFontExists;
     class property Name: String read FFIXED_WIDTH_FONT_NAME;
@@ -55,6 +56,14 @@ begin
   LCtrl := TControltFontHelper(ACtrl);
   if not TFixedWidthFont.IsFixedWidthFont(LCtrl.FontName) then
     LCtrl.FontName := FFIXED_WIDTH_FONT_NAME;
+end;
+
+class procedure TFixedWidthFont.AssingToCtrls(const ACtrls: array of TControl);
+var
+  LCtrl: TControl;
+begin
+  for LCtrl in ACtrls do
+    AssingToCtrl(LCtrl);
 end;
 
 class function TFixedWidthFont.IsFixedWidthFont(const AFontName: String): Boolean;

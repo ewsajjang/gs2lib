@@ -11,14 +11,15 @@ type
   private
     function GetSelectedStr: String;
     procedure SetSelectedStr(const Value: String);
+
   public
     procedure AddFmt(const AStr: String; const Arg: array of const);
     procedure IndexBy(const AValue: String);
     procedure ContainsBy(const AValue: String);
     function ItemSelected: Boolean;
     function ItemCount: Integer;
-    function SelectedObj<T: class>: T;
-    property SelectedStr: String read GetSelectedStr write SetSelectedStr;
+    function ItemObj<T: class>: T;
+    property ItemStr: String read GetSelectedStr write SetSelectedStr;
     procedure DropdownListAutoWidth;
     procedure ClearItemsObjects;
   end;
@@ -131,7 +132,7 @@ begin
     Items[ItemIndex] := Value;
 end;
 
-function TComboBoxHelper.SelectedObj<T>: T;
+function TComboBoxHelper.ItemObj<T>: T;
 begin
   if ItemSelected then
     Result := Items.Objects[ItemIndex] as T
