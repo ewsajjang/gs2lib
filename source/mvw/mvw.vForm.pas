@@ -59,6 +59,15 @@ type
     constructor Create(AOwner: TComponent); override;
   end;
 
+  TvDlg = class(TvForm)
+  private
+    FCloseAction: TAction;
+    FActionList: TActionList;
+    procedure OnCloseActionExecute(Sender: TObject);
+  public
+    constructor Create(AOwner: TComponent); override;
+  end;
+
 implementation
 
 uses
@@ -198,6 +207,25 @@ procedure TvForm.PlaceOnParent(const AParent: TvForm);
 begin
   PlaceOn(Self, FindTargetWinControl(AParent.Name));
   OnPlaceOnParentNotify;
+end;
+
+{ TvDlg }
+
+constructor TvDlg.Create(AOwner: TComponent);
+begin
+  inherited;
+
+  FActionList := TActionList.Create(Self);
+  FActionList.Name := '_ActionList_';
+  FCloseAction := TACtion.Create(FActionList);
+  FCloseAction.ShortCut := TextToShortCut('Esc');
+  FCloseAction.OnExecute := OnCloseActionExecute;
+  FCloseAction.ActionList := FActionList;
+end;
+
+procedure TvDlg.OnCloseActionExecute(Sender: TObject);
+begin
+  Close;
 end;
 
 initialization

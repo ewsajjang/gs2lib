@@ -7,6 +7,7 @@ uses
 
 function BytesToHexStr(const AValue: TBytes): String; overload;
 function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
+function BytesToStr(const AValue: TBytes): String;
 function AnsiBytesToStr(const AValue: TBytes): String; overload;
 function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
 
@@ -25,7 +26,7 @@ function EmailValidate(const Value: String): Boolean;
 implementation
 
 uses
-  System.TypInfo, System.RegularExpressions
+  System.TypInfo, System.RegularExpressions, System.Math
   ;
 
 function MinimumCount(const ADividend, ADivisor: Integer): Integer;
@@ -54,6 +55,18 @@ begin
   Result := EmptyStr;
   for i := StrIdx to StrIdx + ALength - 1 do
     Result := Result + Format('%.2x', [AValue[i]]);
+end;
+
+function BytesToStr(const AValue: TBytes): String;
+var
+  i: Integer;
+begin
+  Result := EmptyStr;
+  for i := 0 to Length(AValue) - 1 do
+    if InRange(AValue[i], $21, $7E) then
+      Result := Result + Chr(AValue[i])
+    else
+      Result := Result + '.'
 end;
 
 procedure HexStrToBytes(const Source: String; var Dest: TBytes);
