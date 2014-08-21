@@ -131,11 +131,6 @@ end;
 
 destructor TMsgRouter<TID>.Destroy;
 begin
-  if FValue.IsObject then
-    FValue.AsObject.Free;
-  if FValue2.IsObject then
-    FValue2.AsObject.Free;
-
   FreeAndNil(FNotifyAfters);
   FreeAndNil(FExcuteAfters);
   FreeAndNil(FGenericAfters);
