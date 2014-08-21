@@ -37,9 +37,12 @@ type
     function KeysExists(const AKeys: array of String): Boolean; overload;
     function KeyExists(const AKey: String): Boolean; overload;
 
-    function O(const AName: String; AObj: TObject): Integer; overload;
+    function O(const AName: String; const AObj: TObject): Integer; overload;
+    function OSwap(const AName: String; const AObj: TObject; AFree: Boolean = True): Integer;
     function O<T: Class>(const AName: String): T; overload;
     function O<T: Class>(const AIdx: Integer): T; overload;
+    function OExtract<T: Class>(const AName: String): T; overload;
+    function OExtract<T: Class>(const AIdx: Integer): T; overload;
 
     property S[Name: String]: String read GetS write SetS;
     property I[Name: String]: Integer read GetI write SetI;
@@ -156,7 +159,7 @@ begin
     Result := Result + Strings[i];
 end;
 
-function TStringListHelper.O(const AName: String; AObj: TObject): Integer;
+function TStringListHelper.O(const AName: String; const AObj: TObject): Integer;
 begin
   Result := AddObject(AName, AObj);
 end;
@@ -164,6 +167,32 @@ end;
 function TStringListHelper.O<T>(const AIdx: Integer): T;
 begin
   Result := Self.Objects[AIdx] as T
+end;
+
+function TStringListHelper.OExtract<T>(const AName: String): T;
+var
+  LIdx: Integer;
+begin
+  LIdx := IndexOf(AName);
+  Result := O<T>(AName);
+  Delete(LIdx);
+end;
+
+function TStringListHelper.OExtract<T>(const AIdx: Integer): T;
+begin
+  Result := O<T>(AIdx);
+  Delete(AIdx);
+end;
+
+function TStringListHelper.OSwap(const AName: String; const AObj: TObject;
+  AFree: Boolean): Integer;
+var
+  LIdx: Integer;
+begin
+  LIdx := IndexOf(AName);
+  if LIdx > VAL_NOT_ASSIGNED then
+    Delete(LIdx);
+  Result := AddObject(AName, AObj);
 end;
 
 function TStringListHelper.O<T>(const AName: String): T;
@@ -248,7 +277,7 @@ var
   LIdx: Integer;
 begin
   LIdx := IndexOf(AValue);
-  if LIdx > -1 then
+  if LIdx > VAL_NOT_ASSIGNED then
     Delete(LIdx);
 end;
 
