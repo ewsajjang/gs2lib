@@ -15,18 +15,23 @@ type
   public
     procedure AddFmt(const AStr: String; const Arg: array of const);
     procedure IndexBy(const AValue: String);
+    procedure IndexByContainStr(const AValue: String);
+    function IndexOfContainStr(const AValue: String): Integer;
     procedure ContainsBy(const AValue: String);
     function ItemSelected: Boolean;
     function ItemCount: Integer;
     function ItemObj<T: class>: T;
-    property ItemStr: String read GetSelectedStr write SetSelectedStr;
     procedure DropdownListAutoWidth;
     procedure ClearItemsObjects;
+
+
+    property ItemStr: String read GetSelectedStr write SetSelectedStr;
   end;
 
 implementation
 
 uses
+	mconsts,
   Winapi.Windows, Winapi.Messages;
 
 { TComboBoxHelper }
@@ -114,6 +119,24 @@ begin
 
   if not LSuccess then
     ItemIndex := -1;
+end;
+
+procedure TComboBoxHelper.IndexByContainStr(const AValue: String);
+begin
+	ItemIndex := IndexOfContainStr(AValue);
+end;
+
+function TComboBoxHelper.IndexOfContainStr(const AValue: String): Integer;
+var
+  i: Integer;
+begin
+	Result := VAL_NOT_ASSIGNED;
+  for i := 0 to ItemCount -1 do
+    if Items[i].Contains(AValue) then
+    begin
+      Result := i;
+      Break;
+    end;
 end;
 
 function TComboBoxHelper.ItemCount: Integer;
