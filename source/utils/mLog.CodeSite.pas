@@ -42,6 +42,7 @@ type
     procedure Msg(const APacket: TBytes); override;
     procedure Msg(const AMsg: String; const APacket: TBytes); override;
     procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes); override;
+    procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes; const ASize: Int64); override;
     procedure Msg(const AErCondition: Boolean; const AMsg: String); override;
 
     procedure Error(const AMsg: String); override;
@@ -116,7 +117,10 @@ begin
 {$ENDIF}
   FCodeSiteDest.LogFile.Active := False;
   CodeSite.Destination := FCodeSiteDest;
-  CodeSite.Clear;
+  //CodeSite.Clear;
+
+
+
 end;
 
 destructor TLogCodeSite.Destroy;
@@ -181,6 +185,12 @@ begin
     CodeSite.SendMsg(cmsSuccess, AMsg)
   else
     CodeSite.SendMsg(csmMsgError, AMsg);
+end;
+
+procedure TLogCodeSite.Msg(const AMsg: String; const Args: array of const;
+  const APacket: TBytes; const ASize: Int64);
+begin
+  CodeSite.Send('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket, 0, ASize)]);
 end;
 
 procedure TLogCodeSite.Msg(const AMsg: String; const APacket: TBytes);
