@@ -3,6 +3,7 @@ unit mdorm;
 interface
 
 uses
+	mConsts,
   dorm,
   dorm.Mappings,
   dorm.Commons,
@@ -13,6 +14,18 @@ uses
 
 const
   SQLITE_BOOL: array[False..True] of Integer = (0, 1);
+
+type
+	TSQLiteBoolStr = (sbNull, sbFalse, sbTrue);
+  TSQLiteBoolStrHelper = record helper for TSQLiteBoolStr
+  	class function New(const AValue: String): TSQLiteBoolStr; overload; static;
+  	class function New(const AFalseCondition, ATrueCondition: Boolean): TSQLiteBoolStr; overload; static;
+    function Str: String;
+  end;
+const
+  SQLITE_BSTR: array[sbNull .. sbTrue] of String = ('', FALSE_STR, TRUE_STR);
+
+const
   SQLITE_IDX_START        = 1;
   SQLITE_IDX_NOT_ASSIGNED = 0;
 
@@ -44,6 +57,7 @@ type
     procedure IndexAppend(const ADBName, AIdxName, ATableName, AColName: String; AUnique: Boolean = False; AAsc: Boolean = True);
     procedure LogFileDelete(AFileName: String = '');
   public
+  	procedure Persist(AValue: TDBModel);
     procedure Update(AValue: TDBModel);
     procedure Delete(AValue: TDBModel);
     procedure Insert(AValue: TDBModel);
@@ -58,7 +72,7 @@ implementation
 
 uses
   mSQLiteUtils, mParams,
-  System.IOUtils;
+  System.IOUtils, System.TypInfo, System.Types;
 
 { Tmdorm }
 
@@ -141,16 +155,14 @@ begin
 end;
 
 procedure Tmdorm.LogFileDelete(AFileName: String);
-//const
-//  LOG_FILE_NAME = 'GlucoNaviiDMS_dormFileLog.log';
 var
-  LFileName: String;
+  LFiles: TStringDynArray;
+  LFile: String;
 begin
-  if AFileName.IsEmpty then
-    LFileName := TParams.ExePath + TPath.GetFileNameWithoutExtension(TParams.ExeName) + '_dormFileLog.log';
-
-  if FileExists(LFileName) then
-    TFile.Delete(LFileName);
+  LFiles := TDirectory.GetFiles(TParams.ExePath, '*.log', TSearchOption.soTopDirectoryOnly);
+  for LFile in LFiles do
+    if FileExists(LFile) then
+      TFile.Delete(LFile);
 end;
 
 procedure Tmdorm.Open;
@@ -166,6 +178,16 @@ begin
       {$ENDIF}
     );
   FSession.StartTransaction;
+end;
+
+procedure Tmdorm.Persist(AValue: TDBModel);
+begin
+  Open;
+  try
+    FSession.Persist(AValue);
+  finally
+    Close;
+  end;
 end;
 
 procedure Tmdorm.Update(AValue: TDBModel);
@@ -187,6 +209,37 @@ begin
   finally
     Close;
   end;
+end;
+
+{ TSQLiteBoolStrHelper }
+
+class function TSQLiteBoolStrHelper.New(const AValue: String): TSQLiteBoolStr;
+var
+	LItem: TSqliteBoolStr;
+begin
+	Result := sbNull;
+	for LItem := Low(TSqliteBoolStr) to High(TSqliteBoolStr) do
+  	if LItem.Str.Contains(AValue) then
+    begin
+      Result := LItem;
+      Break;
+    end;
+end;
+
+class function TSQLiteBoolStrHelper.New(const AFalseCondition,
+  ATrueCondition: Boolean): TSQLiteBoolStr;
+begin
+	if not AFalseCondition and not ATrueCondition then
+  	Result := sbNull
+  else if ATrueCondition then
+  	Result := sbTrue
+  else
+  	Result := sbFalse
+end;
+
+function TSQLiteBoolStrHelper.Str: String;
+begin
+	Result := SQLITE_BSTR[Self];
 end;
 
 end.
