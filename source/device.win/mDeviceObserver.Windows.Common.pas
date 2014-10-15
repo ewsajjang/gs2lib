@@ -114,8 +114,17 @@ type
 
   TDeviceTypeHelper = record helper for TDeviceType
     function Equals(const AValue: TDeviceType): Boolean;
-    function ToString: String;
+    function Str: String;
     function GUID: TGUID;
+    class function Create(const AValue: String): TDeviceType; static;
+  end;
+
+  TDvcDirection = (ddArrived, ddRemoved);
+  EDvcDirectionHelperCreate = class(Exception);
+  TDvcDirectionHelper = record Helper for TDvcDirection
+    function Str: String;
+    function Equal(const AValue: TDvcDirection): Boolean;
+    class function Create(const AValue: String): TDvcDirection; static;
   end;
 
   TDbDiTo = record
@@ -124,7 +133,8 @@ type
     class function DeviceType(const Value: PDEV_BROADCAST_DEVICEINTERFACE): TDeviceType; static;
     class function DeviceDesc(const Value: PDEV_BROADCAST_DEVICEINTERFACE): String; static;
     class function FriendlyName(const Value: PDEV_BROADCAST_DEVICEINTERFACE): String; static;
-    class function Infos(const Value: PDEV_BROADCAST_DEVICEINTERFACE): TStringList; static;
+    class function Infos(const Value: PDEV_BROADCAST_DEVICEINTERFACE): TStringList; overload; static;
+    class function Infos(const ADirection: TDvcDirection; const Value: PDEV_BROADCAST_DEVICEINTERFACE): TStringList; overload; static;
   end;
 
 function FriendlyNameToComport(const AFirendlyName: String): String;
@@ -138,7 +148,7 @@ function UnRegDeviceNotification(const AHandle: PHandle): Boolean;
 implementation
 
 uses
-  System.RegularExpressions,
+  System.RegularExpressions, mConsts,
   mUtils.Windows, mStringListHelper;
 
 function FriendlyNameToComport(const AFirendlyName: String): String;
@@ -300,13 +310,20 @@ begin
     Result := ReadRegNameString(HKEY_LOCAL_MACHINE, Value.dbcc_nameToRegPath, REG_NAME_FRIENDLY_NAME);
 end;
 
+class function TDbDiTo.Infos(const ADirection: TDvcDirection;
+  const Value: PDEV_BROADCAST_DEVICEINTERFACE): TStringList;
+begin
+  Result := Infos(Value);
+  Result.S['Direction'] := ADirection.Str;
+end;
+
 class function TDbDiTo.Infos(
   const Value: PDEV_BROADCAST_DEVICEINTERFACE): TStringList;
 begin
   Result := TStringList.Create;
 
   Result.GUID['classguid'] := Value.dbcc_classguid;
-  Result.S['DeviceType'] :=   DeviceType(Value).ToString;
+  Result.S['DeviceType'] :=   DeviceType(Value).Str;
   Result.S['DeviceDesc'] :=   DeviceDesc(Value);
   Result.S['FriendlyName'] := FriendlyName(Value);
   Result.S['Comport'] := FriendlyNameToComport(Result.S['FriendlyName'])
@@ -319,6 +336,14 @@ begin
   Result := Self = AValue;
 end;
 
+class function TDeviceTypeHelper.Create(const AValue: String): TDeviceType;
+begin
+  Result := dtNone;
+  for Result := Low(TDeviceType) to High(TDeviceType) do
+    if Result.Str.ToLower.Equals(AValue.ToLower) then
+      Break;
+end;
+
 function TDeviceTypeHelper.GUID: TGUID;
 begin
   case Self of
@@ -328,9 +353,36 @@ begin
   end;
 end;
 
-function TDeviceTypeHelper.ToString: String;
+function TDeviceTypeHelper.Str: String;
 begin
   Result := GetEnumName(TypeInfo(TDeviceType), Integer(Self));
+end;
+
+{ TDvcDirectionHelper }
+
+class function TDvcDirectionHelper.Create(const AValue: String): TDvcDirection;
+var
+  LResult: Integer;
+begin
+  LResult := VAL_NOT_ASSIGNED;
+  for Result := Low(TDvcDirection) to High(TDvcDirection) do
+    if Result.Str.ToLower.Equals(AValue.ToLower) then
+    begin
+      LResult := Integer(Result);
+      Break;
+    end;
+  if LResult = VAL_NOT_ASSIGNED then
+    raise EDvcDirectionHelperCreate.CreateFmt('%s is Can''t matched to TDvcDirection', [AValue]);
+end;
+
+function TDvcDirectionHelper.Equal(const AValue: TDvcDirection): Boolean;
+begin
+  Result := Self = AValue;
+end;
+
+function TDvcDirectionHelper.Str: String;
+begin
+  Result := GetEnumName(TypeInfo(TDvcDirection), Integer(Self));
 end;
 
 end.
