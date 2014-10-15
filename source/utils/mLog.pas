@@ -35,6 +35,7 @@ type
     procedure Msg(const AMsg: String; const Args: array of const); overload;
     procedure Msg(const APacket: TBytes); overload;
     procedure Msg(const AMsg: String; const APacket: TBytes); overload;
+    procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes; const ASize: Int64); overload;
     procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
     procedure Msg(const AErCondition: Boolean; const AMsg: String); overload;
     procedure Msg(const AErCondition: Boolean; const AMsg: String; const Args: array of const); overload;
@@ -78,6 +79,7 @@ type
     procedure Msg(const AMsg: String; const Args: array of const); overload;
     procedure Msg(const APacket: TBytes); overload; virtual; abstract;
     procedure Msg(const AMsg: String; const APacket: TBytes); overload; virtual; abstract;
+    procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes; const ASize: Int64); overload; virtual; abstract;
     procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes); overload; virtual; abstract;
 
     procedure Msg(const AErCondition: Boolean; const AMsg: String); overload; virtual; abstract;
