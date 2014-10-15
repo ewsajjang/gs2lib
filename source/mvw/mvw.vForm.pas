@@ -26,10 +26,16 @@ type
     function FindTargetWinControl(const AName: String): TWinControl;
   public
     class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl);
+
+    constructor Create(AOwner: TComponent); override;
+
     procedure PlaceOnParent(const ATarget: TWinControl = nil); overload;
     procedure PlaceOnParent(const AParent: TvForm); overload;
     procedure PlaceOnParent(const AParent: TvFormClass); overload;
     procedure PlaceOnParent(const AParent: String); overload;
+    procedure ComponentsEnum<T: class>(AProc: TProc<T, String>);
+    procedure ControlsEnum<T: class>(const AContainer: TWinControl; AProc: TProc<T, String>); overload;
+    procedure ControlsEnum(const AContainer: TWinControl; AProc: TProc<TControl, String>); overload;
 
     function ExistsForms(const AvFormName: String): Boolean; overload;
     function ExistsForms(const AvFormClass: TvFormClass): Boolean; overload;
@@ -45,8 +51,6 @@ type
   protected
     function Query<Tv: class>: TvForm;
   public
-    constructor Create(AOwner: TComponent); override;
-
     property vm: Tvm read Getvm;
   end;
 
@@ -76,19 +80,6 @@ uses
   ;
 
 { Tv<Tvm> }
-
-constructor Tv<Tvm>.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-
-  FDic.AddOrSetValue(Self.ClassName, Self);
-
-  DoubleBuffered := True;
-
-  Scaled := False;
-
-  TabOrderAlign;
-end;
 
 function Tv<Tvm>.Getvm: Tvm;
 begin
@@ -124,6 +115,56 @@ end;
 function TvForm.ExistsForms(const AvFormName: String): Boolean;
 begin
   Result := FDic.ContainsKey(AvFormName);
+end;
+
+procedure TvForm.ComponentsEnum<T>(AProc: TProc<T, String>);
+var
+	i: Integer;
+begin
+	for i := 0 to ComponentCount -1 do
+  	if Components[i] is T then
+    	if Assigned(AProc) then
+      	AProc(Components[i] as T, Components[i].Name);
+end;
+
+procedure TvForm.ControlsEnum(const AContainer: TWinControl;
+  AProc: TProc<TControl, String>);
+var
+	i: Integer;
+begin
+	for i := 0 to AContainer.ControlCount -1 do
+  begin
+    if Assigned(AProc) then
+      AProc(AContainer.Controls[i], AContainer.Controls[i].Name);
+    if AContainer.Controls[i] is TWinControl then
+      ControlsEnum(TWinControl(AContainer.Controls[i]), AProc);
+  end;
+end;
+
+procedure TvForm.ControlsEnum<T>(const AContainer: TWinControl;
+	AProc: TProc<T, String>);
+var
+	i: Integer;
+begin
+	for i := 0 to AContainer.ControlCount -1 do
+  	if AContainer.Controls[i] is T then
+    begin
+    	if Assigned(AProc) then
+      	AProc(AContainer.Controls[i] as T, AContainer.Controls[i].Name);
+    end
+    else if AContainer.Controls[i] is TWinControl then
+    	ControlsEnum<T>(TWinControl(AContainer.Controls[i]), AProc);
+end;
+
+constructor TvForm.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+
+  DoubleBuffered := True;
+  Scaled := False;
+  TabOrderAlign;
+
+  FDic.AddOrSetValue(Self.ClassName, Self);
 end;
 
 function TvForm.ExistsForms(const AvFormClass: TvFormClass): Boolean;
