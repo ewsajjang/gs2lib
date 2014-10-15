@@ -37,7 +37,7 @@ type
     function KeysExists(const AKeys: array of String): Boolean; overload;
     function KeyExists(const AKey: String): Boolean; overload;
 
-    function O(const AName: String; const AObj: TObject): Integer; overload;
+    function O(const AName: String; AObj: TObject): Integer; overload;
     function OSwap(const AName: String; const AObj: TObject; AFree: Boolean = True): Integer;
     function O<T: Class>(const AName: String): T; overload;
     function O<T: Class>(const AIdx: Integer): T; overload;
@@ -159,7 +159,7 @@ begin
     Result := Result + Strings[i];
 end;
 
-function TStringListHelper.O(const AName: String; const AObj: TObject): Integer;
+function TStringListHelper.O(const AName: String; AObj: TObject): Integer;
 begin
   Result := AddObject(AName, AObj);
 end;
@@ -189,7 +189,7 @@ function TStringListHelper.OSwap(const AName: String; const AObj: TObject;
 var
   LIdx: Integer;
 begin
-  LIdx := IndexOf(AName);
+  LIdx := IndexOfName(AName);
   if LIdx > VAL_NOT_ASSIGNED then
     Delete(LIdx);
   Result := AddObject(AName, AObj);
@@ -277,7 +277,7 @@ var
   LIdx: Integer;
 begin
   LIdx := IndexOf(AValue);
-  if LIdx > VAL_NOT_ASSIGNED then
+  if LIdx > -1 then
     Delete(LIdx);
 end;
 
