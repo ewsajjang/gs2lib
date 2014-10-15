@@ -3,6 +3,7 @@ unit mUtils.Windows.Printer;
 interface
 
 uses
+	Vcl.Printers,
   Winapi.WinSpool, Winapi.Windows;
 
 type
@@ -27,10 +28,28 @@ type
     class procedure DocumentPropertiesOpen(APrinterIdx: Integer = -1);
   end;
 
+  TPrinterHelper = class helper for TPrinter
+  private
+    function GetCounter: Integer;
+    function GetNames(Index: Integer): String;
+    function GetReadableNames(Index: Integer): String;
+    function GetDefaultName: String;
+    function GetDefaultIndex: Integer;
+  public
+  	function IdxOfName(const APrinterName: String): Integer;
+
+    property DefaultIndex: Integer read GetDefaultIndex;
+    property DefaultName: String read GetDefaultName;
+  	property Count: Integer read GetCounter;
+    property Names[Index: Integer]: String read GetNames;
+    property ReadableNames[Index: Integer]: String read GetReadableNames;
+  end;
+
 implementation
 
 uses
-  Vcl.Printers, Winapi.ShlObj, Vcl.Forms;
+	mConsts,
+  Winapi.ShlObj, Vcl.Forms, System.SysUtils;
 
 { TPrinterPropertiesDlg }
 
@@ -94,7 +113,48 @@ begin
     end;
 end;
 
+var
+	FDefaultPrinterIdx: Integer = VAL_NOT_ASSIGNED;
+
+{ TPrinter }
+
+function TPrinterHelper.GetCounter: Integer;
+begin
+	Result := Printers.Count;
+end;
+
+function TPrinterHelper.GetDefaultIndex: Integer;
+begin
+	Result := FDefaultPrinterIdx;
+end;
+
+function TPrinterHelper.GetDefaultName: String;
+begin
+	Result := Printers[FDefaultPrinterIdx];
+end;
+
+function TPrinterHelper.GetNames(Index: Integer): String;
+begin
+	Result := Printers[Index];
+end;
+
+function TPrinterHelper.IdxOfName(const APrinterName: String): Integer;
+var
+  i: Integer;
+begin
+	Result := VAL_NOT_ASSIGNED;
+  for i := 0 to Count -1 do
+		if ReadableNames[i].Contains(APrinterName) then
+    	Result := i;
+end;
+
+function TPrinterHelper.GetReadableNames(Index: Integer): String;
+begin
+	Result := Printers[Index].Replace('&', EmptyStr, [rfReplaceAll])
+end;
+
 initialization
+	FDefaultPrinterIdx := Printer.PrinterIndex;
 
 finalization
 
