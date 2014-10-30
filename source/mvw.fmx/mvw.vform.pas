@@ -14,7 +14,7 @@ type
   TFmxObjectEnumProc = reference to procedure(ACtrl: TFmxObject; ACtrlName: String);
   TvForm = class(TForm)
   private class var
-    FForms: TDictionary<String, TvForm>;
+    FDic: TDictionary<String, TvForm>;
   private
     function GetVCnt: Integer;
     function GetVName(AClassName: String): TvForm;
@@ -34,7 +34,20 @@ type
     property vNames[AClassName: String]: TvForm read GetVName;
   end;
 
+  Tv<Tvm: class> = class(TvForm)
+  private
+    function Getvm: Tvm;
+  protected
+    function Query<Tv: class>: TvForm;
+  public
+    property vm: Tvm read Getvm;
+  end;
+
 implementation
+
+uses
+  mvw.Services
+  ;
 
 { TvForm }
 
@@ -69,28 +82,28 @@ constructor TvForm.Create(AOwner: TComponent);
 begin
   inherited;
 
-  if not Assigned(FForms) then
-    FForms := TDictionary<String, TvForm>.Create;
-  FForms.Add(ClassName, Self);
+  if not Assigned(FDic) then
+    FDic := TDictionary<String, TvForm>.Create;
+  FDic.Add(ClassName, Self);
 end;
 
 destructor TvForm.Destroy;
 begin
-  FForms.Remove(ClassName);
-  if FForms.Count = 0 then
-    FreeAndNil(FForms);
+  FDic.Remove(ClassName);
+  if FDic.Count = 0 then
+    FreeAndNil(FDic);
 
   inherited;
 end;
 
 function TvForm.GetVCnt: Integer;
 begin
-  Result := FForms.Count;
+  Result := FDic.Count;
 end;
 
 function TvForm.GetVName(AClassName: String): TvForm;
 begin
-  if not FForms.TryGetValue(AClassName, Result) then
+  if not FDic.TryGetValue(AClassName, Result) then
     Result := nil;
 end;
 
@@ -108,7 +121,19 @@ end;
 
 function TvForm.vExists(const AClassName: String): Boolean;
 begin
-  Result := FForms.ContainsKey(AClassName)
+  Result := FDic.ContainsKey(AClassName)
+end;
+
+{ Tv<Tvm> }
+
+function Tv<Tvm>.Getvm: Tvm;
+begin
+  Result := vmList.Get<Tvm>;
+end;
+
+function Tv<Tvm>.Query<Tv>: TvForm;
+begin
+  Result := FDic.Items[Tv.ClassName];
 end;
 
 end.
