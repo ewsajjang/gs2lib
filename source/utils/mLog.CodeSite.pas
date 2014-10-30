@@ -43,7 +43,7 @@ type
     procedure Msg(const AMsg: String; const APacket: TBytes); override;
     procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes); override;
     procedure Msg(const AMsg: String; const Args: array of const; const APacket: TBytes; const ASize: Int64); override;
-    procedure Msg(const AErCondition: Boolean; const AMsg: String); override;
+    function Msg(const AErCondition: Boolean; const AMsg: String): Boolean; override;
 
     procedure Error(const AMsg: String); override;
     procedure Error(const AMsg: String; const APacket: TBytes); override;
@@ -179,8 +179,9 @@ begin
   CodeSite.Send(csmError, Format(AMsg, Args), Sender);
 end;
 
-procedure TLogCodeSite.Msg(const AErCondition: Boolean; const AMsg: String);
+function TLogCodeSite.Msg(const AErCondition: Boolean; const AMsg: String): Boolean;
 begin
+  Result := AErCondition;
   if AErCondition then
     CodeSite.SendMsg(cmsSuccess, AMsg)
   else
