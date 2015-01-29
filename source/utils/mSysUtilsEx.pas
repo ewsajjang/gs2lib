@@ -6,6 +6,7 @@ uses
   System.SysUtils, System.Types;
 
 function BytesToHexStr(const AValue: TBytes): String; overload;
+function BytesToHexStr(const AValue: array of Byte): String; overload;
 function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
 function BytesToStr(const AValue: TBytes): String;
 function AnsiBytesToStr(const AValue: TBytes): String; overload;
@@ -40,6 +41,15 @@ begin
 end;
 
 function BytesToHexStr(const AValue: TBytes): String; overload;
+var
+  i: Integer;
+begin
+  Result := EmptyStr;
+  for i := 0 to Length(AValue) - 1 do
+    Result := Result + Format('%.2x', [AValue[i]]);
+end;
+
+function BytesToHexStr(const AValue: array of Byte): String; overload;
 var
   i: Integer;
 begin
