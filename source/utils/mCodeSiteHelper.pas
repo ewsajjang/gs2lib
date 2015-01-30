@@ -4,13 +4,14 @@ interface
 
 uses
   CodeSiteLogging,
-  System.SysUtils
+  System.Classes, System.SysUtils
   ;
 
 type
   TCodeSiteLoggerHelper = class helper for TCodeSiteLogger
     procedure Send(Expression: Boolean; Msg: String); overload;
     procedure Send(Expression: Boolean; Fmt: String; Args: array of const); overload;
+    procedure Send(Fmt: String; Args: array of const; List: TStrings); overload;
 
     procedure Send(const APacket: TBytes); overload;
     procedure Send(const AMsg: String; const APacket: TBytes); overload;
@@ -62,6 +63,12 @@ begin
     CodeSite.Send(Format(AMsg, Args), BytesToHexStr(APacket))
   else
     CodeSite.SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
+end;
+
+procedure TCodeSiteLoggerHelper.Send(Fmt: String; Args: array of const;
+  List: TStrings);
+begin
+  CodeSite.Send(Format(Fmt, Args), List);
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String;
