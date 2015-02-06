@@ -1,69 +1,64 @@
-unit mIdSimpleServerThread;
+unit mIdSimpleServer.Thread;
 
 interface
 
 uses
+  mIdSimpleServer,
+
   IdGlobal, IdTCPConnection, IdSimpleServer, IdExceptionCore, IdException,
-  IdStack,
+  IdStack, IdSync,
+
   System.Classes, System.SysUtils,
   System.Generics.Collections, System.SyncObjs
   ;
 
 type
-  TIdSimpleServerEx = class(TIdSimpleServer)
-  private
-    FOnListen: TProc;
-    FOnEndListen: TProc;
-  public
-    procedure EndListen; override;
-    procedure Listen(ATimeout: Integer = IdTimeoutDefault); override;
-
-    property Aborted: Boolean read FAbortedRequested;
-
-    property OnListen: TProc read FOnListen write FOnListen;
-    property OnEndListen: TProc read FOnEndListen write FOnEndListen;
-  end;
-
-  TSvrStatus = (ssEndListen, ssListenDisconnected, ssListenConnected);
-  TSvrStatusHelper = record helper for TSvrStatus
-    function Str: String;
-  end;
-
   TIdSimpleSvrTh = class(TThread)
+  private const
+    NAME_PORT = 'PORT';
+    NAME_LOCAL_IP = 'LocalIP';
+    NAME_CLIENT_TIMEOUT = 'ClientTimeOut';
+    NAME_CLIENT_CONNECTED = 'ClientConnected';
+    SEC = 1000;
   private
-    FLock: TIdCriticalSection;
     FSvr: TIdSimpleServerEx;
+    FServerInfos: TStringList;
     FClientInfos: TStringList;
     procedure OnBeforeBind(Sender: TObject);
     procedure OnAfterBind(Sender: TObject);
     procedure OnSvrDisconnected(Sender: TObject);
+    procedure DoListen;
+    procedure DoClientConnected;
+    procedure DoClientDisconnect;
+    function CheckForDataOnSource(const ATimeOut: Integer): Boolean;
+    function WaitQueuePopupItem(var AItem: TBytesStream): Boolean;
   private
-    FClientConnected: Boolean;
-    FQueue: TThreadedQueue<TStream>;
+    FQueue: TThreadedQueue<TBytesStream>;
     FOnData: TProc<TIdBytes>;
     FOnError: TProc<Integer>;
-    FPort: Integer;
     FOnEndListen: TProc<TSvrStatus>;
-    FOnListen: TProc<TSvrStatus, String>;
+    FOnListen: TProc<TSvrStatus, TStringList>;
     FOnConnected: TProc<TSvrStatus, TStringList>;
     FOnDisconnected: TProc<TSvrStatus, TStringList>;
-    FClientTimeout: Integer;
-    procedure DoClientConnected;
+    function GetClientTimeout: Integer;
+    function GetPort: Integer;
+    function GetLocalIP: String;
   protected
     procedure TerminatedSet; override;
     procedure Execute; override;
   public
-    constructor Create; reintroduce;
+    constructor Create(const APort: Integer = 65501; const AClientTimeout: Integer = 15 * SEC); reintroduce;
     destructor Destroy; override;
 
     procedure Abort;
     procedure Send(const ABytes: TBytes);
 
-    property ClientTimeout: Integer read FClientTimeout write FClientTimeout;
-    property Port: Integer read FPort write FPort default 65501;
+    property ClientTimeout: Integer read GetClientTimeout default 15 * SEC;
+    property Port: Integer read GetPort default 65501;
+    property LocalIP: String read GetLocalIP;
 
     property OnData: TProc<TIdBytes> read FOnData write FOnData;
-    property OnListen: TProc<TSvrStatus, String> read FOnListen write FOnListen;
+    property OnListen: TProc<TSvrStatus, TStringList> read FOnListen write FOnListen;
     property OnEndListen: TProc<TSvrStatus> read FOnEndListen write FOnEndListen;
     property OnConnected: TProc<TSvrStatus, TStringList> read FOnConnected write FOnConnected;
     property OnDisconnected: TProc<TSvrStatus, TStringList> read FOnDisconnected write FOnDisconnected;
@@ -73,38 +68,9 @@ type
 implementation
 
 uses
-  CodeSiteLogging, mCodeSiteHelper, mStringListHelper, System.TypInfo
+  CodeSiteLogging, mCodeSiteHelper, mStringListHelper, System.TypInfo,
+  mSysUtilsEx, mDateTimeHelper, System.DateUtils
   ;
-
-{ TIdSimpleServerEx }
-
-procedure TIdSimpleServerEx.EndListen;
-var
-  LIsListen: Boolean;
-begin
-  LIsListen := FListening;
-
-  inherited EndListen;
-
-  if LIsListen then
-    if Assigned(FOnEndListen) then
-      FOnEndListen;
-end;
-
-procedure TIdSimpleServerEx.Listen(ATimeout: Integer);
-begin
-  if Assigned(FOnListen) then
-    FOnListen;
-
-  inherited Listen(ATimeOut);
-end;
-
-{ TSvrStatusHelper }
-
-function TSvrStatusHelper.Str: String;
-begin
-  Result := GetEnumName(TypeInfo(TSvrStatus), Integer(Self));
-end;
 
 { TIdSimpleSvrTh }
 
@@ -120,15 +86,10 @@ end;
 
 procedure TIdSimpleSvrTh.OnSvrDisconnected(Sender: TObject);
 begin
-  FClientConnected := False;
+  FServerInfos.B[NAME_CLIENT_CONNECTED] := False;
   CodeSite.Send('Client Disconnected');
-  FLock.Enter;
-  try
     if Assigned(FOnDisconnected) then
       FOnDisconnected(ssListenDisconnected, FClientInfos);
-  finally
-    FLock.Leave;
-  end;
   FClientInfos.Clear;
 end;
 
@@ -142,58 +103,55 @@ begin
     end;
 end;
 
-constructor TIdSimpleSvrTh.Create;
-const
-  SEC = 1000;
+function TIdSimpleSvrTh.CheckForDataOnSource(const ATimeOut: Integer): Boolean;
+var
+  LStart: TDateTime;
+begin
+  Result := False;
+  LStart := Now;
+  while (LStart.MilliSecondsBetween(Now) < ATimeOut) and not Terminated do
+  begin
+    Result := FSvr.IOHandler.CheckForDataOnSource(3);
+    if Result then
+      Break;
+  end;
+end;
+
+constructor TIdSimpleSvrTh.Create(const APort: Integer; const AClientTimeout: Integer);
 begin
   inherited Create(True);
 
   FreeOnTerminate := False;
 
-  FLock := TIdCriticalSection.Create;
-
   FClientInfos := TStringList.Create;
 
-  FPort := 65501;
-  FClientTimeOut := 15 * SEC;
+  FServerInfos := TStringList.Create;
+  FServerInfos.I[NAME_PORT] := APort;
+  FServerInfos.I[NAME_CLIENT_TIMEOUT] := AClientTimeout;
+  FServerInfos.B[NAME_CLIENT_CONNECTED] := False;
+  TIdStack.IncUsage;
+  try
+    FServerInfos.S[NAME_LOCAL_IP] := GStack.LocalAddress
+  finally
+    TIdStack.DecUsage;
+  end;
+
+  FQueue := TThreadedQueue<TBytesStream>.Create;
+
   FSvr := TIdSimpleServerEx.Create(nil);
   FSvr.OnBeforeBind := OnBeforeBind;
   FSvr.OnAfterBind := OnAfterBind;
   FSvr.OnDisconnected := OnSvrDisconnected;
   FSvr.OnListen := procedure
-  var
-    LIPAddr: String;
   begin
-    CodeSite.Send('OnListen');
-    TIdStack.IncUsage;
-    try
-      LIPAddr := GStack.LocalAddress
-    finally
-      TIdStack.DecUsage;
-    end;
-    FLock.Enter;
-    try
-      if Assigned(FOnListen) then
-        FOnListen(ssListenDisconnected, LIPAddr + ':' + FPort.ToString);
-    finally
-      FLock.Leave;
-    end;
+    TIdNotify.NotifyMethod(DoListen);
   end;
   FSvr.OnEndListen := procedure
   begin
     CodeSite.Send('OnEndListen');
-    FLock.Enter;
-    try
       if Assigned(FOnEndListen) then
         FOnEndListen(ssEndListen);
-    finally
-      FLock.Leave;
-    end;
   end;
-
-  FQueue := TThreadedQueue<TStream>.Create;
-
-  FClientConnected := False;
 end;
 
 destructor TIdSimpleSvrTh.Destroy;
@@ -202,21 +160,29 @@ begin
     FQueue.DoShutDown;
   FreeAndNil(FQueue);
   FreeAndNil(FSvr);
+  FreeAndNil(FServerInfos);
   FreeAndNil(FClientInfos);
-  FreeAndNil(FLock);
 
   inherited;
 end;
 
 procedure TIdSimpleSvrTh.DoClientConnected;
 begin
-  FLock.Enter;
-  try
-    if Assigned(FOnConnected) then
-      FOnConnected(ssListenConnected, FClientInfos);
-  finally
-    FLock.Leave;
-  end;
+  if Assigned(FOnConnected) then
+    FOnConnected(ssListenConnected, FClientInfos);
+end;
+
+procedure TIdSimpleSvrTh.DoClientDisconnect;
+begin
+  if Assigned(FOnDisconnected) then
+    FOnDisconnected(ssListenDisconnected, FClientInfos);
+end;
+
+procedure TIdSimpleSvrTh.DoListen;
+begin
+  CodeSite.Send('OnListen');
+  if Assigned(FOnListen) then
+    FOnListen(ssListenDisconnected, FServerInfos);
 end;
 
 procedure TIdSimpleSvrTh.TerminatedSet;
@@ -229,71 +195,90 @@ begin
       FSVr.IOHandler.Close;
 end;
 
+function TIdSimpleSvrTh.WaitQueuePopupItem(var AItem: TBytesStream): Boolean;
+var
+  LStart: TDateTime;
+begin
+  Result := False;
+  LStart := Now;
+  while (LStart.MinutesBetween(Now) < SEC) and not Terminated do
+  begin
+    Result := FQueue.QueueSize > 0;
+    if Result then
+    begin
+      AItem := FQueue.PopItem;
+      Break;
+    end
+    else
+      IndySleep(3);
+  end;
+end;
+
 procedure TIdSimpleSvrTh.Execute;
 var
-  LRcv: TIdBytes;
-  LSndBuffer: TStream;
-  procedure DisconnectClientAndFlushQueue;
+  LRcvBuffer: TIdBytes;
+  LRcvSize: Integer;
+  LSndBuffer: TBytesStream;
+  LWaitSnd: Boolean;
+  procedure DisconnectAndFlushQueue;
   begin
-    FSvr.Disconnect;
+    try
+      if FSVr.Connected then
+        FSvr.Disconnect;
+    except on E: Exception do
+      CodeSite.SendError('TIdSimpleSvrTh.Execute.DisconnectAndFlushQueue -> %s %s', [E.ClassName, E.Message]);
+    end;
+    FSvr.CheckForGracefulDisconnect(False);
+    TIdNotify.NotifyMethod(DoClientDisconnect);
     while FQueue.QueueSize > 0 do
       FQueue.PopItem.Free;
-    FLock.Enter;
-    try
-      if Assigned(FOnDisconnected) then
-        FOnDisconnected(ssListenDisconnected, FClientInfos);
-    finally
-      FLock.Leave;
-    end;
   end;
 begin
-  FSvr.BoundPort := FPort;
+  FSvr.BoundPort := Port;
   while not Terminated do
   try
     FSvr.BeginListen;
     FSvr.Listen;
     try
       CodeSite.Send('Client Connected');
-      FClientConnected := True;
+      FServerInfos.B[NAME_CLIENT_CONNECTED] := True;
       FClientInfos.Clear;
       FClientInfos.S['PeerIP'] := FSvr.Binding.PeerIP;
       FClientInfos.I['PeerPort'] := FSvr.Binding.PeerPort;
       FClientInfos.I['Port'] := FSvr.Binding.Port;
-      DoClientConnected;
+      TIdNotify.NotifyMethod(DoClientConnected);
       while FSvr.Connected and not Terminated do
       begin
-        FSvr.IOHandler.CheckForDisconnect;
-        FSvr.IOHandler.CheckForDataOnSource(FClientTimeOut);
-        if FSvr.IOHandler.InputBufferIsEmpty then
-          DisconnectClientAndFlushQueue
-        else
+        if not CheckForDataOnSource(ClientTimeout) then
+          DisconnectAndFlushQueue
+        else if not FSvr.IOHandler.InputBufferIsEmpty then
         begin
-          FSvr.IOHandler.InputBuffer.ExtractToBytes(LRcv);
-          if Assigned(FOnData) then
+          FSvr.IOHandler.ReadTimeout := 5;
+          LRcvSize := FSvr.IOHandler.InputBuffer.Size;
+          FSvr.IOHandler.ReadBytes(LRcvBuffer, LRcvSize, False);
+          SetLength(LRcvBuffer, LRcvSize);
+          LWaitSnd := not BytesToHexStr(LRcvBuffer).Contains('4004107060AA');
+          TRcvNotify.Execute(FOnData, LRcvBuffer);
+          if LWaitSnd and WaitQueuePopupItem(LSndBuffer) then
           begin
-            FLock.Enter;
-            try
-              FOnData(LRcv);
-            finally
-              FLock.Leave;
-            end;
+            IndySleep(50);
+            LSndBuffer.Seek(0, soFromBeginning);
+            FSvr.IOHandler.WriteBufferClear;
+            FSvr.IOHandler.Write(LSndBuffer);
+            FreeAndNil(LSndBuffer);
+          end
+          else
+          begin
+            DisconnectAndFlushQueue;
+            Break;
           end;
-          SetLength(LRcv, 0);
-          FSvr.IOHandler.InputBuffer.Clear;
         end;
         IndySleep(1);
-        if FSvr.Connected and (FQueue.QueueSize > 0) then
-        begin
-          LSndBuffer := FQueue.PopItem;
-          LSndBuffer.Seek(0, soFromBeginning);
-          FSvr.IOHandler.WriteBufferClear;
-          FSvr.IOHandler.Write(LSndBuffer);
-          FreeAndNil(LSndBuffer);
-        end;
+        FSvr.CheckForGracefulDisconnect;
       end;
       IndySleep(1);
     finally
-      DisconnectClientAndFlushQueue;
+      DisconnectAndFlushQueue;
     end;
   except
     on E: Exception do
@@ -314,17 +299,31 @@ begin
   end;
 end;
 
+function TIdSimpleSvrTh.GetClientTimeout: Integer;
+begin
+  Result := FServerInfos.I[NAME_CLIENT_TIMEOUT];
+end;
+
+function TIdSimpleSvrTh.GetLocalIP: String;
+begin
+  Result := FServerInfos.S[NAME_LOCAL_IP]
+end;
+
+function TIdSimpleSvrTh.GetPort: Integer;
+begin
+  Result := FServerInfos.I[NAME_PORT]
+end;
+
 procedure TIdSimpleSvrTh.Send(const ABytes: TBytes);
 var
   LBuffer: TBytesStream;
 begin
-  if FSvr.Connected then
-    if FClientConnected then
-    begin
-      LBuffer := TBytesStream.Create(ABytes);
-      CodeSite.Send('Snd', ABytes);
-      FQueue.PushItem(LBuffer);
-    end;
+  if FSvr.Connected and FServerInfos.B[NAME_CLIENT_CONNECTED] then
+  begin
+    LBuffer := TBytesStream.Create(ABytes);
+    CodeSite.Send('Snd', ABytes);
+    FQueue.PushItem(LBuffer);
+  end;
 end;
 
 end.
