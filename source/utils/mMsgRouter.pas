@@ -42,10 +42,11 @@ type
     procedure Notify<T>(AID: TID; const Data: T); overload;
     procedure Notify<T, T2>(AID: TID; const Data: T; Data2: T2); overload;
     procedure &On(AID: TID; Proc: TProc); overload;
+    procedure &On(enArray: array of TID; Proc: TProc); overload;
     procedure OnBefore(AID: TID; Proc: TProc); overload;
     procedure OnBefore(AIDs: array of TID; Proc: TProc); overload;
     procedure OnAfter(AID: TID; Proc: TProc); overload;
-    procedure &On(enArray: array of TID; Proc: TProc); overload;
+    procedure OnAfter(AIds: array of TID; Proc: TProc); overload;
     procedure RemoveHandler(AID: TID; Proc: TProc); overload;
 
     function Excute(AID: TID): Boolean; overload;
@@ -187,6 +188,14 @@ begin
     raise ERouterMethodIDAlreadyExists.CreateFmt(FMT_METHOD_ID_ALREADY_EXISTS, [RouterKeyToStr(AID)]);
 
   FExcuteAfters.Add(AID, Func);
+end;
+
+procedure TMsgRouter<TID>.OnAfter(AIds: array of TID; Proc: TProc);
+var
+  Len: TID;
+begin
+  for Len in AIDs do
+    OnAfter(Len, Proc);
 end;
 
 procedure TMsgRouter<TID>.OnAfter<T>(AID: TID; Func: TFunc<T>);
