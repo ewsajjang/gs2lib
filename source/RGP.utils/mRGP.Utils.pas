@@ -32,6 +32,7 @@ type
     procedure MouseOver(const X, Y: Integer);
     function Search(AFields: array of String; AValues: array of Variant): Boolean;
     procedure StrechColumn(const AColumn: TWTGridDataColumn; AMinWidth: Integer = 100);
+    procedure CompareDateTimeStrField(const AFieldName: String; const AFmt: TFormatSettings);
 
     property ActiveCell: TWTGridCellIndex read GetActiveCell write SetActiveCell;
     property SearchIdx: Integer read GetSearchIdx write SetSearchIdx;
@@ -43,10 +44,12 @@ type
 
   TSimpleGridUtil = class(TInterfacedObject, IRealGridPlusUtil)
   private
+    FFmt: TFormatSettings;
     FActiveCell: TWTGridCellIndex;
     FGrid: TWTRealGrid;
     FProvider: TWTRealGridDataProvider;
     FSearchIdx: Integer;
+    function CompareDateTimeField(Field: Integer; const Value1, Value2: Variant): Integer;
     function GetB(Row: Integer; Field: String): Boolean;
     function GetD(Row: Integer; Field: String): TDateTime;
     function GetI(Row: Integer; Field: String): Integer;
@@ -72,6 +75,7 @@ type
     function IdxFormMouse(const X, Y: Integer; var AIdx: TWTGridCellIndex): Boolean;
     procedure MouseOver(const X, Y: Integer);
     function Search(AFields: array of String; AValues: array of Variant): Boolean;
+    procedure CompareDateTimeStrField(const AFieldName: String; const AFmt: TFormatSettings);
 
     property ActiveCell: TWTGridCellIndex read GetActiveCell write SetActiveCell;
     property SearchIdx: Integer read GetSearchIdx;
@@ -119,6 +123,25 @@ procedure TSimpleGridUtil.ActveCellClearBy(const ARow: Integer);
 begin
   if FActiveCell.GetDataRow = ARow then
     ActveCellClear;
+end;
+
+function TSimpleGridUtil.CompareDateTimeField(Field: Integer; const Value1,
+  Value2: Variant): Integer;
+var
+  ADay1 : TDateTime;
+  ADay2 : TDateTime;
+begin
+  ADay1 := TDateTime.FmtSettingsStr(Value1, FFmt);
+  ADay2 := TDateTime.FmtSettingsStr(Value2, FFmt);
+
+  Result := CompareValue(ADay1, ADay2);
+end;
+
+procedure TSimpleGridUtil.CompareDateTimeStrField(const AFieldName: String;
+  const AFmt: TFormatSettings);
+begin
+  FFmt := AFmt;
+  FProvider.SetComparer(AFieldName, CompareDateTimeField);
 end;
 
 constructor TSimpleGridUtil.Create(const AGrid: TWTRealGrid);
