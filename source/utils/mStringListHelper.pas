@@ -36,6 +36,10 @@ type
     function KeysExists(const AKeys: array of String; out ANotExistKeys: TArray<string>): Boolean; overload;
     function KeysExists(const AKeys: array of String): Boolean; overload;
     function KeyExists(const AKey: String): Boolean; overload;
+    function DelimitedValues(const ADelimiter: Char): String;
+    function CommaValues(const ADelimeter: Char): String;
+    function DelimitedKeys(const ADelimiter: Char): String;
+    function CommaKeys: String;
 
     function O(const AName: String; AObj: TObject): Integer; overload;
     function OSwap(const AName: String; const AObj: TObject; AFree: Boolean = True): Integer;
@@ -64,6 +68,54 @@ uses
 function TStringListHelper.AddFmt(const S: string; const Args: array of const): Integer;
 begin
   Result := Add(Format(S, Args));
+end;
+
+function TStringListHelper.CommaKeys: String;
+begin
+  Result := DelimitedKeys(',')
+end;
+
+function TStringListHelper.CommaValues(const ADelimeter: Char): String;
+begin
+  Result := DelimitedValues(',');
+end;
+
+function TStringListHelper.DelimitedKeys(const ADelimiter: Char): String;
+var
+  LValue: String;
+  i: Integer;
+begin
+  for i := 0 to Count -1 do
+  begin
+    LValue := Names[i];
+    if not LValue.IsEmpty then
+    begin
+      if Result.IsEmpty then
+        Result := LValue
+      else
+        Result := LValue + ADelimiter;
+      Result := Result + LValue
+    end;
+  end;
+end;
+
+function TStringListHelper.DelimitedValues(const ADelimiter: Char): String;
+var
+  LValue: String;
+  i: Integer;
+begin
+  for i := 0 to Count -1 do
+  begin
+    LValue := ValueFromIndex[i];
+    if not LValue.IsEmpty then
+    begin
+      if Result.IsEmpty then
+        Result := LValue
+      else
+        Result := LValue + ADelimiter;
+      Result := Result + LValue
+    end;
+  end;
 end;
 
 function TStringListHelper.Exists(const AKey: String): Boolean;
