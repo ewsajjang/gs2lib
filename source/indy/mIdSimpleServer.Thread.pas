@@ -235,6 +235,10 @@ var
   end;
 begin
   FSvr.BoundPort := Port;
+  CodeSite.Send('TIdSimpleSvrTh Excute Port: %d, ClientTimeOut: %d', [
+    Port,
+    ClientTimeOut
+  ]);
   while not Terminated do
   try
     FSvr.BeginListen;
