@@ -27,8 +27,9 @@ type
 
     { IDeviceList }
     procedure ClearAndSearch(const AGUIDs: array of TGUID);
-    function Exists(AFunc: TDvcExistFunc): Boolean; overload;
-    function Exists(const AGUID: TGUID; AFunc: TDvcExistFunc): Boolean; overload;
+    procedure Exists(AFuncs: array of TDvcExistsFunc; AExistsProc: TProc); overload;
+    function Exists(AFunc: TDvcExistsFunc): Boolean; overload;
+    function Exists(const AGUID: TGUID; AFunc: TDvcExistsFunc): Boolean; overload;
     procedure Clear;
 
     { IDeviceList }
@@ -68,7 +69,7 @@ begin
   inherited;
 end;
 
-function TWinDeviceList.Exists(AFunc: TDvcExistFunc): Boolean;
+function TWinDeviceList.Exists(AFunc: TDvcExistsFunc): Boolean;
 var
   i: Integer;
 begin
@@ -82,7 +83,7 @@ begin
   end;
 end;
 
-function TWinDeviceList.Exists(const AGUID: TGUID; AFunc: TDvcExistFunc): Boolean;
+function TWinDeviceList.Exists(const AGUID: TGUID; AFunc: TDvcExistsFunc): Boolean;
 var
   i: Integer;
 begin
@@ -95,6 +96,16 @@ begin
       if Result then
         Break;
     end;
+end;
+
+procedure TWinDeviceList.Exists(AFuncs: array of TDvcExistsFunc;
+  AExistsProc: TProc);
+var
+  LFunc: TDvcExistsFunc;
+begin
+  for LFunc in AFuncs do
+    if Exists(LFunc) then
+      AExistsProc;
 end;
 
 function TWinDeviceList.GetCount: Integer;
