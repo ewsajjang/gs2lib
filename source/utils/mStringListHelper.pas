@@ -37,7 +37,7 @@ type
     function KeysExists(const AKeys: array of String): Boolean; overload;
     function KeyExists(const AKey: String): Boolean; overload;
     function DelimitedValues(const ADelimiter: Char): String;
-    function CommaValues(const ADelimeter: Char): String;
+    function CommaValues: String;
     function DelimitedKeys(const ADelimiter: Char): String;
     function CommaKeys: String;
 
@@ -75,7 +75,7 @@ begin
   Result := DelimitedKeys(',')
 end;
 
-function TStringListHelper.CommaValues(const ADelimeter: Char): String;
+function TStringListHelper.CommaValues: String;
 begin
   Result := DelimitedValues(',');
 end;
