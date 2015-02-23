@@ -4,14 +4,18 @@ interface
 
 uses
   CodeSiteLogging,
-  System.Classes, System.SysUtils
+  System.Classes, System.SysUtils, System.Types
   ;
 
 type
   TCodeSiteLoggerHelper = class helper for TCodeSiteLogger
-    procedure Send(Expression: Boolean; Msg: String); overload;
-    procedure Send(Expression: Boolean; Fmt: String; Args: array of const); overload;
-    procedure Send(Fmt: String; Args: array of const; List: TStrings); overload;
+    procedure Send(const List: TStringList); overload;
+    procedure Send(const Expression: Boolean; Msg: String); overload;
+    procedure Send(const Expression: Boolean; Fmt: String; Args: array of const); overload;
+    procedure Send(const Fmt: String; Args: array of const; List: TStrings); overload;
+
+    procedure Send(const AMsg: String; const ARect: TRect); overload;
+    procedure Send(const AMsg: String; Args: array of const; const ARect: TRect); overload;
 
     procedure Send(const APacket: TBytes); overload;
     procedure Send(const AMsg: String; const APacket: TBytes); overload;
@@ -25,12 +29,12 @@ type
 implementation
 
 uses
-  mSysUtilsEx
+  mSysUtilsEx, mTypesHelper
   ;
 
 { TCodeSiteLoggerHelper }
 
-procedure TCodeSiteLoggerHelper.Send(Expression: Boolean; Msg: String);
+procedure TCodeSiteLoggerHelper.Send(const Expression: Boolean; Msg: String);
 begin
   if not Expression then
     CodeSite.SendError(Msg)
@@ -38,7 +42,7 @@ begin
     CodeSite.Send(Msg);
 end;
 
-procedure TCodeSiteLoggerHelper.Send(Expression: Boolean; Fmt: String;
+procedure TCodeSiteLoggerHelper.Send(const Expression: Boolean; Fmt: String;
   Args: array of const);
 begin
   if not Expression then
@@ -65,7 +69,23 @@ begin
     CodeSite.SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
 end;
 
-procedure TCodeSiteLoggerHelper.Send(Fmt: String; Args: array of const;
+procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const ARect: TRect);
+begin
+  CodeSite.Send(AMsg, ARect.ToString);
+end;
+
+procedure TCodeSiteLoggerHelper.Send(const AMsg: String; Args: array of const;
+  const ARect: TRect);
+begin
+  CodeSite.Send(Format(AMsg, Args), ARect.ToString);
+end;
+
+procedure TCodeSiteLoggerHelper.Send(const List: TStringList);
+begin
+  CodeSite.Send('', List);
+end;
+
+procedure TCodeSiteLoggerHelper.Send(const Fmt: String; Args: array of const;
   List: TStrings);
 begin
   CodeSite.Send(Format(Fmt, Args), List);
