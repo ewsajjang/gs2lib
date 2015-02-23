@@ -67,6 +67,7 @@ end;
 
 procedure TIdSimpleServerEx.Listen(ATimeout: Integer);
 begin
+  FListening := True;
   if Assigned(FOnListen) then
     FOnListen;
 
