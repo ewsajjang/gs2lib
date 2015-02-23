@@ -15,15 +15,19 @@ uses
 type
   TIdSimpleSvrTh = class(TThread)
   private const
-    NAME_PORT = 'PORT';
-    NAME_LOCAL_IP = 'LocalIP';
+    NAME_SVR_PORT = 'ServerPort';
+    NAME_SVR_LOCAL_IP = 'ServerLocalIP';
     NAME_CLIENT_TIMEOUT = 'ClientTimeOut';
     NAME_CLIENT_CONNECTED = 'ClientConnected';
+    NAME_CLIENT_PEER_PORT = 'ClientPeerPort';
+    NAME_CLIENT_PEER_IP = 'ClientPeerIP';
     SEC = 1000;
   private
+    FLock: TIdCriticalSection;
     FSvr: TIdSimpleServerEx;
     FServerInfos: TStringList;
     FClientInfos: TStringList;
+    FStatus: TSvrStatus;
     procedure OnBeforeBind(Sender: TObject);
     procedure OnAfterBind(Sender: TObject);
     procedure OnSvrDisconnected(Sender: TObject);
@@ -42,7 +46,8 @@ type
     FOnDisconnected: TProc<TSvrStatus, TStringList>;
     function GetClientTimeout: Integer;
     function GetPort: Integer;
-    function GetLocalIP: String;
+    class function GetLocalIP: String; static;
+    function GetStatus: TSvrStatus;
   protected
     procedure TerminatedSet; override;
     procedure Execute; override;
@@ -55,7 +60,8 @@ type
 
     property ClientTimeout: Integer read GetClientTimeout default 15 * SEC;
     property Port: Integer read GetPort default 65501;
-    property LocalIP: String read GetLocalIP;
+    class property LocalIP: String read GetLocalIP;
+    property Status: TSvrStatus read GetStatus;
 
     property OnData: TProc<TIdBytes> read FOnData write FOnData;
     property OnListen: TProc<TSvrStatus, TStringList> read FOnListen write FOnListen;
@@ -87,9 +93,10 @@ end;
 procedure TIdSimpleSvrTh.OnSvrDisconnected(Sender: TObject);
 begin
   FServerInfos.B[NAME_CLIENT_CONNECTED] := False;
+  FStatus := ssListenDisconnected;
   CodeSite.Send('Client Disconnected');
     if Assigned(FOnDisconnected) then
-      FOnDisconnected(ssListenDisconnected, FClientInfos);
+      FOnDisconnected(FStatus, FClientInfos);
   FClientInfos.Clear;
 end;
 
@@ -123,18 +130,15 @@ begin
 
   FreeOnTerminate := False;
 
+  FLock := TIdCriticalSection.Create;
+
   FClientInfos := TStringList.Create;
 
   FServerInfos := TStringList.Create;
-  FServerInfos.I[NAME_PORT] := APort;
+  FServerInfos.I[NAME_SVR_PORT] := APort;
   FServerInfos.I[NAME_CLIENT_TIMEOUT] := AClientTimeout;
   FServerInfos.B[NAME_CLIENT_CONNECTED] := False;
-  TIdStack.IncUsage;
-  try
-    FServerInfos.S[NAME_LOCAL_IP] := GStack.LocalAddress
-  finally
-    TIdStack.DecUsage;
-  end;
+  FServerInfos.S[NAME_SVR_LOCAL_IP] := LocalIP;
 
   FQueue := TThreadedQueue<TBytesStream>.Create;
 
@@ -159,17 +163,20 @@ begin
   if not FQueue.ShutDown then
     FQueue.DoShutDown;
   FreeAndNil(FQueue);
+  FSvr.EndListen;
   FreeAndNil(FSvr);
   FreeAndNil(FServerInfos);
   FreeAndNil(FClientInfos);
+  FreeAndNil(FLock);
 
   inherited;
 end;
 
 procedure TIdSimpleSvrTh.DoClientConnected;
 begin
+  FStatus := ssListenConnected;
   if Assigned(FOnConnected) then
-    FOnConnected(ssListenConnected, FClientInfos);
+    FOnConnected(FStatus, FClientInfos);
 end;
 
 procedure TIdSimpleSvrTh.DoClientDisconnect;
@@ -181,8 +188,9 @@ end;
 procedure TIdSimpleSvrTh.DoListen;
 begin
   CodeSite.Send('OnListen');
+  FStatus := ssListenDisconnected;
   if Assigned(FOnListen) then
-    FOnListen(ssListenDisconnected, FServerInfos);
+    FOnListen(FStatus, FServerInfos);
 end;
 
 procedure TIdSimpleSvrTh.TerminatedSet;
@@ -247,9 +255,9 @@ begin
       CodeSite.Send('Client Connected');
       FServerInfos.B[NAME_CLIENT_CONNECTED] := True;
       FClientInfos.Clear;
-      FClientInfos.S['PeerIP'] := FSvr.Binding.PeerIP;
-      FClientInfos.I['PeerPort'] := FSvr.Binding.PeerPort;
-      FClientInfos.I['Port'] := FSvr.Binding.Port;
+      FClientInfos.S[NAME_CLIENT_PEER_IP] := FSvr.Binding.PeerIP;
+      FClientInfos.I[NAME_CLIENT_PEER_PORT] := FSvr.Binding.PeerPort;
+      FClientInfos.I[NAME_SVR_PORT] := FSvr.Binding.Port;
       TIdNotify.NotifyMethod(DoClientConnected);
       while FSvr.Connected and not Terminated do
       begin
@@ -308,14 +316,34 @@ begin
   Result := FServerInfos.I[NAME_CLIENT_TIMEOUT];
 end;
 
-function TIdSimpleSvrTh.GetLocalIP: String;
+class function TIdSimpleSvrTh.GetLocalIP: String;
 begin
-  Result := FServerInfos.S[NAME_LOCAL_IP]
+  TIdStack.IncUsage;
+  try
+    Result := GStack.LocalAddress
+  finally
+    TIdStack.DecUsage;
+  end;
 end;
 
 function TIdSimpleSvrTh.GetPort: Integer;
 begin
-  Result := FServerInfos.I[NAME_PORT]
+  FLock.Enter;
+  try
+    Result := FServerInfos.I[NAME_SVR_PORT];
+  finally
+    FLock.Leave;
+  end;
+end;
+
+function TIdSimpleSvrTh.GetStatus: TSvrStatus;
+begin
+  FLock.Enter;
+  try
+    Result := FStatus;
+  finally
+    FLock.Leave;
+  end;
 end;
 
 procedure TIdSimpleSvrTh.Send(const ABytes: TBytes);
