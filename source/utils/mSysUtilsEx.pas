@@ -5,7 +5,8 @@ interface
 uses
   System.SysUtils, System.Types;
 
-function BytesToHexStr(const AValue: TBytes): String; overload;
+function ByteToHex(const AValue: Byte): String;
+function BytesToHexStr(const ABuffer: TBytes): String; overload;
 function BytesToHexStr(const AValue: array of Byte): String; overload;
 function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
 function BytesToStr(const AValue: TBytes): String;
@@ -40,13 +41,28 @@ begin
     Inc(Result);
 end;
 
-function BytesToHexStr(const AValue: TBytes): String; overload;
-var
-  i: Integer;
+function ByteToHex(const AValue: Byte): String;
+const
+  HEX_DIGITS: array [0..15] of Char = ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'); {do not localize}
 begin
-  Result := EmptyStr;
-  for i := 0 to Length(AValue) - 1 do
-    Result := Result + Format('%.2x', [AValue[i]]);
+  SetLength(Result, 2);
+  Result[1] := HEX_DIGITS[(AValue and $F0) shr 4]; // 1111 0000
+  Result[2] := HEX_DIGITS[AValue and $F];          // 0000 1111
+end;
+
+function BytesToHexStr(const ABuffer: TBytes): String; overload;
+var
+  LByte: Byte;
+  LBuilder: TStringBuilder;
+begin
+  LBuilder := TStringBuilder.Create(Length(ABuffer));
+  try
+    for LByte in ABuffer do
+      LBuilder.Append(ByteToHex(LByte));
+    Result := LBuilder.ToString;
+  finally
+    FreeAndNil(LBuilder);
+  end;
 end;
 
 function BytesToHexStr(const AValue: array of Byte): String; overload;
