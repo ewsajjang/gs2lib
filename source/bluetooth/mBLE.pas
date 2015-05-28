@@ -17,6 +17,7 @@ type
 
   //  Service Exception
   ENotImplementsMandatoryService = class(EBluetoothLEServiceException);
+  ENotMatchedServiceUUID = class(EBluetoothLEServiceException);
 
   //  Descriptor Exception
   ENotImplementsMandatoryDescriptor = class(EBluetoothLEServiceException);

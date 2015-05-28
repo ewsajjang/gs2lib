@@ -28,7 +28,7 @@ type
 implementation
 
 uses
-  System.Rtti, System.TypInfo, vcl.Forms;
+  System.Rtti, System.TypInfo;
 
 { TGenericClassList }
 
