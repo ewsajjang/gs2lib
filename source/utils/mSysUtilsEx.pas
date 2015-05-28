@@ -21,6 +21,7 @@ function HexStrToStr(const Source: String): String;
 function MinimumCount(const ADividend, ADivisor: Integer): Integer;
 function SwapByte(Value: DWord): DWord; overload;
 function SwapByte(Value: Word): Word; overload;
+procedure ReverseBytes(Source, Dest: Pointer; Size: UInt64);
 
 // email validate
 function EmailValidate(const Value: String): Boolean;
@@ -67,11 +68,11 @@ end;
 
 function BytesToHexStr(const AValue: array of Byte): String; overload;
 var
-  i: Integer;
+  LByte: Byte;
 begin
   Result := EmptyStr;
-  for i := 0 to Length(AValue) - 1 do
-    Result := Result + Format('%.2x', [AValue[i]]);
+  for LByte in AValue do
+    Result := Result + LByte.ToHexString(2);
 end;
 
 function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
@@ -165,6 +166,18 @@ end;
 function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): String;
 begin
   SetString(Result, PAnsiChar(@AValue[StrIdx]), ALength);
+end;
+
+procedure ReverseBytes(Source, Dest: Pointer; Size: UInt64);
+begin
+  Dest := PByte(NativeUInt(Dest) + Size -1);
+  while (Size > 0) do
+  begin
+    PByte(Dest)^ := PByte(Source)^;
+    Inc(PByte(Source));
+    Dec(PByte(Dest));
+    Dec(Size);
+  end;
 end;
 
 function EmailValidate(const Value: String): Boolean;
