@@ -3,6 +3,8 @@ unit mLogX;
 interface
 
 uses
+  FMX.Memo,
+
   System.SysUtils, System.Classes,
   System.Rtti
   ;
@@ -13,15 +15,18 @@ type
     TKind = (
       lkMsg,
       lkSnd,
-      lkSndEr,
+      lkErSnd,
       lkRcv,
-      lkRcvEr,
+      lkErRcv,
       lkError
     );
     TKindHelper = record helper for TKind
       function Str: String;
     end;
   private
+    FMemo: TMemo;
+    FMemoEnable: Boolean;
+    FConsoleLog: Boolean;
     function ValueToStr(const AValue: TValue): String;
     procedure Write(const AKind: TKind; const AValues: array of TValue); overload;
   protected
@@ -29,36 +34,51 @@ type
     FAppTitleEnabled: Boolean;
     procedure Write(const AValue: String); overload; virtual; abstract;
   public
-    procedure Msg(const ACondition: Boolean; const AValues: array of TValue); overload;
+    function Msg(const ACondition: Boolean; const AValues: array of TValue): Boolean; overload;
+    function Msg(const ACondition: Boolean; const AValue: String; const Arg: array of const): Boolean; overload;
+    function Msg(const ACondition: Boolean; const ABuffer: TBytes): Boolean; overload;
+    procedure Msg(const AValue: String; const ABuffer: TBytes); overload;
     procedure Msg(const ABuffer: TBytes); overload;
-    procedure Msg(const ACondition: Boolean; const ABuffer: TBytes); overload;
     procedure Msg(const AValue: TValue); overload;
     procedure Msg(const AValues: array of TValue); overload;
     procedure Msg(const AValue: String; const Arg: array of const); overload;
     procedure Msg(const AValue: String; const Arg: array of const; const ABuffer: TBytes); overload;
 
-    procedure Snd(const ACondition: Boolean; const AValues: array of TValue); overload;
-    procedure Snd(const ACondition: Boolean; const ABuffer: TBytes); overload;
+    function Snd(const ACondition: Boolean; const AValues: array of TValue): Boolean; overload;
+    function Snd(const ACondition: Boolean; const ABuffer: TBytes): Boolean; overload;
+    function Snd(const ACondition: Boolean; const AValue: String; const Arg: array of const): Boolean; overload;
+    function Snd(const ACondition: Boolean; const AValue: String; const Arg: array of const; const ABuffer: TBytes): Boolean; overload;
     procedure Snd(const ABuffer: TBytes); overload;
     procedure Snd(const AValue: TValue); overload;
+    procedure Snd(const AValue: String; const ABuffer: TBytes); overload;
     procedure Snd(const AValues: array of TValue); overload;
     procedure Snd(const AValue: String; const Arg: array of const); overload;
+    procedure Snd(const Arg: TStrings); overload;
+    procedure Snd(const AValue: String; const Arg: TStrings); overload;
     procedure Snd(const AValue: String; const Arg: array of const; const ABuffer: TBytes); overload;
 
-    procedure Rcv(const ACondition: Boolean; const AValues: array of TValue); overload;
-    procedure Rcv(const ACondition: Boolean; const ABuffer: TBytes); overload;
+    function Rcv(const ACondition: Boolean; const AValues: array of TValue): Boolean; overload;
+    function Rcv(const ACondition: Boolean; const ABuffer: TBytes): Boolean; overload;
+    function Rcv(const ACondition: Boolean; const AValue: String; const Arg: array of const): Boolean; overload;
+    function Rcv(const ACondition: Boolean; const AValue: String; const Arg: array of const; const ABuffer: TBytes): Boolean; overload;
     procedure Rcv(const ABuffer: TBytes); overload;
     procedure Rcv(const AValue: TValue); overload;
+    procedure Rcv(const Arg: TStrings); overload;
+    procedure Rcv(const AValue: String; const ABuffer: TBytes); overload;
     procedure Rcv(const AValues: array of TValue); overload;
     procedure Rcv(const AValue: String; const Arg: array of const); overload;
+    procedure Rcv(const AValue: String; const Arg: TStrings); overload;
     procedure Rcv(const AValue: String; const Arg: array of const; const ABuffer: TBytes); overload;
 
-    procedure e(const AValue: TValue); overload;
-    procedure e(const AValues: array of TValue); overload;
-    procedure e(const AValue: String; const Arg: array of const); overload;
+    procedure E(const AValue: TValue); overload;
+    procedure E(const AValues: array of TValue); overload;
+    procedure E(const AValue: String; const Arg: array of const); overload;
 
+    property ConsoleLog: Boolean read FConsoleLog write FConsoleLog;
     property AppTitle: String read FAppTitle;
     property AppTitleEnabled: Boolean read FAppTitleEnabled write FAppTitleEnabled;
+    property Memo: TMemo read FMemo write FMemo;
+    property MemoEnable: Boolean read FMemoEnable write FMemoEnable;
   end;
 
 type
@@ -105,7 +125,7 @@ begin
   Result := GetEnumName(TypeInfo(TLogger.TKind), Integer(Self));
 end;
 
-procedure TLogger.e(const AValues: array of TValue);
+procedure TLogger.E(const AValues: array of TValue);
 begin
   Write(lkError, AValues);
 end;
@@ -115,12 +135,14 @@ begin
   Write(lkMsg, AValues);
 end;
 
-procedure TLogger.Msg(const ACondition: Boolean; const AValues: array of TValue);
+function TLogger.Msg(const ACondition: Boolean; const AValues: array of TValue): Boolean;
 begin
   if ACondition then
     Msg(AValues)
   else
-    e(AValues)
+    E(AValues);
+
+  Result := ACondition;
 end;
 
 procedure TLogger.Msg(const AValue: TValue);
@@ -133,12 +155,13 @@ begin
   Write(lkRcv, AValues);
 end;
 
-procedure TLogger.Snd(const ACondition: Boolean; const AValues: array of TValue);
+function TLogger.Snd(const ACondition: Boolean; const AValues: array of TValue): Boolean;
 begin
   if ACondition then
     Snd(AValues)
   else
-    Write(lkSndEr, AValues);
+    Write(lkErSnd, AValues);
+  Result := ACondition;
 end;
 
 procedure TLogger.Snd(const AValue: TValue);
@@ -203,16 +226,21 @@ procedure TLogger.Write(const AKind: TKind; const AValues: array of TValue);
 var
   LValue: TValue;
   LBuilder: TStringBuilder;
+  LLog: String;
 begin
   LBuilder := TStringBuilder.Create;
   try
-    LBuilder.Append(AKind.Str + #9);
+    LBuilder.AppendFormat('%-8s%'#9, [AKind.Str.Substring(2)]);
     for LValue in AValues do
     begin
       LBuilder.Append(ValueToStr(LValue));
       LBuilder.Append(' ');
     end;
-    Write(LBuilder.ToString);
+    LLog := LBuilder.ToString;
+    if FConsoleLog then
+      Write(LLog);
+    if FMemoEnable and Assigned(FMemo) then
+      FMemo.Lines.Add(LLog);
   finally
     FreeAndNil(LBuilder);
   end;
@@ -231,14 +259,14 @@ begin
   Result := FLogger
 end;
 
-procedure TLogger.e(const AValue: TValue);
+procedure TLogger.E(const AValue: TValue);
 begin
   Write(lkError, [AValue]);
 end;
 
-procedure TLogger.e(const AValue: String; const Arg: array of const);
+procedure TLogger.E(const AValue: String; const Arg: array of const);
 begin
-  e(Format(AValue, Arg));
+  E(Format(AValue, Arg));
 end;
 
 procedure TLogger.Msg(const AValue: String; const Arg: array of const;
@@ -247,12 +275,28 @@ begin
   Msg([Format(AValue, Arg), BytesToHexStr(ABuffer)])
 end;
 
-procedure TLogger.Msg(const ACondition: Boolean; const ABuffer: TBytes);
+procedure TLogger.Msg(const AValue: String; const ABuffer: TBytes);
+begin
+  Msg([AValue, BytesToHexStr(ABuffer)])
+end;
+
+function TLogger.Msg(const ACondition: Boolean; const AValue: String;
+  const Arg: array of const): Boolean;
+begin
+  if ACondition then
+    Msg(AValue, Arg)
+  else
+    E(AValue, Arg);
+  Result := ACondition;
+end;
+
+function TLogger.Msg(const ACondition: Boolean; const ABuffer: TBytes): Boolean;
 begin
   if ACondition then
     Msg(ABuffer)
   else
     write(lkError, [BytesToHexStr(ABuffer)]);
+  Result := ACondition;
 end;
 
 procedure TLogger.Msg(const ABuffer: TBytes);
@@ -262,15 +306,16 @@ end;
 
 procedure TLogger.Msg(const AValue: String; const Arg: array of const);
 begin
-  write(Format(AValue, Arg));
+  write(lkMsg, [Format(AValue, Arg)]);
 end;
 
-procedure TLogger.Rcv(const ACondition: Boolean; const AValues: array of TValue);
+function TLogger.Rcv(const ACondition: Boolean; const AValues: array of TValue): Boolean;
 begin
   if ACondition then
     Rcv(AValues)
   else
-    Write(lkRcvEr, AValues)
+    Write(lkErRcv, AValues);
+  Result := ACondition;
 end;
 
 procedure TLogger.Rcv(const AValue: TValue);
@@ -289,25 +334,66 @@ begin
   Snd([Format(AValue, Arg), BytesToHexStr(ABuffer)])
 end;
 
+procedure TLogger.Snd(const Arg: TStrings);
+var
+  LItem: String;
+begin
+  for LItem in Arg do
+    Snd(#9 + LItem);
+end;
+
+procedure TLogger.Snd(const AValue: String; const Arg: TStrings);
+begin
+  Snd(AValue);
+  Snd(Arg);
+end;
+
+function TLogger.Snd(const ACondition: Boolean; const AValue: String;
+  const Arg: array of const): Boolean;
+begin
+  if ACondition then
+    Snd([Format(AValue, Arg)])
+  else
+    write(lkErSnd, [Format(AValue, Arg)]);
+  Result := ACondition;
+end;
+
+function TLogger.Snd(const ACondition: Boolean; const AValue: String;
+  const Arg: array of const; const ABuffer: TBytes): Boolean;
+begin
+  if ACondition then
+    Snd([Format(AValue, Arg), BytesToHexStr(ABuffer)])
+  else
+    write(lkErSnd, [Format(AValue, Arg), BytesToHexStr(ABuffer)]);
+  Result := ACondition;
+end;
+
+procedure TLogger.Snd(const AValue: String; const ABuffer: TBytes);
+begin
+  Snd([AValue, BytesToHexStr(ABuffer)])
+end;
+
 procedure TLogger.Snd(const ABuffer: TBytes);
 begin
   Snd(BytesToHexStr(ABuffer));
 end;
 
-procedure TLogger.Snd(const ACondition: Boolean; const ABuffer: TBytes);
+function TLogger.Snd(const ACondition: Boolean; const ABuffer: TBytes): Boolean;
 begin
   if ACondition then
     Snd(ABuffer)
   else
-    write(lkSndEr, [BytesToHexStr(ABuffer)]);
+    write(lkErSnd, [BytesToHexStr(ABuffer)]);
+  Result := ACondition;
 end;
 
-procedure TLogger.Rcv(const ACondition: Boolean; const ABuffer: TBytes);
+function TLogger.Rcv(const ACondition: Boolean; const ABuffer: TBytes): Boolean;
 begin
   if ACondition then
     Rcv(ABuffer)
   else
-    write(lkRcvEr, [BytesToHexStr(ABuffer)]);
+    write(lkErRcv, [BytesToHexStr(ABuffer)]);
+  Result := ACondition;
 end;
 
 procedure TLogger.Rcv(const ABuffer: TBytes);
@@ -319,6 +405,45 @@ procedure TLogger.Rcv(const AValue: String; const Arg: array of const;
   const ABuffer: TBytes);
 begin
   Rcv([Format(AValue, Arg), BytesToHexStr(ABuffer)])
+end;
+
+procedure TLogger.Rcv(const Arg: TStrings);
+var
+  LItem: String;
+begin
+  for LItem in Arg do
+    Rcv(#9 + LItem);
+end;
+
+procedure TLogger.Rcv(const AValue: String; const Arg: TStrings);
+begin
+  Rcv(AValue);
+  Rcv(Arg);
+end;
+
+function TLogger.Rcv(const ACondition: Boolean; const AValue: String;
+  const Arg: array of const): Boolean;
+begin
+  if ACondition then
+    Rcv([Format(AValue, Arg)])
+  else
+    write(lkErRcv, [Format(AValue, Arg)]);
+  Result := ACondition;
+end;
+
+function TLogger.Rcv(const ACondition: Boolean; const AValue: String;
+  const Arg: array of const; const ABuffer: TBytes): Boolean;
+begin
+  if ACondition then
+    Rcv([Format(AValue, Arg), BytesToHexStr(ABuffer)])
+  else
+    write(lkErRcv, [Format(AValue, Arg), BytesToHexStr(ABuffer)]);
+  Result := ACondition;
+end;
+
+procedure TLogger.Rcv(const AValue: String; const ABuffer: TBytes);
+begin
+  Rcv([AValue, BytesToHexStr(ABuffer)])
 end;
 
 end.
