@@ -4,7 +4,14 @@ interface
 
 uses
   System.SysUtils, System.Classes,
-  Vcl.Forms, Vcl.Controls
+
+  {$IFDEF MACOS or iOS}
+    mLog.osx
+  {$ELSE}
+    {$IFDEF MSWINDOWS}
+      Vcl.Forms, Vcl.Controls
+    {$ENDIF}
+  {$ENDIF}
   ;
 
 type
