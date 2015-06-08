@@ -27,6 +27,7 @@ type
     FMemo: TMemo;
     FMemoEnable: Boolean;
     FConsoleLog: Boolean;
+    FOnLogMsg: TProc<String>;
     function ValueToStr(const AValue: TValue): String;
     procedure Write(const AKind: TKind; const AValues: array of TValue); overload;
   protected
@@ -79,6 +80,8 @@ type
     property AppTitleEnabled: Boolean read FAppTitleEnabled write FAppTitleEnabled;
     property Memo: TMemo read FMemo write FMemo;
     property MemoEnable: Boolean read FMemoEnable write FMemoEnable;
+
+    property OnLogMsg: TProc<String> read FOnLogMsg write FOnLogMsg;
   end;
 
 type
@@ -225,25 +228,24 @@ end;
 procedure TLogger.Write(const AKind: TKind; const AValues: array of TValue);
 var
   LValue: TValue;
-  LBuilder: TStringBuilder;
   LLog: String;
 begin
-  LBuilder := TStringBuilder.Create;
-  try
-    LBuilder.AppendFormat('%-8s%'#9, [AKind.Str.Substring(2)]);
-    for LValue in AValues do
-    begin
-      LBuilder.Append(ValueToStr(LValue));
-      LBuilder.Append(' ');
-    end;
-    LLog := LBuilder.ToString;
-    if FConsoleLog then
-      Write(LLog);
-    if FMemoEnable and Assigned(FMemo) then
-      FMemo.Lines.Add(LLog);
-  finally
-    FreeAndNil(LBuilder);
+  LLog := EmptyStr;
+  for LValue in AValues do
+    if LLog.IsEmpty then
+      LLog := LLog + ValueToStr(LValue)
+    else
+      LLog := LLog + ValueToStr(LValue) + ' ';
+  LLog := Format('%-8s'#9'%s', [AKind.Str.Substring(2), LLog]);
+  if FConsoleLog then
+    Write(LLog);
+  if FMemoEnable and Assigned(FMemo) then
+  begin
+    Memo.Lines.Add(LLog);
+    Memo.GoToTextEnd;
   end;
+  if Assigned(FOnLogMsg) then
+    FOnLogMsg(LLog);
 end;
 
 { TLoggerManager }
