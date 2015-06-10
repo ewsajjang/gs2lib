@@ -39,14 +39,26 @@ type
     function Str: String;
   end;
 
-
+function wclLog(const ASuccess: Integer; const AStr: String): Boolean; overload;
+function wclLog(const ASuccess: Integer; const AStr: String; const Args: array of const): Boolean; overload;
 
 implementation
 
 uses
   wclErrors, wclUUIDs,
-  System.SysUtils, System.TypInfo
+  System.SysUtils, System.TypInfo, CodeSiteLogging, mCodeSiteHelper
   ;
+
+function wclLog(const ASuccess: Integer; const AStr: String): Boolean;
+begin
+  Result := ASuccess = WCL_E_SUCCESS;
+  CodeSite.Send(Result, '%s: [%d]%s', [AStr, ASuccess, wclGetErrorMessage(ASuccess)]);
+end;
+
+function wclLog(const ASuccess: Integer; const AStr: String; const Args: array of const): Boolean;
+begin
+  Result := wclLog(ASuccess, Format(AStr, Args));
+end;
 
 { TwclBluetoothRadioHelper }
 
