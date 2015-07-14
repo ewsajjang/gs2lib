@@ -26,7 +26,6 @@ type
     procedure SetUp;
     [TearDown]
     procedure TearDown;
-  published
     [Test]
     procedure TestInit_Rnage_01_25;
     [Test]

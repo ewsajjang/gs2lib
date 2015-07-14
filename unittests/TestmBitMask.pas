@@ -23,7 +23,6 @@ type
   strict private
   private
   public
-  published
     [test]
     procedure TestLoadAllowedType;
     [test]

@@ -29,7 +29,6 @@ type
     procedure SetUp;
     [TearDown]
     procedure TearDown;
-  published
     [test]
     procedure TestInitAndCheckCount;
     [test]
@@ -78,8 +77,6 @@ begin
 end;
 
 procedure TestTSimpleRepeator.TestInitAndCheckCount;
-var
-  AItems: TOrder;
 begin
   FRepeator.Init([oOne, oTwo, oThree]);
   Assert.AreEqual(3, FRepeator.Count);
@@ -191,7 +188,6 @@ end;
 
 procedure TestTSimpleRepeator.TestCurrentByPosition;
 var
-  ReturnValue: TOrder;
   i: Integer;
 begin
   FRepeator.Init([oOne, oTwo, oThree]);

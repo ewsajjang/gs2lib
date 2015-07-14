@@ -27,7 +27,6 @@ type
     procedure SetUp;
     [TearDown]
     procedure TearDown;
-  published
     [test]
     procedure TestAdd;
     [test]
