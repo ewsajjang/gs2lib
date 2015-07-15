@@ -54,7 +54,29 @@ type
     property Value: T read FValue write FValue;
   end;
 
-  TLinkedList<T> = class(TEnumerable<T>)
+  ILinkedList<T> = interface
+    ['{9D43E8BC-311F-425A-B6E0-FA26340197F9}']
+    function GetCount: NativeUInt;
+    function GetFirstElement: TLinkedElement<T>;
+    function GetLastElement: TLinkedElement<T>;
+
+    procedure Clear;
+
+    procedure AddFirst(const AValue: T); overload;
+    procedure AddFirst(const AElement: TLinkedElement<T>); overload;
+    procedure Add(const AValue: T); overload;
+    procedure Add(const AElement: TLinkedElement<T>); overload;
+    function First: T;
+    function Last: T;
+    function ToArray: TArray<T>;
+    function ToElementArray: TArray<TLinkedElement<T>>;
+
+    property Count: NativeUInt read GetCount;
+    property FirstElement: TLinkedElement<T> read GetFirstElement;
+    property LastElement: TLinkedElement<T> read GetLastElement;
+  end;
+
+  TLinkedList<T> = class(TEnumerable<T>, ILinkedList<T>)
   type
     TEnumerator = class(TEnumerator<T>)
     private
@@ -71,6 +93,9 @@ type
     FFirstElement: TLinkedElement<T>;
     FLastElement: TLinkedElement<T>;
     FCount: NativeUInt;
+    function GetCount: NativeUInt;
+    function GetFirstElement: TLinkedElement<T>;
+    function GetLastElement: TLinkedElement<T>;
   protected
     procedure DoElementAssigned(var AEmlement: TLinkedElement<T>); virtual;
   public
@@ -88,9 +113,9 @@ type
     function ToArray: TArray<T>;
     function ToElementArray: TArray<TLinkedElement<T>>;
 
-    property Count: NativeUInt read FCount;
-    property FirstElement: TLinkedElement<T> read FFirstElement;
-    property LastElement: TLinkedElement<T> read FLastElement;
+    property Count: NativeUInt read GetCount;
+    property FirstElement: TLinkedElement<T> read GetFirstElement;
+    property LastElement: TLinkedElement<T> read GetLastElement;
   end;
 
   TObjectLinkedList<T: class> = class(TLinkedList<T>)
@@ -270,9 +295,24 @@ begin
   Result := FFirstElement.FValue
 end;
 
+function TLinkedList<T>.GetCount: NativeUInt;
+begin
+  Result := FCount;
+end;
+
 function TLinkedList<T>.GetEnumerator: IEnumerator<T>;
 begin
   Result := TEnumerator.Create(Self);
+end;
+
+function TLinkedList<T>.GetFirstElement: TLinkedElement<T>;
+begin
+  Result := FFirstElement;
+end;
+
+function TLinkedList<T>.GetLastElement: TLinkedElement<T>;
+begin
+  Result := FLastElement;
 end;
 
 function TLinkedList<T>.Last: T;
