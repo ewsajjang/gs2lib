@@ -29,12 +29,6 @@ type
     function GetEnumerator: IEnumerator<T>; virtual; abstract;
   end;
 
-//  ILinkedList<T> = interface;
-//
-//  ILinkedElement<T> = interface
-//
-//  end;
-
   TLinkedList<T> = class;
 
   TLinkedElement<T> = class
@@ -85,10 +79,10 @@ type
 
     procedure Clear;
 
-    procedure AddFirst(AValue: T); overload;
-    procedure AddFirst(ANode: TLinkedElement<T>); overload;
-    procedure Add(AValue: T); overload;
-    procedure Add(ANode: TLinkedElement<T>); overload;
+    procedure AddFirst(const AValue: T); overload;
+    procedure AddFirst(const AElement: TLinkedElement<T>); overload;
+    procedure Add(const AValue: T); overload;
+    procedure Add(const AElement: TLinkedElement<T>); overload;
     function First: T;
     function Last: T;
     function ToArray: TArray<T>;
@@ -189,57 +183,58 @@ end;
 
 { TLinkedList<T> }
 
-procedure TLinkedList<T>.Add(AValue: T);
+procedure TLinkedList<T>.Add(const AValue: T);
 begin
   Add(TLinkedElement<T>.Create(AValue));
 end;
 
-procedure TLinkedList<T>.AddFirst(AValue: T);
+procedure TLinkedList<T>.AddFirst(const AValue: T);
 begin
   AddFirst(TLinkedElement<T>.Create(AValue));
 end;
 
-procedure TLinkedList<T>.AddFirst(ANode: TLinkedElement<T>);
+procedure TLinkedList<T>.AddFirst(const AElement: TLinkedElement<T>);
 begin
-  if not Assigned(ANode) then
+  if not Assigned(AElement) then
     raise Exception.Create('TLinkedList<T> Argument nil error');
 
-  if Assigned(ANode.FList) then
+  if Assigned(AElement.FList) then
     raise Exception.Create('TLinkedList<T> Element alrady part of collection error');
 
-  ANode.FNext := FFirstElement;
+  AElement.FNext := FFirstElement;
   if Assigned(FFirstElement) then
-    FFirstElement.FPrev := ANode;
+    FFirstElement.FPrev := AElement;
 
-  DoElementAssigned(ANode);
-  FFirstElement := ANode;
+
+  FFirstElement := AElement;
+  DoElementAssigned(FFirstElement);
 
   if not Assigned(FLastElement) then
     FLastElement := FFirstElement;
 
-  ANode.FList := Self;
+  AElement.FList := Self;
   Inc(FCount);
 end;
 
-procedure TLinkedList<T>.Add(ANode: TLinkedElement<T>);
+procedure TLinkedList<T>.Add(const AElement: TLinkedElement<T>);
 begin
-  if not Assigned(ANode) then
+  if not Assigned(AElement) then
     raise Exception.Create('TLinkedList<T> Argument nil error');
 
-  if Assigned(ANode.FList) then
+  if Assigned(AElement.FList) then
     raise Exception.Create('TLinkedList<T> Element alrady part of collection error');
 
-  ANode.FPrev := FLastElement;
+  AElement.FPrev := FLastElement;
   if Assigned(FLastElement) then
-    FLastElement.FNext := ANode;
+    FLastElement.FNext := AElement;
 
-  DoElementAssigned(ANode);
-  FLastElement := ANode;
+  FLastElement := AElement;
+  DoElementAssigned(FLastElement);
 
   if not Assigned(FFirstElement) then
     FFirstElement := FLastElement;
 
-  ANode.FList := Self;
+  AElement.FList := Self;
   Inc(FCount);
 end;
 
