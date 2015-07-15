@@ -18,7 +18,7 @@ type
         destructor Destroy; override;
       end;
     var
-      FList: TObjectLinkedList<TItem>;
+      FList: ILinkedList<TItem>;
   private
   public
     [Setup]
@@ -90,7 +90,6 @@ end;
 
 procedure TObjectLinkedListTest.TearDown;
 begin
-  FList.Free;
   FList := nil;
   Assert.AreEqual(0, FCnt);
 end;
