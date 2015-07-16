@@ -31,11 +31,11 @@ type
 
   TLinkedList<T> = class;
 
-  TLinkedElement<T> = class
+  TLinkedNode<T> = class
   private
     FValue: T;
-    FPrev: TLinkedElement<T>;
-    FNext: TLinkedElement<T>;
+    FPrev: TLinkedNode<T>;
+    FNext: TLinkedNode<T>;
     FList: TLinkedList<T>;
     FOwnsObject: Boolean;
     function GetEoE: Boolean;
@@ -44,8 +44,8 @@ type
     constructor Create(AValue: T);
     destructor Destroy; override;
 
-    property Next: TLinkedElement<T> read FNext;
-    property Prev: TLinkedElement<T> read FPrev;
+    property Next: TLinkedNode<T> read FNext;
+    property Prev: TLinkedNode<T> read FPrev;
 
     property SoE: Boolean read GetSoE;
     property EoE: Boolean read GetEoE;
@@ -57,23 +57,23 @@ type
   ILinkedList<T> = interface(IEnumerable<T>)
     ['{9D43E8BC-311F-425A-B6E0-FA26340197F9}']
     function GetCount: NativeUInt;
-    function GetFirstElement: TLinkedElement<T>;
-    function GetLastElement: TLinkedElement<T>;
+    function GetFirstNode: TLinkedNode<T>;
+    function GetLastNode: TLinkedNode<T>;
 
     procedure Clear;
 
     procedure AddFirst(const AValue: T); overload;
-    procedure AddFirst(const AElement: TLinkedElement<T>); overload;
+    procedure AddFirst(const ANode: TLinkedNode<T>); overload;
     procedure Add(const AValue: T); overload;
-    procedure Add(const AElement: TLinkedElement<T>); overload;
+    procedure Add(const ANode: TLinkedNode<T>); overload;
     function First: T;
     function Last: T;
     function ToArray: TArray<T>;
-    function ToElementArray: TArray<TLinkedElement<T>>;
+    function ToNodeArray: TArray<TLinkedNode<T>>;
 
     property Count: NativeUInt read GetCount;
-    property FirstElement: TLinkedElement<T> read GetFirstElement;
-    property LastElement: TLinkedElement<T> read GetLastElement;
+    property FirstNode: TLinkedNode<T> read GetFirstNode;
+    property LastNode: TLinkedNode<T> read GetLastNode;
   end;
 
   TLinkedList<T> = class(TEnumerable<T>, ILinkedList<T>)
@@ -81,7 +81,7 @@ type
     TEnumerator = class(TEnumerator<T>)
     private
       FList: TLinkedList<T>;
-      FCurrentElement: TLinkedElement<T>;
+      FCurrentNode: TLinkedNode<T>;
     public
       constructor Create(const AList: TLinkedList<T>);
 
@@ -90,14 +90,14 @@ type
     end;
     function GetEnumerator: IEnumerator<T>; override;
   private
-    FFirstElement: TLinkedElement<T>;
-    FLastElement: TLinkedElement<T>;
+    FFirstNode: TLinkedNode<T>;
+    FLastNode: TLinkedNode<T>;
     FCount: NativeUInt;
     function GetCount: NativeUInt;
-    function GetFirstElement: TLinkedElement<T>;
-    function GetLastElement: TLinkedElement<T>;
+    function GetFirstNode: TLinkedNode<T>;
+    function GetLastNode: TLinkedNode<T>;
   protected
-    procedure DoElementAssigned(var AEmlement: TLinkedElement<T>); virtual;
+    procedure DoNodeAssigned(var AEmlement: TLinkedNode<T>); virtual;
   public
     constructor Create;
     destructor Destroy; override;
@@ -105,35 +105,35 @@ type
     procedure Clear;
 
     procedure AddFirst(const AValue: T); overload;
-    procedure AddFirst(const AElement: TLinkedElement<T>); overload;
+    procedure AddFirst(const ANode: TLinkedNode<T>); overload;
     procedure Add(const AValue: T); overload;
-    procedure Add(const AElement: TLinkedElement<T>); overload;
+    procedure Add(const ANode: TLinkedNode<T>); overload;
     function First: T;
     function Last: T;
     function ToArray: TArray<T>;
-    function ToElementArray: TArray<TLinkedElement<T>>;
+    function ToNodeArray: TArray<TLinkedNode<T>>;
 
     property Count: NativeUInt read GetCount;
-    property FirstElement: TLinkedElement<T> read GetFirstElement;
-    property LastElement: TLinkedElement<T> read GetLastElement;
+    property FirstNode: TLinkedNode<T> read GetFirstNode;
+    property LastNode: TLinkedNode<T> read GetLastNode;
   end;
 
   TObjectLinkedList<T: class> = class(TLinkedList<T>)
   private
-    FElementOwnsObject: Boolean;
+    FNodeOwnsObject: Boolean;
   protected
-    procedure DoElementAssigned(var AEmlement: TLinkedElement<T>); override;
+    procedure DoNodeAssigned(var ANode: TLinkedNode<T>); override;
   public
-    constructor Create(const AOwnsElement: Boolean = True);
+    constructor Create(const AOwnsNode: Boolean = True);
 
-    property OwnsElement: Boolean read FElementOwnsObject;
+    property OwnsNode: Boolean read FNodeOwnsObject;
   end;
 
 implementation
 
 { TLinkedListNode<T> }
 
-constructor TLinkedElement<T>.Create(AValue: T);
+constructor TLinkedNode<T>.Create(AValue: T);
 begin
   FValue := AValue;
 
@@ -142,16 +142,16 @@ begin
   FNext := nil;
 end;
 
-destructor TLinkedElement<T>.Destroy;
+destructor TLinkedNode<T>.Destroy;
 begin
   if Assigned(FPrev) then
   begin
     FPrev.FNext := FNext;
     if Assigned(FNext) and Assigned(FList) then
-      FList.FLastElement := FPrev;
+      FList.FLastNode := FPrev;
   end
   else if Assigned(FList) then
-    FList.FFirstElement := FNext;
+    FList.FFirstNode := FNext;
 
   if Assigned(FNext) then
     FNext.FPrev := FPrev;
@@ -165,17 +165,17 @@ begin
   end;
 
   if FList.Count = 0 then
-    FList.FLastElement := nil;
+    FList.FLastNode := nil;
 
   inherited;
 end;
 
-function TLinkedElement<T>.GetEoE: Boolean;
+function TLinkedNode<T>.GetEoE: Boolean;
 begin
   Result := not Assigned(FNext);
 end;
 
-function TLinkedElement<T>.GetSoE: Boolean;
+function TLinkedNode<T>.GetSoE: Boolean;
 begin
   Result := not Assigned(FPrev);
 end;
@@ -185,94 +185,94 @@ end;
 constructor TLinkedList<T>.TEnumerator.Create(const AList: TLinkedList<T>);
 begin
   FList := AList;
-  FCurrentElement := nil;
+  FCurrentNode := nil;
 end;
 
 function TLinkedList<T>.TEnumerator.GetCurrent: T;
 begin
-  if FCurrentElement <> nil then
-    Result := FCurrentElement.Value
+  if FCurrentNode <> nil then
+    Result := FCurrentNode.Value
   else
     Result := default(T);
 end;
 
 function TLinkedList<T>.TEnumerator.MoveNext: Boolean;
 begin
-  if not Assigned(FCurrentElement) then
-    FCurrentElement := FList.FirstElement
+  if not Assigned(FCurrentNode) then
+    FCurrentNode := FList.FirstNode
   else
-    FCurrentElement := FCurrentElement.FNext;
+    FCurrentNode := FCurrentNode.FNext;
 
-  Result := Assigned(FCurrentElement);
+  Result := Assigned(FCurrentNode);
 end;
 
 { TLinkedList<T> }
 
 procedure TLinkedList<T>.Add(const AValue: T);
 begin
-  Add(TLinkedElement<T>.Create(AValue));
+  Add(TLinkedNode<T>.Create(AValue));
 end;
 
 procedure TLinkedList<T>.AddFirst(const AValue: T);
 begin
-  AddFirst(TLinkedElement<T>.Create(AValue));
+  AddFirst(TLinkedNode<T>.Create(AValue));
 end;
 
-procedure TLinkedList<T>.AddFirst(const AElement: TLinkedElement<T>);
+procedure TLinkedList<T>.AddFirst(const ANode: TLinkedNode<T>);
 begin
-  if not Assigned(AElement) then
+  if not Assigned(ANode) then
     raise Exception.Create('TLinkedList<T> Argument nil error');
 
-  if Assigned(AElement.FList) then
-    raise Exception.Create('TLinkedList<T> Element alrady part of collection error');
+  if Assigned(ANode.FList) then
+    raise Exception.Create('TLinkedList<T> Node alrady part of collection error');
 
-  AElement.FNext := FFirstElement;
-  if Assigned(FFirstElement) then
-    FFirstElement.FPrev := AElement;
+  ANode.FNext := FFirstNode;
+  if Assigned(FFirstNode) then
+    FFirstNode.FPrev := ANode;
 
 
-  FFirstElement := AElement;
-  DoElementAssigned(FFirstElement);
+  FFirstNode := ANode;
+  DoNodeAssigned(FFirstNode);
 
-  if not Assigned(FLastElement) then
-    FLastElement := FFirstElement;
+  if not Assigned(FLastNode) then
+    FLastNode := FFirstNode;
 
-  AElement.FList := Self;
+  ANode.FList := Self;
   Inc(FCount);
 end;
 
-procedure TLinkedList<T>.Add(const AElement: TLinkedElement<T>);
+procedure TLinkedList<T>.Add(const ANode: TLinkedNode<T>);
 begin
-  if not Assigned(AElement) then
+  if not Assigned(ANode) then
     raise Exception.Create('TLinkedList<T> Argument nil error');
 
-  if Assigned(AElement.FList) then
-    raise Exception.Create('TLinkedList<T> Element alrady part of collection error');
+  if Assigned(ANode.FList) then
+    raise Exception.Create('TLinkedList<T> Node alrady part of collection error');
 
-  AElement.FPrev := FLastElement;
-  if Assigned(FLastElement) then
-    FLastElement.FNext := AElement;
+  ANode.FPrev := FLastNode;
+  if Assigned(FLastNode) then
+    FLastNode.FNext := ANode;
 
-  FLastElement := AElement;
-  DoElementAssigned(FLastElement);
+  FLastNode := ANode;
+  DoNodeAssigned(FLastNode);
 
-  if not Assigned(FFirstElement) then
-    FFirstElement := FLastElement;
+  if not Assigned(FFirstNode) then
+    FFirstNode := FLastNode;
 
-  AElement.FList := Self;
+  ANode.FList := Self;
   Inc(FCount);
 end;
 
 procedure TLinkedList<T>.Clear;
 begin
-  while Assigned(FFirstElement) do
-    FFirstElement.Free;
+  while Assigned(FFirstNode) do
+    FFirstNode.Free;
 end;
 
 constructor TLinkedList<T>.Create;
 begin
-  FFirstElement := nil;
-  FLastElement := nil;
+  FFirstNode := nil;
+  FLastNode := nil;
   FCount := 0;
 end;
 
@@ -283,7 +283,7 @@ begin
   inherited;
 end;
 
-procedure TLinkedList<T>.DoElementAssigned(var AEmlement: TLinkedElement<T>);
+procedure TLinkedList<T>.DoNodeAssigned(var AEmlement: TLinkedNode<T>);
 begin
 end;
 
@@ -292,7 +292,7 @@ begin
   if FCount = 0 then
     raise Exception.Create('TLinkedList<T> is Empty Error');
 
-  Result := FFirstElement.FValue
+  Result := FFirstNode.FValue
 end;
 
 function TLinkedList<T>.GetCount: NativeUInt;
@@ -305,14 +305,14 @@ begin
   Result := TEnumerator.Create(Self);
 end;
 
-function TLinkedList<T>.GetFirstElement: TLinkedElement<T>;
+function TLinkedList<T>.GetFirstNode: TLinkedNode<T>;
 begin
-  Result := FFirstElement;
+  Result := FFirstNode;
 end;
 
-function TLinkedList<T>.GetLastElement: TLinkedElement<T>;
+function TLinkedList<T>.GetLastNode: TLinkedNode<T>;
 begin
-  Result := FLastElement;
+  Result := FLastNode;
 end;
 
 function TLinkedList<T>.Last: T;
@@ -320,58 +320,58 @@ begin
   if FCount = 0 then
     raise Exception.Create('TLinkedList<T> is Empty Error');
 
-  Result := FLastElement.FValue;
+  Result := FLastNode.FValue;
 end;
 
 function TLinkedList<T>.ToArray: TArray<T>;
 var
-  LElement: TLinkedElement<T>;
+  LNode: TLinkedNode<T>;
   LIdx: Integer;
 begin
   SetLength(Result, FCount);
-  if not Assigned(FFirstElement) then
+  if not Assigned(FFirstNode) then
     Exit;
 
   LIdx := 0;
-  LElement := FFirstElement;
+  LNode := FFirstNode;
   repeat
-    Result[LIdx] := LElement.Value;
-    LElement := LElement.FNext;
+    Result[LIdx] := LNode.Value;
+    LNode := LNode.FNext;
     Inc(LIdx);
-  until not Assigned(LElement);
+  until not Assigned(LNode);
 end;
 
-function TLinkedList<T>.ToElementArray: TArray<TLinkedElement<T>>;
+function TLinkedList<T>.ToNodeArray: TArray<TLinkedNode<T>>;
 var
-  LElement: TLinkedElement<T>;
+  LNode: TLinkedNode<T>;
   LIdx: Integer;
 begin
   SetLength(Result, FCount);
-  if not Assigned(FFirstElement) then
+  if not Assigned(FFirstNode) then
     Exit;
 
   LIdx := 0;
-  LElement := FFirstElement;
+  LNode := FFirstNode;
   repeat
-    Result[LIdx] := LElement;
-    LElement := LElement.FNext;
+    Result[LIdx] := LNode;
+    LNode := LNode.FNext;
     Inc(LIdx);
-  until not Assigned(LElement);
+  until not Assigned(LNode);
 end;
 
 { TObjectLinkedList<T> }
 
-constructor TObjectLinkedList<T>.Create(const AOwnsElement: Boolean);
+constructor TObjectLinkedList<T>.Create(const AOwnsNode: Boolean);
 begin
-  FElementOwnsObject := AOwnsElement;
+  FNodeOwnsObject := AOwnsNode;
 end;
 
-procedure TObjectLinkedList<T>.DoElementAssigned(
-  var AEmlement: TLinkedElement<T>);
+procedure TObjectLinkedList<T>.DoNodeAssigned(
+  var ANode: TLinkedNode<T>);
 begin
   inherited;
 
-  AEmlement.FOwnsObject := FElementOwnsObject
+  ANode.FOwnsObject := FNodeOwnsObject
 end;
 
 end.

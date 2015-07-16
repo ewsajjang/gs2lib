@@ -37,9 +37,9 @@ type
     [TestCase]
     procedure FirstLastTest;
     [TestCase]
-    procedure FirstLastElementTest;
+    procedure FirstLastNodeTest;
     [TestCase]
-    procedure ElementNextPrev;
+    procedure NodeNextPrev;
   end;
 
 implementation
@@ -67,19 +67,19 @@ end;
 
 procedure TObjectLinkedListTest.AddFirstTest;
 var
-  LElement: TLinkedElement<TItem>;
+  LNode: TLinkedNode<TItem>;
 begin
   FList.Clear;
   FList.AddFirst(TItem.Create(0));
   FList.AddFirst(TItem.Create(1));
   FList.AddFirst(TItem.Create(2));
 
-  LElement := FList.FirstElement;
-  Assert.AreEqual(2, LElement.Value.ID);
-  LElement := LElement.Next;
-  Assert.AreEqual(1, LElement.Value.ID);
-  LElement := LElement.Next;
-  Assert.AreEqual(0, LElement.Value.ID);
+  LNode := FList.FirstNode;
+  Assert.AreEqual(2, LNode.Value.ID);
+  LNode := LNode.Next;
+  Assert.AreEqual(1, LNode.Value.ID);
+  LNode := LNode.Next;
+  Assert.AreEqual(0, LNode.Value.ID);
 end;
 
 procedure TObjectLinkedListTest.Setup;
@@ -114,78 +114,78 @@ end;
 
 procedure TObjectLinkedListTest.ToFieldArrayTest;
 var
-  LElements: array[0..3] of TLinkedElement<TItem>;
-  LArray: TArray<TLinkedElement<TItem>>;
+  LNodes: array[0..3] of TLinkedNode<TItem>;
+  LArray: TArray<TLinkedNode<TItem>>;
 begin
-  LElements[0] := TLinkedElement<TItem>.Create(TItem.Create(0));
-  LElements[1] := TLinkedElement<TItem>.Create(TItem.Create(1));
-  LElements[2] := TLinkedElement<TItem>.Create(TItem.Create(2));
-  FList.Add(LElements[0]);
-  FList.Add(LElements[1]);
-  FList.Add(LElements[2]);
-  LArray := FList.ToElementArray;
+  LNodes[0] := TLinkedNode<TItem>.Create(TItem.Create(0));
+  LNodes[1] := TLinkedNode<TItem>.Create(TItem.Create(1));
+  LNodes[2] := TLinkedNode<TItem>.Create(TItem.Create(2));
+  FList.Add(LNodes[0]);
+  FList.Add(LNodes[1]);
+  FList.Add(LNodes[2]);
+  LArray := FList.ToNodeArray;
   Assert.AreEqual(3, Length(LArray));
-  Assert.AreSame(LElements[0], LArray[0]);
-  Assert.AreSame(LElements[1], LArray[1]);
-  Assert.AreSame(LElements[2], LArray[2]);
+  Assert.AreSame(LNodes[0], LArray[0]);
+  Assert.AreSame(LNodes[1], LArray[1]);
+  Assert.AreSame(LNodes[2], LArray[2]);
 end;
 
 procedure TObjectLinkedListTest.AddTest;
 var
   LItem: TItem;
-  LElement: TLinkedElement<TItem>;
+  LNode: TLinkedNode<TItem>;
 begin
   FList.Add(TItem.Create(0));
   FList.Add(TItem.Create(1));
   FList.Add(TItem.Create(2));
   Assert.AreEqual<NativeUInt>(3, FList.Count);
 
-  LElement := FList.FirstElement;
-  LItem := LElement.Value;
+  LNode := FList.FirstNode;
+  LItem := LNode.Value;
   Assert.AreEqual(0, LItem.ID);
-  Assert.IsTrue(LElement.SoE);
-  Assert.IsFalse(LElement.EoE);
+  Assert.IsTrue(LNode.SoE);
+  Assert.IsFalse(LNode.EoE);
 
-  LElement := LElement.Next;
-  LItem := LElement.Value;
+  LNode := LNode.Next;
+  LItem := LNode.Value;
   Assert.AreEqual(1, LItem.ID);
 
-  LElement := LElement.Next;
-  LItem := LElement.Value;
+  LNode := LNode.Next;
+  LItem := LNode.Value;
   Assert.AreEqual(2, LItem.ID);
-  Assert.IsFalse(LElement.SoE);
-  Assert.IsTrue(LElement.EoE);
+  Assert.IsFalse(LNode.SoE);
+  Assert.IsTrue(LNode.EoE);
 end;
 
-procedure TObjectLinkedListTest.ElementNextPrev;
+procedure TObjectLinkedListTest.NodeNextPrev;
 var
-  LElement: TLinkedElement<TItem>;
+  LNode: TLinkedNode<TItem>;
 begin
   FList.Add(TItem.Create(0));
   FList.Add(TItem.Create(1));
   FList.Add(TItem.Create(2));
-  LElement := FList.FirstElement;
-  LElement := LElement.Next;
-  Assert.AreEqual(1, LElement.Value.ID);
-  LElement := LElement.Prev;
-  Assert.AreEqual(0, LElement.Value.ID);
-  LElement := LElement.Next;
-  Assert.AreEqual(1, LElement.Value.ID);
-  LElement := LElement.Next;
-  Assert.AreEqual(2, LElement.Value.ID);
-  LElement := LElement.Prev;
-  Assert.AreEqual(1, LElement.Value.ID);
-  LElement := LElement.Prev;
-  Assert.AreEqual(0, LElement.Value.ID);
+  LNode := FList.FirstNode;
+  LNode := LNode.Next;
+  Assert.AreEqual(1, LNode.Value.ID);
+  LNode := LNode.Prev;
+  Assert.AreEqual(0, LNode.Value.ID);
+  LNode := LNode.Next;
+  Assert.AreEqual(1, LNode.Value.ID);
+  LNode := LNode.Next;
+  Assert.AreEqual(2, LNode.Value.ID);
+  LNode := LNode.Prev;
+  Assert.AreEqual(1, LNode.Value.ID);
+  LNode := LNode.Prev;
+  Assert.AreEqual(0, LNode.Value.ID);
 end;
 
-procedure TObjectLinkedListTest.FirstLastElementTest;
+procedure TObjectLinkedListTest.FirstLastNodeTest;
 begin
   FList.Add(TItem.Create(0));
   FList.Add(TItem.Create(1));
   FList.Add(TItem.Create(2));
-  Assert.AreEqual(0, FList.FirstElement.Value.ID);
-  Assert.AreEqual(2, FList.LastElement.Value.ID);
+  Assert.AreEqual(0, FList.FirstNode.Value.ID);
+  Assert.AreEqual(2, FList.LastNode.Value.ID);
 end;
 
 procedure TObjectLinkedListTest.FirstLastTest;
