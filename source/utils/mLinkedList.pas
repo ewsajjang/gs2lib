@@ -54,7 +54,7 @@ type
     property Value: T read FValue write FValue;
   end;
 
-  ILinkedList<T> = interface
+  ILinkedList<T> = interface(IEnumerable<T>)
     ['{9D43E8BC-311F-425A-B6E0-FA26340197F9}']
     function GetCount: NativeUInt;
     function GetFirstElement: TLinkedElement<T>;
