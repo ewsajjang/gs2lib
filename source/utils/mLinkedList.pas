@@ -129,7 +129,29 @@ type
     property OwnsNode: Boolean read FNodeOwnsObject;
   end;
 
-  TLinkedElement<T> = class(TEnumerable<T>)
+  TLinkedElement<T> = class;
+  ILinkedElement<T> = interface(IEnumerable<T>)
+    function GetCount: Integer;
+    function GetEoE: Boolean;
+    function GetSoE: Boolean;
+    function GetValue: T;
+
+    procedure Add(const AValue: T);
+
+    function First: TLinkedElement<T>;
+    function Last: TLinkedElement<T>;
+    function Next: TLinkedElement<T>;
+    function Prev: TLinkedElement<T>;
+
+    function ToArray: TArray<T>;
+
+    property Count: Integer read GetCount;
+    property Value: T read GetValue;
+    property SoE: Boolean read GetSoE;
+    property EoE: Boolean read GetEoE;
+  end;
+
+  TLinkedElement<T> = class(TEnumerable<T>, ILinkedElement<T>)
   type
     TEnumerator = class(TEnumerator<T>)
     private

@@ -69,7 +69,7 @@ type
       destructor Destroy; override;
     end;
   private
-    FElement: TObjectLinkedElement<TItem>;
+    FElement: ILinkedElement<TItem>;
   public
     [Setup]
     procedure Setup;
@@ -321,7 +321,8 @@ end;
 
 procedure TObjectLinkedElementTest.TearDown;
 begin
-  FreeAndNil(FElement);
+//  FreeAndNil(FElement);
+  FElement := nil;
   Assert.AreEqual(0, TItem.FCnt);
 end;
 
