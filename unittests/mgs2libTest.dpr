@@ -10,6 +10,9 @@ uses
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestRunner,
   DUnitX.TestFramework,
+  TestmLinkedList in 'TestmLinkedList.pas',
+  mLinkedList.pas in '..\source\utils\mLinkedList.pas.bak',
+  mLinkedList in '..\source\utils\mLinkedList.pas',
   TestmRouter in 'TestmRouter.pas',
   TestmBitMask in 'TestmBitMask.pas',
   TestmIntervalCounter in 'TestmIntervalCounter.pas',
@@ -21,10 +24,7 @@ uses
   mIntervalCounter in '..\source\utils\mIntervalCounter.pas',
   mRepeator in '..\source\utils\mRepeator.pas',
   TestmGenericValueList in 'TestmGenericValueList.pas',
-  mGenericValueList in '..\source\utils\mGenericValueList.pas',
-  TestmLinkedList in 'TestmLinkedList.pas',
-  mLinkedList.pas in '..\source\utils\mLinkedList.pas.bak',
-  mLinkedList in '..\source\utils\mLinkedList.pas';
+  mGenericValueList in '..\source\utils\mGenericValueList.pas';
 
 {R *.RES}
 
@@ -39,11 +39,13 @@ begin
     //Create the runner
     runner := TDUnitX.CreateRunner;
     runner.UseRTTI := True;
+    //runner.FailsOnNoAsserts := True; //Assertions must be made during tests;
     //tell the runner how we will log things
     logger := TDUnitXConsoleLogger.Create(true);
     nunitLogger := TDUnitXXMLNUnitFileLogger.Create;
     runner.AddLogger(logger);
     runner.AddLogger(nunitLogger);
+
 
     //Run tests
     results := runner.Execute;

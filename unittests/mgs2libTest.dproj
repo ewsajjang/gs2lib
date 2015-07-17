@@ -112,6 +112,9 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
+        <DCCReference Include="TestmLinkedList.pas"/>
+        <DCCReference Include="..\source\utils\mLinkedList.pas.bak"/>
+        <DCCReference Include="..\source\utils\mLinkedList.pas"/>
         <DCCReference Include="TestmRouter.pas"/>
         <DCCReference Include="TestmBitMask.pas"/>
         <DCCReference Include="TestmIntervalCounter.pas"/>
@@ -124,9 +127,6 @@
         <DCCReference Include="..\source\utils\mRepeator.pas"/>
         <DCCReference Include="TestmGenericValueList.pas"/>
         <DCCReference Include="..\source\utils\mGenericValueList.pas"/>
-        <DCCReference Include="TestmLinkedList.pas"/>
-        <DCCReference Include="..\source\utils\mLinkedList.pas.bak"/>
-        <DCCReference Include="..\source\utils\mLinkedList.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -524,12 +524,12 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
+                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Android" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="Win32" Name="$(PROJECTNAME)"/>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="Win64" Name="$(PROJECTNAME)"/>
-                <ProjectRoot Platform="OSX32" Name="$(PROJECTNAME)"/>
+                <ProjectRoot Platform="iOSSimulator" Name="$(PROJECTNAME).app"/>
                 <ProjectRoot Platform="iOSDevice32" Name="$(PROJECTNAME).app"/>
             </Deployment>
             <Platforms>

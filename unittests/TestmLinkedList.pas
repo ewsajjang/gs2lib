@@ -42,6 +42,44 @@ type
     procedure NodeNextPrev;
   end;
 
+  [IgnoreMemoryLeaks(False)]
+  TLinkedElementTest = class
+  private
+    FElement: TLinkedElement<Integer>;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+
+    [TestCase]
+    [IgnoreMemoryLeaks(False)]
+    procedure Test;
+  end;
+
+  [IgnoreMemoryLeaks(False)]
+  TObjectLinkedElementTest = class
+  private type
+    TItem = class
+    public
+      class var FCnt: Integer;
+    public
+      ID: Integer;
+      constructor Create(AID: Integer);
+      destructor Destroy; override;
+    end;
+  private
+    FElement: TObjectLinkedElement<TItem>;
+  public
+    [Setup]
+    procedure Setup;
+    [TearDown]
+    procedure TearDown;
+
+    [TestCase]
+    procedure Test;
+  end;
+
 implementation
 
 var
@@ -197,7 +235,148 @@ begin
   Assert.AreEqual(2, FList.Last.ID);
 end;
 
+{ TLinkedElementTest }
+
+procedure TLinkedElementTest.Setup;
+begin
+  FElement := TLinkedElement<Integer>.Create;
+end;
+
+procedure TLinkedElementTest.TearDown;
+begin
+  FElement.Free;
+  FElement := nil;
+end;
+
+procedure TLinkedElementTest.Test;
+var
+  LExpected, LValue: Integer;
+begin
+  FElement.Add(1);
+  Assert.AreEqual(1, FElement.Value);
+  Assert.AreEqual(1, FElement.Count);
+  FElement.Add(2);
+  Assert.AreEqual(2, FElement.Value);
+  Assert.AreEqual(2, FElement.Count);
+  FElement.Add(3);
+  Assert.AreEqual(3, FElement.Value);
+  Assert.AreEqual(3, FElement.Count);
+  LExpected := 1;
+  for LValue in FElement do
+  begin
+    Assert.AreEqual(LExpected, LValue);
+    Inc(LExpected);
+  end;
+  FElement.First;
+  Assert.AreEqual(1, FElement.Value);
+  Assert.IsTrue(FElement.SoE);
+  Assert.IsFalse(FElement.EoE);
+  FElement.Next;
+  Assert.AreEqual(2, FElement.Value);
+  Assert.IsFalse(FElement.SoE);
+  Assert.IsFalse(FElement.EoE);
+  FElement.Next;
+  Assert.AreEqual(3, FElement.Value);
+  Assert.IsFalse(FElement.SoE);
+  Assert.IsTrue(FElement.EoE);
+  FElement.Prev;
+  Assert.AreEqual(2, FElement.Value);
+  Assert.IsFalse(FElement.SoE);
+  Assert.IsFalse(FElement.EoE);
+  FElement.Prev;
+  Assert.AreEqual(1, FElement.Value);
+  Assert.IsFalse(FElement.EoE);
+  Assert.IsTrue(FElement.SoE);
+
+  LExpected := 1;
+  for LValue in FElement.ToArray do
+  begin
+    Assert.AreEqual(LExpected, LValue);
+    Inc(LExpected);
+  end;
+end;
+
+{ TObjectLinkedElementTest.TItem }
+
+constructor TObjectLinkedElementTest.TItem.Create(AID: Integer);
+begin
+  ID := AID;
+  Inc(FCnt);
+end;
+
+destructor TObjectLinkedElementTest.TItem.Destroy;
+begin
+  Dec(FCnt);
+
+  inherited
+end;
+
+{ TObjectLinkedElementTest }
+
+procedure TObjectLinkedElementTest.Setup;
+begin
+  TItem.FCnt := 0;
+  FElement := TObjectLinkedElement<TItem>.Create(True);
+end;
+
+procedure TObjectLinkedElementTest.TearDown;
+begin
+  FreeAndNil(FElement);
+  Assert.AreEqual(0, TItem.FCnt);
+end;
+
+procedure TObjectLinkedElementTest.Test;
+var
+  LExpected: Integer;
+  LValue: TItem;
+begin
+  FElement.Add(TItem.Create(1));
+  Assert.AreEqual(1, FElement.Value.ID);
+  Assert.AreEqual(1, FElement.Count);
+  FElement.Add(TItem.Create(2));
+  Assert.AreEqual(2, FElement.Value.ID);
+  Assert.AreEqual(2, FElement.Count);
+  FElement.Add(TItem.Create(3));
+  Assert.AreEqual(3, FElement.Value.ID);
+  Assert.AreEqual(3, FElement.Count);
+  LExpected := 1;
+  for LValue in FElement do
+  begin
+    Assert.AreEqual(LExpected, LValue.ID);
+    Inc(LExpected);
+  end;
+  FElement.First;
+  Assert.AreEqual(1, FElement.Value.ID);
+  Assert.IsTrue(FElement.SoE);
+  Assert.IsFalse(FElement.EoE);
+  FElement.Next;
+  Assert.AreEqual(2, FElement.Value.ID);
+  Assert.IsFalse(FElement.SoE);
+  Assert.IsFalse(FElement.EoE);
+  FElement.Next;
+  Assert.AreEqual(3, FElement.Value.ID);
+  Assert.IsFalse(FElement.SoE);
+  Assert.IsTrue(FElement.EoE);
+  FElement.Prev;
+  Assert.AreEqual(2, FElement.Value.ID);
+  Assert.IsFalse(FElement.SoE);
+  Assert.IsFalse(FElement.EoE);
+  FElement.Prev;
+  Assert.AreEqual(1, FElement.Value.ID);
+  Assert.IsFalse(FElement.EoE);
+  Assert.IsTrue(FElement.SoE);
+
+  LExpected := 1;
+  for LValue in FElement.ToArray do
+  begin
+    Assert.AreEqual(LExpected, LValue.ID);
+    Inc(LExpected);
+  end;
+end;
+
 initialization
   TDUnitX.RegisterTestFixture(TObjectLinkedListTest);
+  TDUnitX.RegisterTestFixture(TLinkedElementTest);
+  TDUnitX.RegisterTestFixture(TObjectLinkedElementTest);
 
 end.
