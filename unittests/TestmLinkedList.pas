@@ -181,8 +181,8 @@ begin
   LNode := FList.FirstNode;
   LItem := LNode.Value;
   Assert.AreEqual(0, LItem.ID);
-  Assert.IsTrue(LNode.SoE);
-  Assert.IsFalse(LNode.EoE);
+  Assert.IsTrue(LNode.SoN);
+  Assert.IsFalse(LNode.EoN);
 
   LNode := LNode.Next;
   LItem := LNode.Value;
@@ -191,8 +191,8 @@ begin
   LNode := LNode.Next;
   LItem := LNode.Value;
   Assert.AreEqual(2, LItem.ID);
-  Assert.IsFalse(LNode.SoE);
-  Assert.IsTrue(LNode.EoE);
+  Assert.IsFalse(LNode.SoN);
+  Assert.IsTrue(LNode.EoN);
 end;
 
 procedure TObjectLinkedListTest.NodeNextPrev;

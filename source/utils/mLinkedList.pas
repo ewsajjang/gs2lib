@@ -138,10 +138,15 @@ type
 
     procedure Add(const AValue: T);
 
-    function First: TLinkedElement<T>;
-    function Last: TLinkedElement<T>;
-    function Next: TLinkedElement<T>;
-    function Prev: TLinkedElement<T>;
+    function FirstElement: TLinkedElement<T>;
+    function LastElement: TLinkedElement<T>;
+    function NextElement: TLinkedElement<T>;
+    function PrevElement: TLinkedElement<T>;
+
+    function First: T;
+    function Last: T;
+    function Next: T;
+    function Prev: T;
 
     function ToArray: TArray<T>;
 
@@ -181,10 +186,15 @@ type
 
     procedure Add(const AValue: T);
 
-    function First: TLinkedElement<T>;
-    function Last: TLinkedElement<T>;
-    function Next: TLinkedElement<T>;
-    function Prev: TLinkedElement<T>;
+    function FirstElement: TLinkedElement<T>;
+    function LastElement: TLinkedElement<T>;
+    function NextElement: TLinkedElement<T>;
+    function PrevElement: TLinkedElement<T>;
+
+    function First: T;
+    function Last: T;
+    function Next: T;
+    function Prev: T;
 
     function ToArray: TArray<T>;
 
@@ -465,7 +475,7 @@ begin
   LElement.FValue := AValue;
   if Assigned(FCurrent) then
   begin
-    LLast := Last;
+    LLast := LastElement;
     LElement.FPrev := LLast;
     LLast.FNext := LElement;
   end;
@@ -510,7 +520,12 @@ begin
   Result := TLinkedElement<T>.Create;
 end;
 
-function TLinkedElement<T>.First: TLinkedElement<T>;
+function TLinkedElement<T>.First: T;
+begin
+  Result := FirstElement.FValue;
+end;
+
+function TLinkedElement<T>.FirstElement: TLinkedElement<T>;
 var
   LElement: TLinkedElement<T>;
 begin
@@ -546,7 +561,12 @@ begin
   Result := FCurrent.FValue
 end;
 
-function TLinkedElement<T>.Last: TLinkedElement<T>;
+function TLinkedElement<T>.Last: T;
+begin
+  Result := LastElement.FValue;
+end;
+
+function TLinkedElement<T>.LastElement: TLinkedElement<T>;
 var
   LElement: TLinkedElement<T>;
 begin
@@ -557,12 +577,22 @@ begin
   Result := FCurrent;
 end;
 
-function TLinkedElement<T>.Next: TLinkedElement<T>;
+function TLinkedElement<T>.Next: T;
+begin
+  Result := NextElement.FValue;
+end;
+
+function TLinkedElement<T>.NextElement: TLinkedElement<T>;
 begin
   FCurrent := FCurrent.FNext;
 end;
 
-function TLinkedElement<T>.Prev: TLinkedElement<T>;
+function TLinkedElement<T>.Prev: T;
+begin
+  Result := PrevElement.FValue;
+end;
+
+function TLinkedElement<T>.PrevElement: TLinkedElement<T>;
 begin
   FCurrent:= FCurrent.FPrev
 end;
@@ -571,7 +601,7 @@ function TLinkedElement<T>.ToArray: TArray<T>;
 var
   LElement: TLinkedElement<T>;
 begin
-  LElement := First;
+  LElement := FirstElement;
   repeat
     Result := Result + [LElement.FValue];
     LElement := LElement.FNext;
