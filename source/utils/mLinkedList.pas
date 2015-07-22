@@ -38,8 +38,8 @@ type
     FNext: TLinkedNode<T>;
     FList: TLinkedList<T>;
     FOwnsObject: Boolean;
-    function GetEoE: Boolean;
-    function GetSoE: Boolean;
+    function GetEoN: Boolean;
+    function GetSoN: Boolean;
   public
     constructor Create(AValue: T);
     destructor Destroy; override;
@@ -47,8 +47,8 @@ type
     property Next: TLinkedNode<T> read FNext;
     property Prev: TLinkedNode<T> read FPrev;
 
-    property SoE: Boolean read GetSoE;
-    property EoE: Boolean read GetEoE;
+    property SoN: Boolean read GetSoN;
+    property EoN: Boolean read GetEoN;
 
     property List: TLinkedList<T> read FList;
     property Value: T read FValue write FValue;
@@ -229,12 +229,12 @@ begin
   inherited;
 end;
 
-function TLinkedNode<T>.GetEoE: Boolean;
+function TLinkedNode<T>.GetEoN: Boolean;
 begin
   Result := not Assigned(FNext);
 end;
 
-function TLinkedNode<T>.GetSoE: Boolean;
+function TLinkedNode<T>.GetSoN: Boolean;
 begin
   Result := not Assigned(FPrev);
 end;
