@@ -3,7 +3,7 @@ unit mLinkedList;
 interface
 
 uses
-  System.Classes, System.SysUtils,
+  System.Classes, System.SysUtils, System.Rtti,
 
   System.Generics.Collections
   ;
@@ -129,7 +129,35 @@ type
     property OwnsNode: Boolean read FNodeOwnsObject;
   end;
 
-  TLinkedElement<T> = class(TEnumerable<T>)
+  TLinkedElement<T> = class;
+  ILinkedElement<T> = interface(IEnumerable<T>)
+    function GetCount: Integer;
+    function GetEoE: Boolean;
+    function GetSoE: Boolean;
+    function GetValue: T;
+
+    procedure Add(const AValue: T);
+    procedure Clear;
+
+    function FirstElement: TLinkedElement<T>;
+    function LastElement: TLinkedElement<T>;
+    function NextElement: TLinkedElement<T>;
+    function PrevElement: TLinkedElement<T>;
+
+    function First: T;
+    function Last: T;
+    function Next: T;
+    function Prev: T;
+
+    function ToArray: TArray<T>;
+
+    property Count: Integer read GetCount;
+    property Value: T read GetValue;
+    property SoE: Boolean read GetSoE;
+    property EoE: Boolean read GetEoE;
+  end;
+
+  TLinkedElement<T> = class(TEnumerable<T>, ILinkedElement<T>)
   type
     TEnumerator = class(TEnumerator<T>)
     private
@@ -157,12 +185,18 @@ type
     constructor Create; overload;
     destructor Destroy; override;
 
-    procedure Add(const AValue: T);
+    procedure Clear; virtual;
+    procedure Add(const AValue: T); overload;
 
-    function First: TLinkedElement<T>;
-    function Last: TLinkedElement<T>;
-    function Next: TLinkedElement<T>;
-    function Prev: TLinkedElement<T>;
+    function FirstElement: TLinkedElement<T>;
+    function LastElement: TLinkedElement<T>;
+    function NextElement: TLinkedElement<T>;
+    function PrevElement: TLinkedElement<T>;
+
+    function First: T;
+    function Last: T;
+    function Next: T;
+    function Prev: T;
 
     function ToArray: TArray<T>;
 
@@ -180,8 +214,42 @@ type
   public
     destructor Destroy; override;
 
+    function Add(const ACreateParams: array of TValue): T; overload;
+    function Add: T; overload;
+
     constructor Create(const AValue: T; const AOwnsElement: Boolean = True); overload;
     constructor Create(const AOwnsElement: Boolean = True); overload;
+  end;
+
+  TLinkedElementList<T> = class(TLinkedElement<T>)
+  private
+    FList: TList<TLinkedElement<T>>;
+  protected
+    function DoCreateElelement: TLinkedElement<T>; override;
+  public
+    constructor Create(const AValue: T); overload;
+    constructor Create; overload;
+
+    destructor Destroy; override;
+
+    procedure Clear; override;
+  end;
+
+  TObjectLinkedElementList<T: class> = class(TObjectLinkedElement<T>)
+  private
+    FList: TList<TLinkedElement<T>>;
+    function GetItems(Index: Integer): T;
+  protected
+    function DoCreateElelement: TLinkedElement<T>; override;
+  public
+    destructor Destroy; override;
+
+    constructor Create(const AValue: T; const AOwnsElement: Boolean = True); overload;
+    constructor Create(const AOwnsElement: Boolean = True); overload;
+
+    procedure Clear; override;
+
+    property Items[Index: Integer]: T read GetItems; default;
   end;
 
 implementation
@@ -443,7 +511,7 @@ begin
   LElement.FValue := AValue;
   if Assigned(FCurrent) then
   begin
-    LLast := Last;
+    LLast := LastElement;
     LElement.FPrev := LLast;
     LLast.FNext := LElement;
   end;
@@ -467,18 +535,7 @@ end;
 
 destructor TLinkedElement<T>.Destroy;
 begin
-  if Assigned(FPrev) then
-    FPrev.FNext := FNext
-  else if Assigned(FNext) then
-    FNext.FPrev := FPrev;
-
-  if Assigned(FPrev) then
-    FreeAndNil(FPrev)
-  else if Assigned(FNext) then
-    FreeAndNil(FNext);
-
-  if Assigned(FCurrent) then
-    FCurrent.Free;
+  Clear;
 
   inherited;
 end;
@@ -488,7 +545,12 @@ begin
   Result := TLinkedElement<T>.Create;
 end;
 
-function TLinkedElement<T>.First: TLinkedElement<T>;
+function TLinkedElement<T>.First: T;
+begin
+  Result := FirstElement.FValue;
+end;
+
+function TLinkedElement<T>.FirstElement: TLinkedElement<T>;
 var
   LElement: TLinkedElement<T>;
 begin
@@ -524,7 +586,12 @@ begin
   Result := FCurrent.FValue
 end;
 
-function TLinkedElement<T>.Last: TLinkedElement<T>;
+function TLinkedElement<T>.Last: T;
+begin
+  Result := LastElement.FValue;
+end;
+
+function TLinkedElement<T>.LastElement: TLinkedElement<T>;
 var
   LElement: TLinkedElement<T>;
 begin
@@ -535,12 +602,22 @@ begin
   Result := FCurrent;
 end;
 
-function TLinkedElement<T>.Next: TLinkedElement<T>;
+function TLinkedElement<T>.Next: T;
+begin
+  Result := NextElement.FValue;
+end;
+
+function TLinkedElement<T>.NextElement: TLinkedElement<T>;
 begin
   FCurrent := FCurrent.FNext;
 end;
 
-function TLinkedElement<T>.Prev: TLinkedElement<T>;
+function TLinkedElement<T>.Prev: T;
+begin
+  Result := PrevElement.FValue;
+end;
+
+function TLinkedElement<T>.PrevElement: TLinkedElement<T>;
 begin
   FCurrent:= FCurrent.FPrev
 end;
@@ -549,11 +626,27 @@ function TLinkedElement<T>.ToArray: TArray<T>;
 var
   LElement: TLinkedElement<T>;
 begin
-  LElement := First;
+  LElement := FirstElement;
   repeat
     Result := Result + [LElement.FValue];
     LElement := LElement.FNext;
   until not Assigned(LElement);
+end;
+
+procedure TLinkedElement<T>.Clear;
+begin
+  if Assigned(FPrev) then
+    FPrev.FNext := FNext
+  else if Assigned(FNext) then
+    FNext.FPrev := FPrev;
+  if Assigned(FPrev) then
+    FreeAndNil(FPrev)
+  else if Assigned(FNext) then
+    FreeAndNil(FNext);
+  if Assigned(FCurrent) then
+    FreeAndNil(FCurrent);
+
+  FCount := 0;
 end;
 
 { TLinkedElement<T>.TEnumerator }
@@ -585,6 +678,34 @@ begin
   Create(AOwnsElement);
 end;
 
+function TObjectLinkedElement<T>.Add(const ACreateParams: array of TValue): T;
+var
+  LValue: TValue;
+  LCtx: TRttiContext;
+  LRType: TRttiType;
+  LCreator: TRttiMethod;
+  LInstanceType: TRttiInstanceType;
+begin
+  LCtx := TRttiContext.Create;
+  LRType := LCtx.GetType(TypeInfo(T));
+  for LCreator in LRType.GetMethods do
+  begin
+    if (LCreator.IsConstructor) and (Length(LCreator.GetParameters) = 0) then
+    begin
+      LInstanceType := LRType.AsInstance;
+      LValue := LCreator.Invoke(LInstanceType.MetaclassType, ACreateParams);
+      Result := LValue.AsType<T>;
+      inherited Add(Result);
+      Exit;
+    end;
+  end;
+end;
+
+function TObjectLinkedElement<T>.Add: T;
+begin
+  Result := Add([]);
+end;
+
 constructor TObjectLinkedElement<T>.Create(const AOwnsElement: Boolean);
 begin
   inherited Create;
@@ -603,6 +724,83 @@ end;
 function TObjectLinkedElement<T>.DoCreateElelement: TLinkedElement<T>;
 begin
   Result := TObjectLinkedElement<T>.Create;
+end;
+
+{ TLinkedElementList<T> }
+
+constructor TLinkedElementList<T>.Create(const AValue: T);
+begin
+  Create;
+  Add(AValue);
+end;
+
+procedure TLinkedElementList<T>.Clear;
+begin
+  inherited;
+
+  FList.Create;
+end;
+
+constructor TLinkedElementList<T>.Create;
+begin
+  inherited Create;
+
+  FList := TList<TLinkedElement<T>>.Create;
+end;
+
+destructor TLinkedElementList<T>.Destroy;
+begin
+  FreeAndNil(FList);
+
+  inherited;
+end;
+
+function TLinkedElementList<T>.DoCreateElelement: TLinkedElement<T>;
+begin
+  Result := inherited;
+  FList.Add(Result);
+end;
+
+{ TObjectLinkedElementList<T> }
+
+constructor TObjectLinkedElementList<T>.Create(const AValue: T;
+  const AOwnsElement: Boolean);
+begin
+  Create(AOwnsElement);
+
+  Add(AValue);
+end;
+
+procedure TObjectLinkedElementList<T>.Clear;
+begin
+  inherited;
+
+  FList.Clear;
+end;
+
+constructor TObjectLinkedElementList<T>.Create(const AOwnsElement: Boolean);
+begin
+  inherited Create(AOwnsElement);
+
+  FList := TList<TLinkedElement<T>>.Create;
+end;
+
+destructor TObjectLinkedElementList<T>.Destroy;
+begin
+  FreeAndNil(FList);
+
+  inherited;
+end;
+
+function TObjectLinkedElementList<T>.DoCreateElelement: TLinkedElement<T>;
+begin
+  Result := inherited;
+  FList.Add(Result)
+end;
+
+function TObjectLinkedElementList<T>.GetItems(Index: Integer): T;
+begin
+  Result := FList[Index].Value
 end;
 
 end.
