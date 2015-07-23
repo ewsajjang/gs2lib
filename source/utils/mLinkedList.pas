@@ -3,32 +3,12 @@ unit mLinkedList;
 interface
 
 uses
-  System.Classes, System.SysUtils, System.Rtti,
+  System.Classes, System.SysUtils, System.Rtti, mEnumerator,
 
   System.Generics.Collections
   ;
 
 type
-  IEnumerator<T> = interface
-    function GetCurrent: T;
-    function MoveNext: Boolean;
-    property Current: T read GetCurrent;
-  end;
-
-  TEnumerator<T> = class(TInterfacedObject, IEnumerator<T>)
-    function GetCurrent: T; virtual; abstract;
-    function MoveNext: Boolean; virtual; abstract;
-    property Current: T read GetCurrent;
-  end;
-
-  IEnumerable<T> = interface
-    function GetEnumerator: IEnumerator<T>;
-  end;
-
-  TEnumerable<T> = class(TInterfacedObject, IEnumerable<T>)
-    function GetEnumerator: IEnumerator<T>; virtual; abstract;
-  end;
-
   TLinkedList<T> = class;
 
   TLinkedNode<T> = class
@@ -76,9 +56,9 @@ type
     property LastNode: TLinkedNode<T> read GetLastNode;
   end;
 
-  TLinkedList<T> = class(TEnumerable<T>, ILinkedList<T>)
+  TLinkedList<T> = class(mEnumerator.TEnumerable<T>, ILinkedList<T>)
   type
-    TEnumerator = class(TEnumerator<T>)
+    TEnumerator = class(mEnumerator.TEnumerator<T>)
     private
       FList: TLinkedList<T>;
       FCurrentNode: TLinkedNode<T>;
@@ -157,9 +137,9 @@ type
     property EoE: Boolean read GetEoE;
   end;
 
-  TLinkedElement<T> = class(TEnumerable<T>, ILinkedElement<T>)
+  TLinkedElement<T> = class(mEnumerator.TEnumerable<T>, ILinkedElement<T>)
   type
-    TEnumerator = class(TEnumerator<T>)
+    TEnumerator = class(mEnumerator.TEnumerator<T>)
     private
       FIdx: Integer;
       FElementValues: TArray<T>;
@@ -689,8 +669,7 @@ begin
   LCtx := TRttiContext.Create;
   LRType := LCtx.GetType(TypeInfo(T));
   for LCreator in LRType.GetMethods do
-  begin
-    if (LCreator.IsConstructor) and (Length(LCreator.GetParameters) = 0) then
+    if LCreator.IsConstructor then
     begin
       LInstanceType := LRType.AsInstance;
       LValue := LCreator.Invoke(LInstanceType.MetaclassType, ACreateParams);
@@ -698,7 +677,6 @@ begin
       inherited Add(Result);
       Exit;
     end;
-  end;
 end;
 
 function TObjectLinkedElement<T>.Add: T;
