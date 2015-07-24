@@ -1,15 +1,15 @@
-unit TestmLinkedList;
+unit TestmLinkedCollections;
 
 interface
 
 uses
-  System.Classes, System.SysUtils, mLinkedList,
+  System.Classes, System.SysUtils, mLinkedCollections,
 
   DUnitX.TestFramework;
 
 type
   [TestFixture]
-  TObjectLinkedListTest = class
+  TLinkedListTest = class
   private
     type
       TItem = class
@@ -42,8 +42,17 @@ type
     procedure NodeNextPrev;
   end;
 
-  [IgnoreMemoryLeaks(False)]
   TLinkedElementTest = class
+  private type
+    TObjElement = class(TLinkedElement<TObjElement>)
+    private
+      FID: Integer;
+        function GetID: Integer;
+        procedure SetID(const Value: Integer);
+    public
+      constructor Create(AID: Integer); overload;
+      property ID: Integer read GetID write SetID;
+    end;
   private
     FElement: TLinkedElement<Integer>;
   public
@@ -53,33 +62,9 @@ type
     procedure TearDown;
 
     [TestCase]
-    [IgnoreMemoryLeaks(False)]
-    procedure Test;
-  end;
-
-  [IgnoreMemoryLeaks(False)]
-  TObjectLinkedElementTest = class
-  private type
-    TItem = class
-    public
-      class var FCnt: Integer;
-    public
-      ID: Integer;
-      constructor Create(AID: Integer);
-      destructor Destroy; override;
-    end;
-  private
-    FElement: ILinkedElement<TItem>;
-  public
-    [Setup]
-    procedure Setup;
-    [TearDown]
-    procedure TearDown;
-
+    procedure ManagedTypeTest;
     [TestCase]
-    procedure Test;
-    [TestCase]
-    procedure TestClear;
+    procedure ClassTypeTest;
   end;
 
 implementation
@@ -88,7 +73,7 @@ var
   FCnt: Integer;
 { LinkedListTest.TItem }
 
-constructor TObjectLinkedListTest.TItem.Create(const AID: Integer);
+constructor TLinkedListTest.TItem.Create(const AID: Integer);
 begin
   inherited Create;
 
@@ -96,7 +81,7 @@ begin
   Inc(FCnt);
 end;
 
-destructor TObjectLinkedListTest.TItem.Destroy;
+destructor TLinkedListTest.TItem.Destroy;
 begin
   Dec(FCnt);
 
@@ -105,7 +90,7 @@ end;
 
 { LinkedListTest }
 
-procedure TObjectLinkedListTest.AddFirstTest;
+procedure TLinkedListTest.AddFirstTest;
 var
   LNode: TLinkedNode<TItem>;
 begin
@@ -122,19 +107,19 @@ begin
   Assert.AreEqual(0, LNode.Value.ID);
 end;
 
-procedure TObjectLinkedListTest.Setup;
+procedure TLinkedListTest.Setup;
 begin
   FList := TObjectLinkedList<TItem>.Create;
   FCnt := 0;
 end;
 
-procedure TObjectLinkedListTest.TearDown;
+procedure TLinkedListTest.TearDown;
 begin
   FList := nil;
   Assert.AreEqual(0, FCnt);
 end;
 
-procedure TObjectLinkedListTest.ToArrayTest;
+procedure TLinkedListTest.ToArrayTest;
 var
   LItems: array[0..3] of TItem;
   LArray: TArray<TItem>;
@@ -152,7 +137,7 @@ begin
   Assert.AreSame(LItems[2], LArray[2]);
 end;
 
-procedure TObjectLinkedListTest.ToFieldArrayTest;
+procedure TLinkedListTest.ToFieldArrayTest;
 var
   LNodes: array[0..3] of TLinkedNode<TItem>;
   LArray: TArray<TLinkedNode<TItem>>;
@@ -170,7 +155,7 @@ begin
   Assert.AreSame(LNodes[2], LArray[2]);
 end;
 
-procedure TObjectLinkedListTest.AddTest;
+procedure TLinkedListTest.AddTest;
 var
   LItem: TItem;
   LNode: TLinkedNode<TItem>;
@@ -197,7 +182,7 @@ begin
   Assert.IsTrue(LNode.EoN);
 end;
 
-procedure TObjectLinkedListTest.NodeNextPrev;
+procedure TLinkedListTest.NodeNextPrev;
 var
   LNode: TLinkedNode<TItem>;
 begin
@@ -219,7 +204,7 @@ begin
   Assert.AreEqual(0, LNode.Value.ID);
 end;
 
-procedure TObjectLinkedListTest.FirstLastNodeTest;
+procedure TLinkedListTest.FirstLastNodeTest;
 begin
   FList.Add(TItem.Create(0));
   FList.Add(TItem.Create(1));
@@ -228,7 +213,7 @@ begin
   Assert.AreEqual(2, FList.LastNode.Value.ID);
 end;
 
-procedure TObjectLinkedListTest.FirstLastTest;
+procedure TLinkedListTest.FirstLastTest;
 begin
   FList.Add(TItem.Create(0));
   FList.Add(TItem.Create(1));
@@ -250,19 +235,64 @@ begin
   FElement := nil;
 end;
 
-procedure TLinkedElementTest.Test;
+procedure TLinkedElementTest.ClassTypeTest;
+var
+  LObj, LItem: TObjElement;
+begin
+  LObj := TObjElement.Create;
+  try
+    Assert.AreEqual(0, LObj.Length);
+    LObj.Add([0]);
+    LObj.Add([1]);
+    LObj.Add([2]);
+    LObj.Add([3]);
+    Assert.AreEqual(4, LObj.Length);
+    LItem := LObj.First;
+    Assert.AreEqual(0, LItem.ID);
+    Assert.AreEqual(0, LObj.ID);
+    Assert.AreEqual(1, LObj.Next.ID);
+    LObj.MoveNext(LItem);
+    Assert.AreEqual(2, LItem.ID);
+    Assert.AreEqual(3, LObj.Next.ID);
+    Assert.AreEqual(0, LObj.First.ID);
+    Assert.IsTrue(LObj.SoE);
+    Assert.IsFalse(LObj.EoE);
+    Assert.AreEqual(3, LObj.Last.ID);
+    Assert.IsFalse(LObj.SoE);
+    Assert.IsTrue(LObj.EoE);
+    LObj.Prev;
+    Assert.AreEqual(2, LObj.ID);
+    LObj.Prev;
+    Assert.AreEqual(1, LObj.ID);
+    LObj.ID := 11;
+    Assert.AreEqual(11, LObj.ID);
+    LObj.Prev;
+    Assert.AreEqual(0, LObj.ID);
+    LObj.Next;
+    Assert.AreEqual(11, LObj.ID);
+    LObj.Next;
+    Assert.AreEqual(2, LObj.ID);
+    Assert.AreEqual(11, LObj[1].ID, 'property Elements error');
+    LObj.Clear;
+    Assert.AreEqual(0, LObj.Length);
+  finally
+    FreeAndNil(LObj);
+  end;
+end;
+
+procedure TLinkedElementTest.ManagedTypeTest;
 var
   LExpected, LValue: Integer;
 begin
   FElement.Add(1);
   Assert.AreEqual(1, FElement.Value);
-  Assert.AreEqual(1, FElement.Count);
+  Assert.AreEqual(1, FElement.Length);
   FElement.Add(2);
   Assert.AreEqual(2, FElement.Value);
-  Assert.AreEqual(2, FElement.Count);
+  Assert.AreEqual(2, FElement.Length);
   FElement.Add(3);
   Assert.AreEqual(3, FElement.Value);
-  Assert.AreEqual(3, FElement.Count);
+  Assert.AreEqual(3, FElement.Length);
   LExpected := 1;
   for LValue in FElement do
   begin
@@ -291,145 +321,38 @@ begin
   Assert.IsTrue(FElement.SoE);
 
   LExpected := 1;
-  for LValue in FElement.ToArray do
+  for LValue in FElement do
   begin
     Assert.AreEqual(LExpected, LValue);
     Inc(LExpected);
   end;
 end;
 
-{ TObjectLinkedElementTest.TItem }
+{ TLinkedElementTest.TObjElement }
 
-constructor TObjectLinkedElementTest.TItem.Create(AID: Integer);
+constructor TLinkedElementTest.TObjElement.Create(AID: Integer);
 begin
-  ID := AID;
-  Inc(FCnt);
+  FID := AID;
 end;
 
-destructor TObjectLinkedElementTest.TItem.Destroy;
+function TLinkedElementTest.TObjElement.GetID: Integer;
 begin
-  Dec(FCnt);
-
-  inherited
+  if IsRootElement then
+    Result := FCurrent.FValue.FID
+  else
+    Result := FID;
 end;
 
-{ TObjectLinkedElementTest }
-
-procedure TObjectLinkedElementTest.Setup;
+procedure TLinkedElementTest.TObjElement.SetID(const Value: Integer);
 begin
-  TItem.FCnt := 0;
-  FElement := TObjectLinkedElement<TItem>.Create(True);
-end;
-
-procedure TObjectLinkedElementTest.TearDown;
-begin
-//  FreeAndNil(FElement);
-  FElement := nil;
-  Assert.AreEqual(0, TItem.FCnt);
-end;
-
-procedure TObjectLinkedElementTest.Test;
-var
-  LExpected: Integer;
-  LValue: TItem;
-begin
-  FElement.Add(TItem.Create(1));
-  Assert.AreEqual(1, FElement.Value.ID);
-  Assert.AreEqual(1, FElement.Count);
-  FElement.Add(TItem.Create(2));
-  Assert.AreEqual(2, FElement.Value.ID);
-  Assert.AreEqual(2, FElement.Count);
-  FElement.Add(TItem.Create(3));
-  Assert.AreEqual(3, FElement.Value.ID);
-  Assert.AreEqual(3, FElement.Count);
-  LExpected := 1;
-  for LValue in FElement do
-  begin
-    Assert.AreEqual(LExpected, LValue.ID);
-    Inc(LExpected);
-  end;
-  FElement.First;
-  Assert.AreEqual(1, FElement.Value.ID);
-  Assert.IsTrue(FElement.SoE);
-  Assert.IsFalse(FElement.EoE);
-  FElement.Next;
-  Assert.AreEqual(2, FElement.Value.ID);
-  Assert.IsFalse(FElement.SoE);
-  Assert.IsFalse(FElement.EoE);
-  FElement.Next;
-  Assert.AreEqual(3, FElement.Value.ID);
-  Assert.IsFalse(FElement.SoE);
-  Assert.IsTrue(FElement.EoE);
-  FElement.Prev;
-  Assert.AreEqual(2, FElement.Value.ID);
-  Assert.IsFalse(FElement.SoE);
-  Assert.IsFalse(FElement.EoE);
-  FElement.Prev;
-  Assert.AreEqual(1, FElement.Value.ID);
-  Assert.IsFalse(FElement.EoE);
-  Assert.IsTrue(FElement.SoE);
-
-  LExpected := 1;
-  for LValue in FElement.ToArray do
-  begin
-    Assert.AreEqual(LExpected, LValue.ID);
-    Inc(LExpected);
-  end;
-end;
-
-procedure TObjectLinkedElementTest.TestClear;
-var
-  LExpected: Integer;
-  LValue: TItem;
-begin
-  FElement.Add(TItem.Create(1));
-  Assert.AreEqual(1, FElement.Value.ID);
-  Assert.AreEqual(1, FElement.Count);
-  FElement.Add(TItem.Create(2));
-  Assert.AreEqual(2, FElement.Value.ID);
-  Assert.AreEqual(2, FElement.Count);
-  FElement.Add(TItem.Create(3));
-  Assert.AreEqual(3, FElement.Value.ID);
-  Assert.AreEqual(3, FElement.Count);
-  LExpected := 1;
-  for LValue in FElement do
-  begin
-    Assert.AreEqual(LExpected, LValue.ID);
-    Inc(LExpected);
-  end;
-  FElement.First;
-  Assert.AreEqual(1, FElement.Value.ID);
-  Assert.IsTrue(FElement.SoE);
-  Assert.IsFalse(FElement.EoE);
-  FElement.Next;
-  Assert.AreEqual(2, FElement.Value.ID);
-  Assert.IsFalse(FElement.SoE);
-  Assert.IsFalse(FElement.EoE);
-  FElement.Next;
-  Assert.AreEqual(3, FElement.Value.ID);
-  Assert.IsFalse(FElement.SoE);
-  Assert.IsTrue(FElement.EoE);
-  FElement.Prev;
-  Assert.AreEqual(2, FElement.Value.ID);
-  Assert.IsFalse(FElement.SoE);
-  Assert.IsFalse(FElement.EoE);
-  FElement.Prev;
-  Assert.AreEqual(1, FElement.Value.ID);
-  Assert.IsFalse(FElement.EoE);
-  Assert.IsTrue(FElement.SoE);
-
-  LExpected := 1;
-  for LValue in FElement.ToArray do
-  begin
-    Assert.AreEqual(LExpected, LValue.ID);
-    Inc(LExpected);
-  end;
-  FElement.Clear;
+  if IsRootElement then
+    FCurrent.FValue.FID := Value
+  else
+    FID := Value
 end;
 
 initialization
-  TDUnitX.RegisterTestFixture(TObjectLinkedListTest);
+  TDUnitX.RegisterTestFixture(TLinkedListTest);
   TDUnitX.RegisterTestFixture(TLinkedElementTest);
-  TDUnitX.RegisterTestFixture(TObjectLinkedElementTest);
 
 end.

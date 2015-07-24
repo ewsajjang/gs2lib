@@ -10,9 +10,6 @@ uses
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestRunner,
   DUnitX.TestFramework,
-  TestmLinkedList in 'TestmLinkedList.pas',
-  mLinkedList.pas in '..\source\utils\mLinkedList.pas.bak',
-  mLinkedList in '..\source\utils\mLinkedList.pas',
   TestmRouter in 'TestmRouter.pas',
   TestmBitMask in 'TestmBitMask.pas',
   TestmIntervalCounter in 'TestmIntervalCounter.pas',
@@ -24,7 +21,9 @@ uses
   mIntervalCounter in '..\source\utils\mIntervalCounter.pas',
   mRepeator in '..\source\utils\mRepeator.pas',
   TestmGenericValueList in 'TestmGenericValueList.pas',
-  mGenericValueList in '..\source\utils\mGenericValueList.pas';
+  mGenericValueList in '..\source\utils\mGenericValueList.pas',
+  mLinkedCollections in '..\source\utils\mLinkedCollections.pas',
+  TestmLinkedCollections in 'TestmLinkedCollections.pas';
 
 {R *.RES}
 
