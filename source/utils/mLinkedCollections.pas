@@ -490,12 +490,13 @@ end;
 
 procedure TLinkedElement<T>.Clear;
 begin
-  if Assigned(FElements) then
-    FElements.Clear;
-  if not IsRootElement and (GetTypeKind(T) in [tkClass]) then
+  if not IsRootElement and FOwnsObject and (GetTypeKind(T) in [tkClass]) then
     PObject(@FValue)^.Free
   else if IsManagedType(T) then
     FValue := Default(T);
+
+  if IsRootElement then
+    FElements.Clear;
 
   FCurrent := nil;
   FPrev := nil;
@@ -505,7 +506,7 @@ end;
 constructor TLinkedElement<T>.Create(const AOwnsObject: Boolean = True);
 begin
   FOwnsObject := AOwnsObject;
-  FElements := TObjectList<TLinkedElement<T>>.Create;
+  FElements := TObjectList<TLinkedElement<T>>.Create(True);
 end;
 
 destructor TLinkedElement<T>.Destroy;
