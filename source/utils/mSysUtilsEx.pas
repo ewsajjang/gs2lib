@@ -16,6 +16,7 @@ function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): S
 function StrToHexStr(const Str: String): String;
 procedure HexStrToBytes(const Source: String; var Dest: TBytes);
 function HexStrToStr(const Source: String): String;
+function HexStrToInt(const Source: String): Integer;
 
 // Numbers Utils
 function MinimumCount(const ADividend, ADivisor: Integer): Integer;
@@ -127,6 +128,11 @@ var
 begin
   HexStrToBytes(Source, LBytes);
   SetString(Result, PAnsiChar(@LBytes[0]), Length(LBytes));
+end;
+
+function HexStrToInt(const Source: String): Integer;
+begin
+  Result := StrToIntDef('$'+Source, 0);
 end;
 
 function StrToHexStr(const Str: String): String;
