@@ -40,6 +40,19 @@ type
     class function Create(AMin, AMax: TDateTime): TPeriod; static;
   end;
 
+  TResult<T, T1> = record
+    Value: T;
+    Param: T1;
+    constructor Create(const AValue: T; const AParam: T1);
+  end;
+
+  TResult<T, T1, T2> = record
+    Value: T;
+    Param1: T1;
+    Param2: T2;
+    constructor Create(const AValue: T; const AParam1: T1; const AParam2: T2);
+  end;
+
 implementation
 
 uses
@@ -89,6 +102,26 @@ begin
     //CopyArray(@LItem[0], @(Items[i][0]), TypeInfo(TBytes), Length(Items[i]));
     Result.Add(LItem);
   end;
+end;
+
+{ TResult<T, T1> }
+
+{ TResult<T, T1> }
+
+constructor TResult<T, T1>.Create(const AValue: T; const AParam: T1);
+begin
+  Value := AValue;
+  Param := AParam;
+end;
+
+{ TResult<T, T1, T2> }
+
+constructor TResult<T, T1, T2>.Create(const AValue: T; const AParam1: T1;
+  const AParam2: T2);
+begin
+  Value := AValue;
+  Param1 := AParam1;
+  Param2 := AParam2;
 end;
 
 end.
