@@ -10,6 +10,7 @@ type
   TStringGridHelper = class Helper for TStringGrid
     procedure AutoSizeCol(const AColIdx: Integer);
     procedure AutoSizeCols;
+    procedure Clear;
   end;
 
 implementation
@@ -38,6 +39,14 @@ var
 begin
   for i := 0 to ColCount - 1 do
     AutoSizeCol(i);
+end;
+
+procedure TStringGridHelper.Clear;
+var
+  i: Integer;
+begin
+  for i:= 0 to ColCount - 1 do
+    Cols[i].Clear;
 end;
 
 end.
