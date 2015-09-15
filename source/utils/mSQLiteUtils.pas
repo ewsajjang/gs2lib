@@ -63,7 +63,7 @@ begin
         LResult := LResult + #13#10 + Table.FieldAsString(Table.FieldIndex['sql']);
         Table.Next;
       end;
-      LRegExp := Format('\[%s\]', [ACol]);
+      LRegExp := Format('\[?%s\]?', [ACol]);
       Result := TRegEx.Match(LResult, LRegExp).Success;
     finally
       FreeAndNil(Table);
