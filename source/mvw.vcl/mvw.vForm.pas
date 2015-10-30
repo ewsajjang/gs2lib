@@ -33,8 +33,10 @@ type
     procedure PlaceOnParent(const AParent: TvForm); overload;
     procedure PlaceOnParent(const AParent: TvFormClass); overload;
     procedure PlaceOnParent(const AParent: String); overload;
-    procedure ComponentsEnum<T: class>(AProc: TProc<T, String>);
+    procedure ComponentsEnum<T: class>(AProc: TProc<T, String>); overload;
+    procedure ComponentsEnum<T: class>(AProc: TProc<T>); overload;
     procedure ControlsEnum<T: class>(const AContainer: TWinControl; AProc: TProc<T, String>); overload;
+    procedure ControlsEnum<T: class>(const AContainer: TWinControl; AProc: TProc<T>); overload;
     procedure ControlsEnum(const AContainer: TWinControl; AProc: TProc<TControl, String>); overload;
 
     function ExistsForms(const AvFormName: String): Boolean; overload;
@@ -43,6 +45,15 @@ type
     property vCnt: Integer read GetFormsCnt;
     property vNames[Name: String]: TvForm read GetFormsFormName;
     property vClasses[AClass: TvFormClass]: TvForm read GetFormsFromClass;
+  end;
+
+  TvDlg = class(TvForm)
+  private
+    FCloseAction: TAction;
+    FActionList: TActionList;
+    procedure OnCloseActionExecute(Sender: TObject);
+  public
+    constructor Create(AOwner: TComponent); override;
   end;
 
   Tv<Tvm: class> = class(TvForm)
@@ -55,15 +66,6 @@ type
   end;
 
   TvDlg<Tvm: class> = class(Tv<Tvm>)
-  private
-    FCloseAction: TAction;
-    FActionList: TActionList;
-    procedure OnCloseActionExecute(Sender: TObject);
-  public
-    constructor Create(AOwner: TComponent); override;
-  end;
-
-  TvDlg = class(TvForm)
   private
     FCloseAction: TAction;
     FActionList: TActionList;
@@ -127,6 +129,16 @@ begin
       	AProc(Components[i] as T, Components[i].Name);
 end;
 
+procedure TvForm.ComponentsEnum<T>(AProc: TProc<T>);
+var
+	i: Integer;
+begin
+	for i := 0 to ComponentCount -1 do
+  	if Components[i] is T then
+    	if Assigned(AProc) then
+      	AProc(Components[i] as T);
+end;
+
 procedure TvForm.ControlsEnum(const AContainer: TWinControl;
   AProc: TProc<TControl, String>);
 var
@@ -139,6 +151,21 @@ begin
     if AContainer.Controls[i] is TWinControl then
       ControlsEnum(TWinControl(AContainer.Controls[i]), AProc);
   end;
+end;
+
+procedure TvForm.ControlsEnum<T>(const AContainer: TWinControl;
+  AProc: TProc<T>);
+var
+	i: Integer;
+begin
+	for i := 0 to AContainer.ControlCount -1 do
+  	if AContainer.Controls[i] is T then
+    begin
+    	if Assigned(AProc) then
+      	AProc(AContainer.Controls[i] as T);
+    end
+    else if AContainer.Controls[i] is TWinControl then
+    	ControlsEnum<T>(TWinControl(AContainer.Controls[i]), AProc);
 end;
 
 procedure TvForm.ControlsEnum<T>(const AContainer: TWinControl;
