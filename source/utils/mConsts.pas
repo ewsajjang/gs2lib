@@ -9,6 +9,16 @@ const
   VAL_NOT_ASSIGNED = -1;
   VAL_NOT_ASSIGNED_STR = 'not assigned';
 
+function StrToBool(const AValue: String): Boolean;
+
 implementation
+
+function StrToBool(const AValue: String): Boolean;
+begin
+  if AValue = FALSE_STR then
+    Result := False
+  else
+    Result := True;
+end;
 
 end.
