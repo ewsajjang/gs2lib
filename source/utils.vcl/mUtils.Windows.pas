@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes,
-  System.Win.Registry, System.IOUtils,
+  System.Win.Registry, System.IOUtils, WinAPI.TlHelp32,
 
   WinApi.Windows, Winapi.ShlObj;
 
@@ -27,6 +27,9 @@ procedure EmailByOutlook(const Subject, Body, FileName: String);
 function ExeVersion(FileName: String = ''): String;
 function ExtractExePath: String; overload;
 function ExtractExePath(const AFileName: String): String; overload;
+
+function IsRunningProcess(const AName: String) : Boolean;
+procedure TerminateProcess(const AName: String; const AExceptCurrentProcess: Boolean = True);
 
 type
   TFileHelper = record helper for TFile
@@ -335,6 +338,62 @@ begin
 
   FindFirst(ModuleFileName, faAnyFile, LSr);
   Result := LSr.Size;
+end;
+
+function IsRunningProcess(const AName: String) : Boolean;
+var
+  LProcess32: TProcessEntry32;
+  LHandle: THandle;
+  LNext: Boolean;
+begin
+  Result := False;
+  LProcess32.dwSize := SizeOf(TProcessEntry32);
+  LHandle := CreateToolHelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  try
+    if Process32First(LHandle, LProcess32) then
+      repeat
+        LNext := Process32Next(LHandle, LProcess32);
+        if AnsiCompareText(LProcess32.szExeFile, Trim(AName))=0 then
+          Exit(True);
+      until not LNext;
+  finally
+    CloseHandle(LHandle);
+  end;
+end;
+
+procedure TerminateProcess(const AName: String; const AExceptCurrentProcess: Boolean);
+var
+  LCurrentID: DWord;
+  LProcess32: TProcessEntry32;
+  LHandle, LProcess: THandle;
+  LNext: Boolean;
+begin
+  LCurrentID := GetCurrentProcessId;
+  LProcess32.dwSize := SizeOf(TProcessEntry32);
+  LProcess32.th32ProcessID := 0;
+  LHandle := CreateToolHelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+  try
+    if Process32First(LHandle, LProcess32) then
+      repeat
+        LNext := Process32Next(LHandle, LProcess32);
+        if AnsiCompareText(LProcess32.szExeFile, AName.Trim) = 0 then
+          if LProcess32.th32ProcessID <> 0 then
+          begin
+            if AExceptCurrentProcess and (LProcess32.th32ProcessID = LCurrentID) then
+              Continue;
+            LProcess := OpenProcess(PROCESS_TERMINATE, True, LProcess32.th32ProcessID);
+            try
+              if LProcess <> 0 then
+                WinAPI.Windows.TerminateProcess(LProcess, 0);
+            finally
+              CloseHandle(LProcess);
+            end;
+          end;
+
+      until not LNext;
+  finally
+    CloseHandle(LHandle);
+  end;
 end;
 
 end.

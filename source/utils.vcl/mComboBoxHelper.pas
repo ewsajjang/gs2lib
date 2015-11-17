@@ -13,6 +13,7 @@ type
     procedure SetSelectedStr(const Value: String);
 
   public
+    procedure AddItems(const AValues: TArray<String>);
     procedure AddFmt(const AStr: String; const Arg: array of const);
     procedure IndexBy(const AValue: String);
     procedure IndexByContainStr(const AValue: String);
@@ -23,7 +24,6 @@ type
     function ItemObj<T: class>: T;
     procedure DropdownListAutoWidth;
     procedure ClearItemsObjects;
-
 
     property ItemStr: String read GetSelectedStr write SetSelectedStr;
   end;
@@ -39,6 +39,19 @@ uses
 procedure TComboBoxHelper.AddFmt(const AStr: String; const Arg: array of const);
 begin
   Items.Add(Format(AStr, Arg));
+end;
+
+procedure TComboBoxHelper.AddItems(const AValues: TArray<String>);
+var
+  LValue: String;
+begin
+  Items.BeginUpdate;
+  try
+    for LValue in AValues do
+      Items.Add(LValue);
+  finally
+    Items.EndUpdate;
+  end;
 end;
 
 procedure TComboBoxHelper.ClearItemsObjects;
