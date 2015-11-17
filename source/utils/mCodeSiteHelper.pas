@@ -22,6 +22,7 @@ type
     procedure Send(const AMsg: String; const APacket: array of Byte); overload;
     procedure Send(const AMsg: String; Args: array of const; const APacket: TBytes); overload;
     procedure Send(const AErCondition: Boolean; const APacket: TBytes); overload;
+    procedure Send(const AErCondition: Boolean; const AMsg: String; const AValue: String); overload;
     procedure Send(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); overload;
     procedure Send(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
   end;
@@ -29,8 +30,22 @@ type
 implementation
 
 uses
-  mSysUtilsEx, mTypesHelper
+  mSysUtilsEx, mTypesHelper, System.StrUtils, System.SysConst
   ;
+
+procedure CodeSiteAssertErrorHandler(const Message, Filename: String; LineNumber: Integer; ErrorAddr: Pointer);
+const
+  SAssertionFmt = 'AssertionFiled - File: %s, Line: %d, Addr: %p, Msg: %s';
+var
+  LMsg: String;
+begin
+  LMsg := IfThen(not Message.IsEmpty, Message, SAssertionFailed);
+  CodeSite.SendError(SAssertionFmt,
+    [ExtractFileName(Filename), LineNumber, ErrorAddr, LMsg]);
+
+  raise EAssertionFailed.CreateFmt(SAssertionFmt,
+    [ExtractFileName(Filename), LineNumber, ErrorAddr, LMsg])
+end;
 
 { TCodeSiteLoggerHelper }
 
@@ -67,6 +82,15 @@ begin
     CodeSite.Send(Format(AMsg, Args), BytesToHexStr(APacket))
   else
     CodeSite.SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
+end;
+
+procedure TCodeSiteLoggerHelper.Send(const AErCondition: Boolean; const AMsg,
+  AValue: String);
+begin
+if AErCondition then
+    CodeSite.Send(AMsg, AValue)
+  else
+    CodeSite.SendError('%s = %s', [AMsg, AValue])
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const ARect: TRect);
@@ -121,5 +145,8 @@ procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const APacket: TBytes);
 begin
   CodeSite.Send(AMsg, BytesToHexStr(APacket))
 end;
+
+initialization
+  AssertErrorProc := CodeSiteAssertErrorHandler;
 
 end.
