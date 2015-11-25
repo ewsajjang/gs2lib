@@ -33,11 +33,11 @@ type
     procedure PlaceOnParent(const AParent: TvForm); overload;
     procedure PlaceOnParent(const AParent: TvFormClass); overload;
     procedure PlaceOnParent(const AParent: String); overload;
-    procedure ComponentsEnum<T: class>(AProc: TProc<T, String>); overload;
-    procedure ComponentsEnum<T: class>(AProc: TProc<T>); overload;
-    procedure ControlsEnum<T: class>(const AContainer: TWinControl; AProc: TProc<T, String>); overload;
-    procedure ControlsEnum<T: class>(const AContainer: TWinControl; AProc: TProc<T>); overload;
-    procedure ControlsEnum(const AContainer: TWinControl; AProc: TProc<TControl, String>); overload;
+    procedure EnumComponents<T: class>(AProc: TProc<T, String>); overload;
+    procedure EnumComponents<T: class>(AProc: TProc<T>); overload;
+    procedure EnumControls<T: class>(const AContainer: TWinControl; AProc: TProc<T, String>); overload;
+    procedure EnumControls<T: class>(const AContainer: TWinControl; AProc: TProc<T>); overload;
+    procedure EnumControls(const AContainer: TWinControl; AProc: TProc<TControl, String>); overload;
 
     function ExistsForms(const AvFormName: String): Boolean; overload;
     function ExistsForms(const AvFormClass: TvFormClass): Boolean; overload;
@@ -119,7 +119,7 @@ begin
   Result := FDic.ContainsKey(AvFormName);
 end;
 
-procedure TvForm.ComponentsEnum<T>(AProc: TProc<T, String>);
+procedure TvForm.EnumComponents<T>(AProc: TProc<T, String>);
 var
 	i: Integer;
 begin
@@ -129,7 +129,7 @@ begin
       	AProc(Components[i] as T, Components[i].Name);
 end;
 
-procedure TvForm.ComponentsEnum<T>(AProc: TProc<T>);
+procedure TvForm.EnumComponents<T>(AProc: TProc<T>);
 var
 	i: Integer;
 begin
@@ -139,7 +139,7 @@ begin
       	AProc(Components[i] as T);
 end;
 
-procedure TvForm.ControlsEnum(const AContainer: TWinControl;
+procedure TvForm.EnumControls(const AContainer: TWinControl;
   AProc: TProc<TControl, String>);
 var
 	i: Integer;
@@ -149,11 +149,11 @@ begin
     if Assigned(AProc) then
       AProc(AContainer.Controls[i], AContainer.Controls[i].Name);
     if AContainer.Controls[i] is TWinControl then
-      ControlsEnum(TWinControl(AContainer.Controls[i]), AProc);
+      EnumControls(TWinControl(AContainer.Controls[i]), AProc);
   end;
 end;
 
-procedure TvForm.ControlsEnum<T>(const AContainer: TWinControl;
+procedure TvForm.EnumControls<T>(const AContainer: TWinControl;
   AProc: TProc<T>);
 var
 	i: Integer;
@@ -165,10 +165,10 @@ begin
       	AProc(AContainer.Controls[i] as T);
     end
     else if AContainer.Controls[i] is TWinControl then
-    	ControlsEnum<T>(TWinControl(AContainer.Controls[i]), AProc);
+    	EnumControls<T>(TWinControl(AContainer.Controls[i]), AProc);
 end;
 
-procedure TvForm.ControlsEnum<T>(const AContainer: TWinControl;
+procedure TvForm.EnumControls<T>(const AContainer: TWinControl;
 	AProc: TProc<T, String>);
 var
 	i: Integer;
@@ -180,7 +180,7 @@ begin
       	AProc(AContainer.Controls[i] as T, AContainer.Controls[i].Name);
     end
     else if AContainer.Controls[i] is TWinControl then
-    	ControlsEnum<T>(TWinControl(AContainer.Controls[i]), AProc);
+    	EnumControls<T>(TWinControl(AContainer.Controls[i]), AProc);
 end;
 
 constructor TvForm.Create(AOwner: TComponent);
