@@ -5,7 +5,7 @@ interface
 uses
   System.Classes, System.SysUtils,
 
-  Vcl.ActnList, vcl.Forms, Vcl.Menus, Vcl.Controls,
+  Vcl.ActnList, vcl.Forms, Vcl.Menus, Vcl.Controls, WinAPI.Windows,
   System.Generics.Collections
   ;
 
@@ -15,6 +15,7 @@ type
   private class var
     FDic: TDictionary<String, TvForm>;
   private
+    FLockWindowsUpdate: Boolean;
     function GetFormsFromClass(AClass: TvFormClass): TvForm;
     function GetFormsFormName(Name: String): TvForm;
     function GetFormsCnt: Integer;
@@ -29,6 +30,8 @@ type
 
     constructor Create(AOwner: TComponent); override;
 
+    procedure BeginUpdate;
+    procedure EndUpdate;
     procedure PlaceOnParent(const ATarget: TWinControl = nil); overload;
     procedure PlaceOnParent(const AParent: TvForm); overload;
     procedure PlaceOnParent(const AParent: TvFormClass); overload;
@@ -129,6 +132,12 @@ begin
       	AProc(Components[i] as T, Components[i].Name);
 end;
 
+procedure TvForm.EndUpdate;
+begin
+  if FLockWindowsUpdate then
+    LockWindowUpdate(0);
+end;
+
 procedure TvForm.EnumComponents<T>(AProc: TProc<T>);
 var
 	i: Integer;
@@ -181,6 +190,12 @@ begin
     end
     else if AContainer.Controls[i] is TWinControl then
     	EnumControls<T>(TWinControl(AContainer.Controls[i]), AProc);
+end;
+
+procedure TvForm.BeginUpdate;
+begin
+  if CanFocus then
+    FLockWindowsUpdate := LockWindowUpdate(Handle);
 end;
 
 constructor TvForm.Create(AOwner: TComponent);
