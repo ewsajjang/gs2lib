@@ -34,6 +34,7 @@ type
     function Integers(Name: String): Integer;
     function Exists(const AKey: String): Boolean;
     function KeysExists(const AKeys: array of String; out ANotExistKeys: TArray<string>): Boolean; overload;
+    function KeysExists(const AKeys: array of String; out ANotExistKeys: String): Boolean; overload;
     function KeysExists(const AKeys: array of String): Boolean; overload;
     function KeyExists(const AKey: String): Boolean; overload;
     function DelimitedValues(const ADelimiter: Char): String;
@@ -200,6 +201,20 @@ begin
       Exit;
     end;
   Result := True;
+end;
+
+function TStringListHelper.KeysExists(const AKeys: array of String;
+  out ANotExistKeys: String): Boolean;
+const
+  SEPERATOR: Char = ',';
+var
+  LKey: String;
+begin
+  ANotExistKeys := EmptyStr;
+  for LKey in AKeys do
+    if not KeyExists(LKey) then
+      ANotExistKeys := ANotExistKeys.Join(SEPERATOR, [LKey]);
+  Result := ANotExistKeys.IsEmpty;
 end;
 
 function TStringListHelper.MergeString: String;
