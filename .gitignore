@@ -16,3 +16,4 @@ bin
 *.swp
 *.tvsconfig
 *.stat
+dunitx-results.xml
