@@ -6,6 +6,8 @@ function EmailValidate(const Value: String): Boolean;
 function FloatValidate(const AValue: String): Boolean;
 function IntegerValidate(const AValue: String): Boolean;
 function NonEmptyStr(const AValue1, AValue2: String): String;
+function IsNumeric(const AValue: String): Boolean;
+function IsInteger(const AValue: String): Boolean;
 
 implementation
 
@@ -22,7 +24,7 @@ end;
 
 function FloatValidate(const AValue: String): Boolean;
 begin
-  Result := TRegEx.IsMatch(AValue, '[0-9]*\.?[0-9]+$')
+  Result := TRegEx.IsMatch(AValue, '[0-9]*\'+FormatSettings.DecimalSeparator+'?[0-9]+$')
 end;
 
 function IntegerValidate(const AValue: String): Boolean;
@@ -36,6 +38,20 @@ begin
     Result := AValue2
   else
     Result := AValue1
+end;
+
+function IsNumeric(const AValue: String): Boolean;
+var
+  LValue: Extended;
+begin
+  Result := TryStrToFloat(AValue, LValue);
+end;
+
+function IsInteger(const AValue: String): Boolean;
+var
+  LValue: Int64;
+begin
+  Result := TryStrToInt64(AValue, LValue);
 end;
 
 end.
