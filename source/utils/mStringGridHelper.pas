@@ -11,6 +11,8 @@ type
     procedure AutoSizeCol(const AColIdx: Integer);
     procedure AutoSizeCols;
     procedure Clear;
+    procedure ScrollBy(const ARow: Integer);
+    procedure ScrollToBottom;
   end;
 
 implementation
@@ -47,6 +49,19 @@ var
 begin
   for i:= 0 to ColCount - 1 do
     Cols[i].Clear;
+end;
+
+procedure TStringGridHelper.ScrollBy(const ARow: Integer);
+begin
+  if ARow < TopRow then
+    TopRow := ARow
+  else
+    TopRow := ARow - VisibleRowCount -1;
+end;
+
+procedure TStringGridHelper.ScrollToBottom;
+begin
+  ScrollBy(RowCount -1);
 end;
 
 end.
