@@ -10,8 +10,7 @@ uses
 type
   TCodeSiteLoggerHelper = class helper for TCodeSiteLogger
     procedure Send(const List: TStringList); overload;
-    procedure Send(const Expression: Boolean; Msg: String); overload;
-    procedure Send(const Expression: Boolean; Fmt: String; Args: array of const); overload;
+
     procedure Send(const Fmt: String; Args: array of const; List: TStrings); overload;
 
     procedure Send(const AMsg: String; const ARect: TRect); overload;
@@ -21,10 +20,13 @@ type
     procedure Send(const AMsg: String; const APacket: TBytes); overload;
     procedure Send(const AMsg: String; const APacket: array of Byte); overload;
     procedure Send(const AMsg: String; Args: array of const; const APacket: TBytes); overload;
-    procedure Send(const AErCondition: Boolean; const APacket: TBytes); overload;
-    procedure Send(const AErCondition: Boolean; const AMsg: String; const AValue: String); overload;
-    procedure Send(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); overload;
-    procedure Send(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
+
+    function Send(const Expression: Boolean; Msg: String): Boolean; overload;
+    function Send(const Expression: Boolean; Fmt: String; Args: array of const): Boolean; overload;
+    function Send(const Expression: Boolean; const APacket: TBytes): Boolean; overload;
+    function Send(const Expression: Boolean; const AMsg: String; const AValue: String): Boolean; overload;
+    function Send(const Expression: Boolean; const AMsg: String; const APacket: TBytes): Boolean; overload;
+    function Send(const Expression: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes): Boolean; overload;
   end;
 
 implementation
@@ -49,45 +51,50 @@ end;
 
 { TCodeSiteLoggerHelper }
 
-procedure TCodeSiteLoggerHelper.Send(const Expression: Boolean; Msg: String);
+function TCodeSiteLoggerHelper.Send(const Expression: Boolean; Msg: String): Boolean;
 begin
-  if not Expression then
-    CodeSite.SendError(Msg)
+  Result := Expression;
+  if not Result then
+    CodeSite.Send(Msg)
   else
-    CodeSite.Send(Msg);
+    CodeSite.SendError(Msg);
 end;
 
-procedure TCodeSiteLoggerHelper.Send(const Expression: Boolean; Fmt: String;
-  Args: array of const);
+function TCodeSiteLoggerHelper.Send(const Expression: Boolean; Fmt: String;
+  Args: array of const): Boolean;
 begin
-  if not Expression then
-    CodeSite.SendError(Fmt, Args)
+  Result := Expression;
+  if Result then
+    CodeSite.Send(Fmt, Args)
   else
-    CodeSite.Send(Fmt, Args);
+    CodeSite.SendError(Fmt, Args);
 end;
 
-procedure TCodeSiteLoggerHelper.Send(const AErCondition: Boolean;
-  const AMsg: String; const APacket: TBytes);
+function TCodeSiteLoggerHelper.Send(const Expression: Boolean;
+  const AMsg: String; const APacket: TBytes): Boolean;
 begin
-  if AErCondition then
+  Result := Expression;
+  if Result then
     CodeSite.Send(AMsg, BytesToHexStr(APacket))
   else
     CodeSite.SendError('[%s]%s', [AMsg, BytesToHexStr(APacket)])
 end;
 
-procedure TCodeSiteLoggerHelper.Send(const AErCondition: Boolean;
-  const AMsg: String; const Args: array of const; const APacket: TBytes);
+function TCodeSiteLoggerHelper.Send(const Expression: Boolean;
+  const AMsg: String; const Args: array of const; const APacket: TBytes): Boolean;
 begin
-  if AErCondition then
+  Result := Expression;
+  if Result then
     CodeSite.Send(Format(AMsg, Args), BytesToHexStr(APacket))
   else
     CodeSite.SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
 end;
 
-procedure TCodeSiteLoggerHelper.Send(const AErCondition: Boolean; const AMsg,
-  AValue: String);
+function TCodeSiteLoggerHelper.Send(const Expression: Boolean; const AMsg,
+  AValue: String): Boolean;
 begin
-if AErCondition then
+  Result := Expression;
+  if Result then
     CodeSite.Send(AMsg, AValue)
   else
     CodeSite.SendError('%s = %s', [AMsg, AValue])
@@ -132,10 +139,11 @@ begin
   CodeSite.Send(BytesToHexStr(APacket))
 end;
 
-procedure TCodeSiteLoggerHelper.Send(const AErCondition: Boolean;
-  const APacket: TBytes);
+function TCodeSiteLoggerHelper.Send(const Expression: Boolean;
+  const APacket: TBytes): Boolean;
 begin
-  if AErCondition then
+  Result := Expression;
+  if Result then
     CodeSite.Send(BytesToHexStr(APacket))
   else
     CodeSite.SendError(BytesToHexStr(APacket))
