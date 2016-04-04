@@ -43,9 +43,6 @@ type
     function CommaKeys: String;
     function CommaValues: String;
 
-    function O<T: Class>(const AIdx: Integer): T; overload;
-    function OExtract<T: Class>(const AIdx: Integer): T; overload;
-
     property S[Name: String]: String read GetS write SetS;
     property I[Name: String]: Integer read GetI write SetI;
     property B[Name: String]: Boolean read GetB write SetB;
@@ -61,8 +58,10 @@ type
     procedure TryDelete(const AValue: String);
     function AddFmt(const S: string; const Args: array of const): Integer;
 
-    function O<T: Class>(const AName: String): T; overload;
+    function O<T: Class>(const AIdx: Integer): T; overload;
+    function O<T: class>(const AName: String): T; overload;
     function O(const AName: String; AObj: TObject): Integer; overload;
+    function OExtract<T: Class>(const AIdx: Integer): T; overload;
     function OSwap(const AName: String; const AObj: TObject; AFree: Boolean = True): Integer;
 
     function OExtract<T: Class>(const AName: String): T; overload;
@@ -308,17 +307,6 @@ begin
   Result := DelimitedValues(',');
 end;
 
-function TStringsHelper.O<T>(const AIdx: Integer): T;
-begin
-  Result := Objects[AIdx] as T
-end;
-
-function TStringsHelper.OExtract<T>(const AIdx: Integer): T;
-begin
-  Result := O<T>(AIdx);
-  Delete(AIdx);
-end;
-
 { TStringListHelper }
 
 procedure TStringListHelper.TryDelete(const AValue: String);
@@ -333,6 +321,17 @@ end;
 function TStringListHelper.AddFmt(const S: string; const Args: array of const): Integer;
 begin
   Result := Add(Format(S, Args));
+end;
+
+function TStringListHelper.O<T>(const AIdx: Integer): T;
+begin
+  Result := Objects[AIdx] as T
+end;
+
+function TStringListHelper.OExtract<T>(const AIdx: Integer): T;
+begin
+  Result := O<T>(AIdx);
+  Delete(AIdx);
 end;
 
 function TStringListHelper.O(const AName: String; AObj: TObject): Integer;
