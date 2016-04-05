@@ -43,6 +43,9 @@ type
     function CommaKeys: String;
     function CommaValues: String;
 
+    function First: String; inline;
+    function Last: String; inline;
+
     property S[Name: String]: String read GetS write SetS;
     property I[Name: String]: Integer read GetI write SetI;
     property B[Name: String]: Boolean read GetB write SetB;
@@ -114,6 +117,11 @@ end;
 function TStringsHelper.Exists(const AKey: String): Boolean;
 begin
   Result := IndexOfName(AKey) <> -1;
+end;
+
+function TStringsHelper.First: String;
+begin
+  Result := Strings[0];
 end;
 
 function TStringsHelper.GetB(Name: String): Boolean;
@@ -193,6 +201,11 @@ begin
       Exit;
     end;
   Result := True;
+end;
+
+function TStringsHelper.Last: String;
+begin
+  Result := Strings[Count -1];
 end;
 
 function TStringsHelper.KeysExists(const AKeys: array of String;
