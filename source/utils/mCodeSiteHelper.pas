@@ -54,7 +54,7 @@ end;
 function TCodeSiteLoggerHelper.Send(const Expression: Boolean; Msg: String): Boolean;
 begin
   Result := Expression;
-  if not Result then
+  if Result then
     CodeSite.Send(Msg)
   else
     CodeSite.SendError(Msg);
