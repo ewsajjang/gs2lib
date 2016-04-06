@@ -17,6 +17,10 @@ type
 
 implementation
 
+uses
+  System.Math
+  ;
+
 { TStringGridHelper }
 
 procedure TStringGridHelper.AutoSizeCol(const AColIdx: Integer);
@@ -56,7 +60,7 @@ begin
   if ARow < TopRow then
     TopRow := ARow
   else
-    TopRow := ARow - VisibleRowCount -1;
+    TopRow := Max(0, ARow - VisibleRowCount -1);
 end;
 
 procedure TStringGridHelper.ScrollToBottom;
