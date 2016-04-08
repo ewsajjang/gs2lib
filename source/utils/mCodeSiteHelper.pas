@@ -20,13 +20,6 @@ type
     procedure Send(const AMsg: String; const APacket: TBytes); overload;
     procedure Send(const AMsg: String; const APacket: array of Byte); overload;
     procedure Send(const AMsg: String; Args: array of const; const APacket: TBytes); overload;
-<<<<<<< HEAD
-    procedure Send(const AErCondition: Boolean; const APacket: TBytes); overload;
-    procedure Send(const AErCondition: Boolean; const AMsg: String; const AValue: String); overload;
-    procedure Send(const AErCondition: Boolean; const AMsg: String; const APacket: TBytes); overload;
-    procedure Send(const AErCondition: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
-    procedure SendError(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
-=======
 
     function Send(const Expression: Boolean; Msg: String): Boolean; overload;
     function Send(const Expression: Boolean; Fmt: String; Args: array of const): Boolean; overload;
@@ -34,7 +27,8 @@ type
     function Send(const Expression: Boolean; const AMsg: String; const AValue: String): Boolean; overload;
     function Send(const Expression: Boolean; const AMsg: String; const APacket: TBytes): Boolean; overload;
     function Send(const Expression: Boolean; const AMsg: String; const Args: array of const; const APacket: TBytes): Boolean; overload;
->>>>>>> f2616987f48021c07cdbd67250f5218bc4cfc33c
+
+    procedure SendError(const AMsg: String; const Args: array of const; const APacket: TBytes); overload;
   end;
 
 implementation
@@ -98,19 +92,14 @@ begin
     CodeSite.SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
 end;
 
-<<<<<<< HEAD
 procedure TCodeSiteLoggerHelper.SendError(const AMsg: String;
   const Args: array of const; const APacket: TBytes);
 begin
   CodeSite.SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
 end;
 
-procedure TCodeSiteLoggerHelper.Send(const AErCondition: Boolean; const AMsg,
-  AValue: String);
-=======
 function TCodeSiteLoggerHelper.Send(const Expression: Boolean; const AMsg,
   AValue: String): Boolean;
->>>>>>> f2616987f48021c07cdbd67250f5218bc4cfc33c
 begin
   Result := Expression;
   if Result then
