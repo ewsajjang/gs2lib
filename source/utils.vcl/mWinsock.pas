@@ -24,10 +24,12 @@ type
     class function GetStatus: String; static;
     class function GetVersion: String; static;
     class function GetErMsg: String; static;
-  public
     class function Excuete(const AErCode: Integer; const AOperation: String): Boolean; static;
-    class procedure Startup; static;
+  public
+    class function Startup: Boolean; static;
     class procedure Cleanup; static;
+
+    class function IsPortOpen(const AHost: String; const APort: Integer): Boolean; static;
 
     class property Active: Boolean read FActive;
     class property ErMsg: String read GetErMsg;
@@ -221,7 +223,33 @@ begin
   Result := Format('%d.%d', [(FData.wVersion shr 8) and  $FF, FData.wVersion and $FF]);
 end;
 
-class procedure TWinsock.Startup;
+class function TWinsock.IsPortOpen(const AHost: String;
+  const APort: Integer): Boolean;
+var
+  LSocket: TBlockClientSocket;
+begin
+  Result := False;
+  if StartUp then
+  try
+    LSocket := TBlockClientSocket.Create;
+    try
+      try
+        LSocket.Open(AHost, APort);
+      except on E: Exception do
+        Result := False;
+      end;
+      Result := LSocket.Connected;
+      if Result then
+        LSocket.Close;
+    finally
+      FreeAndNil(LSocket);
+    end;
+  finally
+    CleanUp;
+  end;
+end;
+
+class function TWinsock.Startup: Boolean;
 begin
   FErCode := WSAStartup($0101, FData);
   FActive := FErCode = 0;
@@ -235,6 +263,7 @@ begin
     FMaxSocket := FData.iMaxSockets;
     FMaxUdpDg := FData.iMaxUdpDg;
   end;
+  Result := FActive;
 end;
 
 { TCustomSocket }
