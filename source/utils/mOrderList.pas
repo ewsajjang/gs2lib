@@ -9,18 +9,22 @@ uses
 type
   TSimpleOrderList<T> = class
   private
-    FPosByIdx: Integer;
     FItemIsClass: Boolean;
     FItemClass: TClass;
-    FList: TList<T>;
+    FOwnsObjects: Boolean;
     procedure OnNotify(Sender: TObject; const Item: T; Action: TCollectionNotification);
   private
-    FOwnsObjects: Boolean;
     function GetCount: Integer;
     procedure SetPosByIdx(const Value: Integer);
     function GetCurrent: T;
     function GetPosBy: T;
     procedure SetPosBy(const Value: T);
+    function GetItems(Index: Integer): T;
+
+    procedure SetItems(Index: Integer; const Value: T);
+  protected
+    FPosByIdx: Integer;
+    FList: TList<T>;
   public
     constructor Create(AOwnsObjects: Boolean = True);
     destructor Destroy; override;
@@ -37,6 +41,7 @@ type
     property Current: T read GetCurrent;
     property PosByIdx: Integer read FPosByIdx write SetPosByIdx;
     property PosBy: T read GetPosBy write SetPosBy;
+    property Items[Index: Integer]: T read GetItems write SetItems;
 
     property OwnsObjects: Boolean read FOwnsObjects write FOwnsObjects;
   end;
@@ -92,6 +97,11 @@ begin
   Result := FList[FPosByIdx];
 end;
 
+function TSimpleOrderList<T>.GetItems(Index: Integer): T;
+begin
+  Result := FList[Index];
+end;
+
 function TSimpleOrderList<T>.GetPosBy: T;
 begin
   Result := Current;
@@ -122,7 +132,8 @@ begin
   if FPosByIdx < Count then
     Inc(FPosByIdx);
 
-  Result := FList[FPosByIdx];
+  if not Eof then
+    Result := FList[FPosByIdx];
 end;
 
 procedure TSimpleOrderList<T>.OnNotify(Sender: TObject; const Item: T;
@@ -136,6 +147,11 @@ end;
 function TSimpleOrderList<T>.Remove(const AItem: T): Integer;
 begin
   Result := FList.Remove(AItem)
+end;
+
+procedure TSimpleOrderList<T>.SetItems(Index: Integer; const Value: T);
+begin
+  FList[Index] := Value;
 end;
 
 procedure TSimpleOrderList<T>.SetPosBy(const Value: T);

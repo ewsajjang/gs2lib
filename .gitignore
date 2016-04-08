@@ -17,3 +17,4 @@ bin
 *.tvsconfig
 *.stat
 dunitx-results.xml
+TestInsightSettings.ini

@@ -8,7 +8,7 @@ uses
 type
   TSequentialIdx = (siExist, siAdd, siInsert);
 
-  TStringListHelper = class helper for TStringList
+  TStringsHelper = class helper for TStrings
   private
     function GetB(Name: String): Boolean;
     function GetD(Name: String): Double;
@@ -24,30 +24,27 @@ type
     procedure SetC(Name: String; const Value: TColor);
     function GetGUID(Name: String): TGUID;
     procedure SetGUID(Name: String; const Value: TGUID);
+
   public
-    procedure TryDelete(const AValue: String);
     procedure PriorityS(const AName, AValue: String);
 
     function SequentialIdx(S: String; var AIdx: Integer): TSequentialIdx;
     function MergeString: String;
-    function AddFmt(const S: string; const Args: array of const): Integer;
-    function Integers(Name: String): Integer;
+
+    function Integers(Name: String; Defualt: Integer = 0): Integer;
     function Exists(const AKey: String): Boolean;
     function KeysExists(const AKeys: array of String; out ANotExistKeys: TArray<string>): Boolean; overload;
     function KeysExists(const AKeys: array of String; out ANotExistKeys: String): Boolean; overload;
     function KeysExists(const AKeys: array of String): Boolean; overload;
     function KeyExists(const AKey: String): Boolean; overload;
     function DelimitedValues(const ADelimiter: Char): String;
-    function CommaValues: String;
+
     function DelimitedKeys(const ADelimiter: Char): String;
     function CommaKeys: String;
+    function CommaValues: String;
 
-    function O(const AName: String; AObj: TObject): Integer; overload;
-    function OSwap(const AName: String; const AObj: TObject; AFree: Boolean = True): Integer;
-    function O<T: Class>(const AName: String): T; overload;
-    function O<T: Class>(const AIdx: Integer): T; overload;
-    function OExtract<T: Class>(const AName: String): T; overload;
-    function OExtract<T: Class>(const AIdx: Integer): T; overload;
+    function First: String; inline;
+    function Last: String; inline;
 
     property S[Name: String]: String read GetS write SetS;
     property I[Name: String]: Integer read GetI write SetI;
@@ -58,30 +55,28 @@ type
     property GUID[Name: String]: TGUID read GetGUID write SetGUID;
   end;
 
+  TStringListHelper = class helper(TStringsHelper) for TStringList
+  private
+  public
+    procedure TryDelete(const AValue: String);
+    function AddFmt(const S: string; const Args: array of const): Integer;
+
+    function O<T: Class>(const AIdx: Integer): T; overload;
+    function O<T: class>(const AName: String): T; overload;
+    function O(const AName: String; AObj: TObject): Integer; overload;
+    function OExtract<T: Class>(const AIdx: Integer): T; overload;
+    function OSwap(const AName: String; const AObj: TObject; AFree: Boolean = True): Integer;
+
+    function OExtract<T: Class>(const AName: String): T; overload;
+  end;
+
 implementation
 
 uses
   mConsts, mDateTimeHelper, DateUtils,
   System.UIConsts;
 
-{ TStringListHelper }
-
-function TStringListHelper.AddFmt(const S: string; const Args: array of const): Integer;
-begin
-  Result := Add(Format(S, Args));
-end;
-
-function TStringListHelper.CommaKeys: String;
-begin
-  Result := DelimitedKeys(',')
-end;
-
-function TStringListHelper.CommaValues: String;
-begin
-  Result := DelimitedValues(',');
-end;
-
-function TStringListHelper.DelimitedKeys(const ADelimiter: Char): String;
+function TStringsHelper.DelimitedKeys(const ADelimiter: Char): String;
 var
   LValue: String;
   i: Integer;
@@ -100,7 +95,7 @@ begin
   end;
 end;
 
-function TStringListHelper.DelimitedValues(const ADelimiter: Char): String;
+function TStringsHelper.DelimitedValues(const ADelimiter: Char): String;
 var
   LValue: String;
   i: Integer;
@@ -119,32 +114,37 @@ begin
   end;
 end;
 
-function TStringListHelper.Exists(const AKey: String): Boolean;
+function TStringsHelper.Exists(const AKey: String): Boolean;
 begin
   Result := IndexOfName(AKey) <> -1;
 end;
 
-function TStringListHelper.GetB(Name: String): Boolean;
+function TStringsHelper.First: String;
+begin
+  Result := Strings[0];
+end;
+
+function TStringsHelper.GetB(Name: String): Boolean;
 begin
   Result := Values[Name] = BoolStr[True];
 end;
 
-function TStringListHelper.GetC(Name: String): TColor;
+function TStringsHelper.GetC(Name: String): TColor;
 begin
   Result := StringToColor(Values[Name]);
 end;
 
-function TStringListHelper.GetD(Name: String): Double;
+function TStringsHelper.GetD(Name: String): Double;
 begin
   Result:= StrToFloatDef(Values[Name], 0);
 end;
 
-function TStringListHelper.GetDT(Name: String): TDateTime;
+function TStringsHelper.GetDT(Name: String): TDateTime;
 begin
   Result := TDateTime.FmtISO8601(Values[Name]);
 end;
 
-function TStringListHelper.GetGUID(Name: String): TGUID;
+function TStringsHelper.GetGUID(Name: String): TGUID;
 begin
   try
     Result := StringToGUID(Values[Name]);
@@ -153,25 +153,25 @@ begin
   end;
 end;
 
-function TStringListHelper.GetI(Name: String): Integer;
+function TStringsHelper.GetI(Name: String): Integer;
 begin
   Result := StrToIntDef(Values[Name], 0);
 end;
 
-function TStringListHelper.GetS(Name: String): String;
+function TStringsHelper.GetS(Name: String): String;
 begin
   Result := Values[Name];
 end;
 
-function TStringListHelper.Integers(Name: String): Integer;
+function TStringsHelper.Integers(Name: String; Defualt: Integer): Integer;
 begin
   if Values[Name] = EmptyStr then
-    Result := 0
+    Result := Defualt
   else
-    Result := StrToIntDef(Values[Name], 0);
+    Result := StrToIntDef(Values[Name], Defualt);
 end;
 
-function TStringListHelper.KeysExists(const AKeys: array of String; out ANotExistKeys: TArray<string>): Boolean;
+function TStringsHelper.KeysExists(const AKeys: array of String; out ANotExistKeys: TArray<string>): Boolean;
 const
   SEPERATOR: Char = ',';
 var
@@ -185,12 +185,12 @@ begin
   ANotExistKeys := LNotExistsKeys.Split(SEPERATOR);
 end;
 
-function TStringListHelper.KeyExists(const AKey: String): Boolean;
+function TStringsHelper.KeyExists(const AKey: String): Boolean;
 begin
   Result := Exists(AKey);
 end;
 
-function TStringListHelper.KeysExists(const AKeys: array of String): Boolean;
+function TStringsHelper.KeysExists(const AKeys: array of String): Boolean;
 var
   LKey: String;
 begin
@@ -203,7 +203,12 @@ begin
   Result := True;
 end;
 
-function TStringListHelper.KeysExists(const AKeys: array of String;
+function TStringsHelper.Last: String;
+begin
+  Result := Strings[Count -1];
+end;
+
+function TStringsHelper.KeysExists(const AKeys: array of String;
   out ANotExistKeys: String): Boolean;
 const
   SEPERATOR: Char = ',';
@@ -217,7 +222,7 @@ begin
   Result := ANotExistKeys.IsEmpty;
 end;
 
-function TStringListHelper.MergeString: String;
+function TStringsHelper.MergeString: String;
 var
   i: Integer;
 begin
@@ -226,48 +231,49 @@ begin
     Result := Result + Strings[i];
 end;
 
-function TStringListHelper.O(const AName: String; AObj: TObject): Integer;
+procedure TStringsHelper.SetB(Name: String; const Value: Boolean);
 begin
-  Result := AddObject(AName, AObj);
+  Values[Name] := BoolStr[Value];
 end;
 
-function TStringListHelper.O<T>(const AIdx: Integer): T;
+procedure TStringsHelper.SetC(Name: String; const Value: TColor);
 begin
-  Result := Self.Objects[AIdx] as T
+  Values[Name] := ColorToString(Value);
 end;
 
-function TStringListHelper.OExtract<T>(const AName: String): T;
-var
-  LIdx: Integer;
+procedure TStringsHelper.SetD(Name: String; const Value: Double);
 begin
-  LIdx := IndexOf(AName);
-  Result := O<T>(AName);
-  Delete(LIdx);
+  Values[Name]:= FloatToStr(Value);
 end;
 
-function TStringListHelper.OExtract<T>(const AIdx: Integer): T;
+procedure TStringsHelper.SetDT(Name: String; const Value: TDateTime);
 begin
-  Result := O<T>(AIdx);
-  Delete(AIdx);
+  Values[Name] := Value.ToISO8601Str;
 end;
 
-function TStringListHelper.OSwap(const AName: String; const AObj: TObject;
-  AFree: Boolean): Integer;
-var
-  LIdx: Integer;
+procedure TStringsHelper.SetGUID(Name: String; const Value: TGUID);
 begin
-  LIdx := IndexOfName(AName);
-  if LIdx > VAL_NOT_ASSIGNED then
-    Delete(LIdx);
-  Result := AddObject(AName, AObj);
+  Values[NAME] := Value.ToString;
 end;
 
-function TStringListHelper.O<T>(const AName: String): T;
+procedure TStringsHelper.SetI(Name: String; const Value: Integer);
 begin
-  Result := Self.Objects[IndexOf(AName)] as T
+  Values[Name] := IntToStr(Value);
 end;
 
-function TStringListHelper.SequentialIdx(S: String;
+procedure TStringsHelper.SetS(Name: String; const Value: String);
+begin
+  Values[Name] := Value;
+end;
+
+procedure TStringsHelper.PriorityS(const AName, AValue: String);
+begin
+  S[AName] := AValue;
+  if AValue.IsEmpty and not Exists(AName) then
+    Add(AName + NameValueSeparator);
+end;
+
+function TStringsHelper.SequentialIdx(S: String;
   var AIdx: Integer): TSequentialIdx;
 var
   L, H, C: Integer;
@@ -304,40 +310,17 @@ begin
   end;
 end;
 
-procedure TStringListHelper.SetB(Name: String; const Value: Boolean);
+function TStringsHelper.CommaKeys: String;
 begin
-  Values[Name] := BoolStr[Value];
+  Result := DelimitedKeys(',')
 end;
 
-procedure TStringListHelper.SetC(Name: String; const Value: TColor);
+function TStringsHelper.CommaValues: String;
 begin
-  Values[Name] := ColorToString(Value);
+  Result := DelimitedValues(',');
 end;
 
-procedure TStringListHelper.SetD(Name: String; const Value: Double);
-begin
-  Values[Name]:= FloatToStr(Value);
-end;
-
-procedure TStringListHelper.SetDT(Name: String; const Value: TDateTime);
-begin
-  Values[Name] := Value.ToISO8601Str;
-end;
-
-procedure TStringListHelper.SetGUID(Name: String; const Value: TGUID);
-begin
-  Values[NAME] := Value.ToString;
-end;
-
-procedure TStringListHelper.SetI(Name: String; const Value: Integer);
-begin
-  Values[Name] := IntToStr(Value);
-end;
-
-procedure TStringListHelper.SetS(Name: String; const Value: String);
-begin
-  Values[Name] := Value;
-end;
+{ TStringListHelper }
 
 procedure TStringListHelper.TryDelete(const AValue: String);
 var
@@ -348,11 +331,51 @@ begin
     Delete(LIdx);
 end;
 
-procedure TStringListHelper.PriorityS(const AName, AValue: String);
+function TStringListHelper.AddFmt(const S: string; const Args: array of const): Integer;
 begin
-  S[AName] := AValue;
-  if AValue.IsEmpty and not Exists(AName) then
-    Add(AName + NameValueSeparator);
+  Result := Add(Format(S, Args));
 end;
+
+function TStringListHelper.O<T>(const AIdx: Integer): T;
+begin
+  Result := Objects[AIdx] as T
+end;
+
+function TStringListHelper.OExtract<T>(const AIdx: Integer): T;
+begin
+  Result := O<T>(AIdx);
+  Delete(AIdx);
+end;
+
+function TStringListHelper.O(const AName: String; AObj: TObject): Integer;
+begin
+  Result := AddObject(AName, AObj);
+end;
+
+function TStringListHelper.OExtract<T>(const AName: String): T;
+var
+  LIdx: Integer;
+begin
+  LIdx := IndexOf(AName);
+  Result := O<T>(AName);
+  Delete(LIdx);
+end;
+
+function TStringListHelper.OSwap(const AName: String; const AObj: TObject;
+  AFree: Boolean): Integer;
+var
+  LIdx: Integer;
+begin
+  LIdx := IndexOfName(AName);
+  if LIdx > VAL_NOT_ASSIGNED then
+    Delete(LIdx);
+  Result := AddObject(AName, AObj);
+end;
+
+function TStringListHelper.O<T>(const AName: String): T;
+begin
+  Result := Objects[IndexOf(AName)] as T
+end;
+
 
 end.
