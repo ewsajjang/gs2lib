@@ -24,12 +24,13 @@ type
     class function GetStatus: String; static;
     class function GetVersion: String; static;
     class function GetErMsg: String; static;
-    class function Excuete(const AErCode: Integer; const AOperation: String): Boolean; static;
   public
     class function Startup: Boolean; static;
     class procedure Cleanup; static;
 
     class function IsPortOpen(const AHost: String; const APort: Integer): Boolean; static;
+
+    class function Excuete(const AErCode: Integer; const AOperation: String): Boolean; static;
 
     class property Active: Boolean read FActive;
     class property ErMsg: String read GetErMsg;
