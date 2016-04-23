@@ -16,7 +16,7 @@ type
     function Key<T: class>: String;
     procedure OnValueNotify(Sender: TObject; const Item: TObject; Action: TCollectionNotification);
   public
-    constructor Create;
+    constructor Create; virtual;
     destructor Destroy; override;
 
     procedure Add(AGenricInstance: TObject);
