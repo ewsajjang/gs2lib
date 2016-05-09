@@ -15,6 +15,7 @@ type
     FPause, FWait: TSimpleEvent;
     function GetEnabled: Boolean;
     procedure SetEnabled(const Value: Boolean);
+    procedure SetInterval(const Value: Integer);
   protected
     procedure Execute; override;
     procedure TerminatedSet; override;
@@ -24,7 +25,7 @@ type
 
     procedure Alive;
 
-    property Interval: Integer read FInterval;
+    property Interval: Integer read FInterval write SetInterval;
     property Enabled: Boolean read GetEnabled write SetEnabled;
 
     property OnTimeOut: TProc read FOnTimeOut write FOnTimeOut;
@@ -99,6 +100,12 @@ begin
   end;
   if Enabled then
     FPause.SetEvent;
+end;
+
+procedure TwatchInterval.SetInterval(const Value: Integer);
+begin
+  if not Started then
+    FInterval := Value;
 end;
 
 procedure TwatchInterval.TerminatedSet;
