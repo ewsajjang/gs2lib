@@ -16,9 +16,15 @@ type
     procedure Send(const AMsg: String; const ARect: TRect); overload;
     procedure Send(const AMsg: String; Args: array of const; const ARect: TRect); overload;
 
+
     procedure Send(const APacket: TBytes); overload;
-    procedure Send(const APacket: TBytes; const ALength: Integer); overload;
     procedure Send(const AMsg: String; const APacket: TBytes); overload;
+    procedure Send(const APacket: TBytes; const ALength: Integer); overload;
+    procedure Send(const AMsg: String; const APacket: TBytes; const ALength: Integer); overload;
+
+    procedure Send(const ABuffer: Pointer; const ALength: Integer); overload;
+    procedure Send(const AMsg: String; const ABuffer: Pointer; const ALength: Integer); overload;
+
     procedure Send(const AMsg: String; const APacket: array of Byte); overload;
     procedure Send(const AMsg: String; Args: array of const; const APacket: TBytes); overload;
 
@@ -97,6 +103,32 @@ procedure TCodeSiteLoggerHelper.Send(const APacket: TBytes;
   const ALength: Integer);
 begin
   CodeSite.Send(BytesToHexStr(APacket, 0, ALength));
+end;
+
+procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const ABuffer: Pointer;
+  const ALength: Integer);
+var
+  LBuffer: TBytes;
+begin
+  SetLength(LBuffer, ALength);
+  Move(ABuffer^, LBuffer[0], ALength);
+  Send(AMsg, LBuffer);
+end;
+
+procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const APacket: TBytes;
+  const ALength: Integer);
+begin
+  CodeSite.Send(AMsg, BytesToHexStr(APacket, 0, ALength));
+end;
+
+procedure TCodeSiteLoggerHelper.Send(const ABuffer: Pointer;
+  const ALength: Integer);
+var
+  LBuffer: TBytes;
+begin
+  SetLength(LBuffer, ALength);
+  Move(ABuffer^, LBuffer[0], ALength);
+  Send(LBuffer);
 end;
 
 procedure TCodeSiteLoggerHelper.SendError(const AMsg: String;

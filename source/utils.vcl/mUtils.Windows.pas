@@ -31,6 +31,8 @@ function ExtractExePath(const AFileName: String): String; overload;
 function IsRunningProcess(const AName: String) : Boolean;
 procedure TerminateProcess(const AName: String; const AExceptCurrentProcess: Boolean = True);
 
+procedure Delay(const AInterval: Cardinal);
+
 type
   TFileHelper = record helper for TFile
     class function Size(const AFileName: String): Int64; static;
@@ -394,6 +396,18 @@ begin
   finally
     CloseHandle(LHandle);
   end;
+end;
+
+procedure Delay(const AInterval: Cardinal);
+var
+  LTick: Cardinal;
+begin
+  LTick := GetTickCount;
+   repeat
+     Application.HandleMessage;
+     if Application.Terminated then
+      Break;
+   until (GetTickCount - LTick) > AInterval;
 end;
 
 end.
