@@ -26,7 +26,9 @@ type
 
     function FindTargetWinControl(const AName: String): TWinControl;
   public
-    class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl);
+    class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl); overload;
+    class function PlaceOn(const AChildClass: TFormClass; ATarget: TWinControl; AOwner: TComponent = nil): TForm; overload;
+    class function PlaceOn<T: TForm>(const AChildClass: TFormClass; ATarget: TWinControl; AOwner: TComponent = nil): T; overload;
 
     constructor Create(AOwner: TComponent); override;
 
@@ -268,6 +270,25 @@ begin
     FOnPlaceOnParent;
 end;
 
+class function TvForm.PlaceOn(const AChildClass: TFormClass;
+  ATarget: TWinControl; AOwner: TComponent): TForm;
+begin
+  Result := AChildClass.Create(AOwner);
+  Result.Parent := ATarget;
+  Result.Align := alClient;
+  Result.Show;
+  Result.BringToFront;
+  if Result is TvForm then
+    if Assigned((Result as TvForm).FOnPlaceOn) then
+      (Result as TvForm).FOnPlaceOn();
+end;
+
+class function TvForm.PlaceOn<T>(const AChildClass: TFormClass;
+  ATarget: TWinControl; AOwner: TComponent): T;
+begin
+  Result := PlaceOn(AChildClass, ATarget, AOwner) as T;
+end;
+
 procedure TvForm.PlaceOnParent(const AParent: String);
 var
   LParent: TvForm;
@@ -292,7 +313,13 @@ begin
   OnPlaceOnParentNotify;
 end;
 
-{ TvDlg }
+{class function TvForm.PlaceOn<T>(const AChildClass: TFormClass;
+  ATarget: TWinControl; AOwner: TComponent): T;
+begin
+
+end;
+
+ TvDlg }
 
 constructor TvDlg.Create(AOwner: TComponent);
 begin
