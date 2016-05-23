@@ -1,4 +1,4 @@
-unit mHandleComponent.Windows;
+unit mHandledComponent;
 
 interface
 

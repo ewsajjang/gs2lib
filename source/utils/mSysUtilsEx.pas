@@ -9,7 +9,8 @@ function ByteToHex(const AValue: Byte): String;
 function BytesToHexStr(const ABuffer: TBytes): String; overload;
 function BytesToHexStr(const AValue: array of Byte): String; overload;
 function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
-function BytesToStr(const AValue: TBytes): String;
+function BytesToStr(const AValue: TBytes): String; overload;
+function BytesToStr(const AValue: TBytes; const ALength: Int64): String; overload;
 function AnsiBytesToStr(const AValue: TBytes): String; overload;
 function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
 
@@ -22,6 +23,7 @@ function HexStrToInt(const Source: String): Integer;
 function MinimumCount(const ADividend, ADivisor: Integer): Integer;
 function SwapByte(Value: DWord): DWord; overload;
 function SwapByte(Value: Word): Word; overload;
+function SwapByte(Value: Single): Single; overload;
 procedure ReverseBytes(Source, Dest: Pointer; Size: UInt64);
 
 // email validate
@@ -86,11 +88,16 @@ begin
 end;
 
 function BytesToStr(const AValue: TBytes): String;
+begin
+  Result := BytesToStr(AValue, Length(AValue));
+end;
+
+function BytesToStr(const AValue: TBytes; const ALength: Int64): String;
 var
   i: Integer;
 begin
   Result := EmptyStr;
-  for i := 0 to Length(AValue) - 1 do
+  for i := 0 to ALength - 1 do
     if InRange(AValue[i], $21, $7E) then
       Result := Result + Chr(AValue[i])
     else
@@ -147,6 +154,16 @@ begin
 end;
 
 function SwapByte(Value: DWord): DWord;
+type
+  Bytes = packed array[0..3] of Byte;
+begin
+  Bytes(Result)[0]:= Bytes(Value)[3];
+  Bytes(Result)[1]:= Bytes(Value)[2];
+  Bytes(Result)[2]:= Bytes(Value)[1];
+  Bytes(Result)[3]:= Bytes(Value)[0];
+end;
+
+function SwapByte(Value: Single): Single; overload;
 type
   Bytes = packed array[0..3] of Byte;
 begin

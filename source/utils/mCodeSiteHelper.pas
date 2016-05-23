@@ -17,6 +17,7 @@ type
     procedure Send(const AMsg: String; Args: array of const; const ARect: TRect); overload;
 
     procedure Send(const APacket: TBytes); overload;
+    procedure Send(const APacket: TBytes; const ALength: Integer); overload;
     procedure Send(const AMsg: String; const APacket: TBytes); overload;
     procedure Send(const AMsg: String; const APacket: array of Byte); overload;
     procedure Send(const AMsg: String; Args: array of const; const APacket: TBytes); overload;
@@ -90,6 +91,12 @@ begin
     CodeSite.Send(Format(AMsg, Args), BytesToHexStr(APacket))
   else
     CodeSite.SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
+end;
+
+procedure TCodeSiteLoggerHelper.Send(const APacket: TBytes;
+  const ALength: Integer);
+begin
+  CodeSite.Send(BytesToHexStr(APacket, 0, ALength));
 end;
 
 procedure TCodeSiteLoggerHelper.SendError(const AMsg: String;
