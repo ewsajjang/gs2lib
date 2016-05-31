@@ -18,14 +18,14 @@ type
 
 
     procedure Send(const APacket: TBytes); overload;
-    procedure Send(const AMsg: String; const APacket: TBytes); overload;
+    procedure Send(const AMsg: String; APacket: TBytes); overload;
     procedure Send(const APacket: TBytes; const ALength: Integer); overload;
     procedure Send(const AMsg: String; const APacket: TBytes; const ALength: Integer); overload;
 
     procedure Send(const ABuffer: Pointer; const ALength: Integer); overload;
     procedure Send(const AMsg: String; const ABuffer: Pointer; const ALength: Integer); overload;
 
-    procedure Send(const AMsg: String; const APacket: array of Byte); overload;
+    //procedure Send(const AMsg: String; APacket: array of Byte); overload;
     procedure Send(const AMsg: String; Args: array of const; const APacket: TBytes); overload;
 
     function Send(const Expression: Boolean; Msg: String): Boolean; overload;
@@ -169,11 +169,11 @@ begin
   CodeSite.Send(Format(Fmt, Args), List);
 end;
 
-procedure TCodeSiteLoggerHelper.Send(const AMsg: String;
-  const APacket: array of Byte);
-begin
-  CodeSite.Send(AMsg, BytesToHexStr(APacket))
-end;
+//procedure TCodeSiteLoggerHelper.Send(const AMsg: String;
+//  APacket: array of Byte);
+//begin
+//  CodeSite.Send(AMsg, BytesToHexStr(APacket))
+//end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; Args: array of const;
   const APacket: TBytes);
@@ -196,7 +196,7 @@ begin
     CodeSite.SendError(BytesToHexStr(APacket))
 end;
 
-procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const APacket: TBytes);
+procedure TCodeSiteLoggerHelper.Send(const AMsg: String; APacket: TBytes);
 begin
   CodeSite.Send(AMsg, BytesToHexStr(APacket))
 end;
