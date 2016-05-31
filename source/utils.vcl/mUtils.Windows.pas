@@ -20,7 +20,8 @@ function ComObjExists(ClassName: string): Boolean;
 function ComObjRunning(ClassName: string): Boolean;
 function ComObjRequest(ClassName: String; var AComObj: OLEVariant): Boolean;
 
-function MakeUniqueFileName(const APath, AFileName: string): string;
+function MakeUniqueFileName(const APath, AFileName: string): string; overload;
+function MakeUniqueFileName(const AFileName: string): string; overload;
 procedure MyDocumentFile(var AFileName: String);
 procedure EmailByOutlook(const Subject, Body, FileName: String);
 
@@ -189,6 +190,14 @@ begin
   if FileExists( Result ) then
     if PathMakeUniqueName( UniqueName, Length(UniqueName), PChar(AFileName), nil, PChar(APath) ) then
       Result := UniqueName;
+end;
+
+function MakeUniqueFileName(const AFileName: string): string;
+var
+  LPath: String;
+begin
+  LPath := ExtractFilePath(AFileName);
+  Result := MakeUniqueFileName(LPath, AFileName);
 end;
 
 procedure MyDocumentFile(var AFileName: String);
