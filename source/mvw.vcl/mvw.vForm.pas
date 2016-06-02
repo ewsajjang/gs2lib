@@ -28,7 +28,7 @@ type
   public
     class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl); overload;
     class function PlaceOn(const AChildClass: TFormClass; ATarget: TWinControl; AOwner: TComponent = nil): TForm; overload;
-    class function PlaceOn<T: TForm>(const AChildClass: TFormClass; ATarget: TWinControl; AOwner: TComponent = nil): T; overload;
+    class function PlaceOn<T: TForm>(ATarget: TWinControl; AOwner: TComponent = nil): T; overload;
 
     constructor Create(AOwner: TComponent); override;
 
@@ -283,10 +283,9 @@ begin
       (Result as TvForm).FOnPlaceOn();
 end;
 
-class function TvForm.PlaceOn<T>(const AChildClass: TFormClass;
-  ATarget: TWinControl; AOwner: TComponent): T;
+class function TvForm.PlaceOn<T>(ATarget: TWinControl; AOwner: TComponent): T;
 begin
-  Result := PlaceOn(AChildClass, ATarget, AOwner) as T;
+  Result := PlaceOn(T, ATarget, AOwner) as T;
 end;
 
 procedure TvForm.PlaceOnParent(const AParent: String);

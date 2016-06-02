@@ -9,6 +9,9 @@ uses
 
 type
   TCodeSiteLoggerHelper = class helper for TCodeSiteLogger
+
+    procedure EnterMethod(const AMethodName: String; Args: array of const); overload;
+    procedure ExitMethod(const AMethodName: String; Args: array of const); overload;
     procedure Send(const List: TStringList); overload;
 
     procedure Send(const Fmt: String; Args: array of const; List: TStrings); overload;
@@ -24,6 +27,7 @@ type
 
     procedure Send(const ABuffer: Pointer; const ALength: Integer); overload;
     procedure Send(const AMsg: String; const ABuffer: Pointer; const ALength: Integer); overload;
+    procedure Send(const AMsg: String; Args: array of const; const ABuffer: Pointer; const ALength: Integer); overload;
 
     //procedure Send(const AMsg: String; APacket: array of Byte); overload;
     procedure Send(const AMsg: String; Args: array of const; const APacket: TBytes); overload;
@@ -89,6 +93,18 @@ begin
     CodeSite.SendError('[%s]%s', [AMsg, BytesToHexStr(APacket)])
 end;
 
+procedure TCodeSiteLoggerHelper.EnterMethod(const AMethodName: String;
+  Args: array of const);
+begin
+  EnterMethod(Format(AMethodName, Args));
+end;
+
+procedure TCodeSiteLoggerHelper.ExitMethod(const AMethodName: String;
+  Args: array of const);
+begin
+  ExitMethod(Format(AMethodName, Args))
+end;
+
 function TCodeSiteLoggerHelper.Send(const Expression: Boolean;
   const AMsg: String; const Args: array of const; const APacket: TBytes): Boolean;
 begin
@@ -97,6 +113,12 @@ begin
     CodeSite.Send(Format(AMsg, Args), BytesToHexStr(APacket))
   else
     CodeSite.SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
+end;
+
+procedure TCodeSiteLoggerHelper.Send(const AMsg: String; Args: array of const;
+  const ABuffer: Pointer; const ALength: Integer);
+begin
+  Send(Format(AMsg, Args), ABuffer, ALength);
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const APacket: TBytes;

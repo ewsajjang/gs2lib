@@ -31,10 +31,12 @@ type
     function GetInteger(const Index: Integer): Integer;
     function GetString(const Index: Integer): String;
     function GetBool(const Index: Integer): Boolean;
+    function GetFloat(const Index: Integer): Double;
 
     procedure SetInteger(const Index, Value: Integer);
     procedure SetString(const Index: Integer; const Value: String);
     procedure SetBool(const Index: Integer; const Value: Boolean);
+    procedure SetFloat(const Index: Integer; const Value: Double);
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -96,6 +98,11 @@ begin
   Result := FIni.ReadBool(Section(Index), Ident(Index), Defualt(Index).ToBoolean);
 end;
 
+function TCustomPreferences.GetFloat(const Index: Integer): Double;
+begin
+  Result := FIni.ReadFloat(Section(Index), Ident(Index), Defualt(Index).ToDouble);
+end;
+
 function TCustomPreferences.GetInteger(const Index: Integer): Integer;
 begin
   Result := FIni.ReadInteger(Section(Index), Ident(Index), Defualt(Index).ToInteger);
@@ -120,6 +127,12 @@ procedure TCustomPreferences.SetBool(const Index: Integer;
   const Value: Boolean);
 begin
   FIni.WriteBool(Section(Index), Ident(Index), Value);
+end;
+
+procedure TCustomPreferences.SetFloat(const Index: Integer;
+  const Value: Double);
+begin
+  FIni.WriteFloat(Section(Index), Ident(Index), Value);
 end;
 
 procedure TCustomPreferences.SetInteger(const Index, Value: Integer);
