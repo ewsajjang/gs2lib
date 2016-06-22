@@ -5,6 +5,7 @@ interface
 uses
   System.SysUtils, System.Types;
 
+function BufferToHexStr(const ABuffer: Pointer; const ALength: Integer): String;
 function ByteToHex(const AValue: Byte): String;
 function BytesToHexStr(const ABuffer: TBytes): String; overload;
 function BytesToHexStr(const AValue: array of Byte): String; overload;
@@ -34,6 +35,15 @@ implementation
 uses
   System.TypInfo, System.RegularExpressions, System.Math
   ;
+
+function BufferToHexStr(const ABuffer: Pointer; const ALength: Integer): String;
+var
+  LBuffer: TBytes;
+begin
+  SetLength(LBuffer, ALength);
+  Move(ABuffer^, LBuffer[0], ALength);
+  Result := BytesToHexStr(LBuffer);
+end;
 
 function MinimumCount(const ADividend, ADivisor: Integer): Integer;
 var

@@ -25,6 +25,8 @@ type
     procedure OnPlaceOnParentNotify; virtual;
 
     function FindTargetWinControl(const AName: String): TWinControl;
+
+    procedure DoCreate; override;
   public
     class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl); overload;
     class function PlaceOn(const AChildClass: TFormClass; ATarget: TWinControl; AOwner: TComponent = nil): TForm; overload;
@@ -204,11 +206,22 @@ constructor TvForm.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
+//  DoubleBuffered := True;
+//  Scaled := False;
+//  TabOrderAlign;
+//
+//  FDic.AddOrSetValue(Self.ClassName, Self);
+end;
+
+procedure TvForm.DoCreate;
+begin
   DoubleBuffered := True;
   Scaled := False;
   TabOrderAlign;
 
   FDic.AddOrSetValue(Self.ClassName, Self);
+
+  inherited;
 end;
 
 function TvForm.ExistsForms(const AvFormClass: TvFormClass): Boolean;
