@@ -87,6 +87,8 @@ end;
 destructor TCustomPreferences.Destroy;
 begin
   FreeAndNil(FIni);
+
+  inherited;
 end;
 
 procedure TCustomPreferences.DoCreateIniFile(AIniFile: TIniFile);

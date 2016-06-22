@@ -9,13 +9,13 @@ uses
 type
   TComboBoxHelper = class helper for TComboBox
   private
-    function GetSelectedStr: String;
-    procedure SetSelectedStr(const Value: String);
+    function GetSelectedText: String;
+    procedure SetSelectedText(const Value: String);
 
   public
     procedure AddItems(const AValues: TArray<String>);
     procedure AddFmt(const AStr: String; const Arg: array of const);
-    procedure IndexBy(const AValue: String);
+    procedure IndexBy(const AValue: String; const AFireOnChange: Boolean = True);
     procedure IndexByContainStr(const AValue: String);
     function IndexOfContainStr(const AValue: String): Integer;
     procedure ContainsBy(const AValue: String);
@@ -25,7 +25,7 @@ type
     procedure DropdownListAutoWidth;
     procedure ClearItemsObjects;
 
-    property ItemStr: String read GetSelectedStr write SetSelectedStr;
+    property SelectedText: String read GetSelectedText write SetSelectedText;
   end;
 
 implementation
@@ -109,12 +109,12 @@ begin
   end;
 end;
 
-function TComboBoxHelper.GetSelectedStr: String;
+function TComboBoxHelper.GetSelectedText: String;
 begin
   Result := Text;
 end;
 
-procedure TComboBoxHelper.IndexBy(const AValue: String);
+procedure TComboBoxHelper.IndexBy(const AValue: String; const AFireOnChange: Boolean);
 var
   LSuccess: Boolean;
   i: Integer;
@@ -126,6 +126,8 @@ begin
     if LSuccess then
     begin
       ItemIndex := i;
+      if AFireOnChange and Assigned(OnChange) then
+        OnChange(Self);
       Break;
     end;
   end;
@@ -162,7 +164,7 @@ begin
   Result := ItemIndex > -1;
 end;
 
-procedure TComboBoxHelper.SetSelectedStr(const Value: String);
+procedure TComboBoxHelper.SetSelectedText(const Value: String);
 begin
   if ItemSelected then
     Items[ItemIndex] := Value;

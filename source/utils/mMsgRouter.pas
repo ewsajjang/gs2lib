@@ -347,6 +347,7 @@ function TMsgRouter<TID>.Query<T>(AID: TID): T;
 var
   LFunc: TFunc<TValue>;
 begin
+  Result := Default(T);
   if FGenerics.TryGetValue(AID, LFunc) then
   begin
     if Assigned(LFunc) then
