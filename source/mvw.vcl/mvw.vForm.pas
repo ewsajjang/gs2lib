@@ -16,9 +16,9 @@ type
     FDic: TDictionary<String, TvForm>;
   private
     FLockWindowsUpdate: Boolean;
-    function GetFormsFromClass(AClass: TvFormClass): TvForm;
-    function GetFormsFormName(Name: String): TvForm;
-    function GetFormsCnt: Integer;
+    function GetVClasses(AClass: TvFormClass): TvForm;
+    function GetVNames(Name: String): TvForm;
+    function GetVCnt: Integer;
   protected
     FOnPlaceOn: TProc;
     FOnPlaceOnParent: TProc;
@@ -47,9 +47,9 @@ type
     function ExistsForms(const AvFormName: String): Boolean; overload;
     function ExistsForms(const AvFormClass: TvFormClass): Boolean; overload;
 
-    property vCnt: Integer read GetFormsCnt;
-    property vNames[Name: String]: TvForm read GetFormsFormName;
-    property vClasses[AClass: TvFormClass]: TvForm read GetFormsFromClass;
+    property vCnt: Integer read GetVCnt;
+    property vNames[Name: String]: TvForm read GetVNames;
+    property vClasses[AClass: TvFormClass]: TvForm read GetVClasses;
   end;
 
   TvDlg = class(TvForm)
@@ -234,7 +234,7 @@ begin
     end;
 end;
 
-function TvForm.GetFormsFromClass(AClass: TvFormClass): TvForm;
+function TvForm.GetVClasses(AClass: TvFormClass): TvForm;
 begin
   Result := vNames[AClass.ClassName];
 end;
@@ -249,12 +249,12 @@ begin
     AChild.FOnPlaceOn();
 end;
 
-function TvForm.GetFormsCnt: Integer;
+function TvForm.GetVCnt: Integer;
 begin
   Result := FDic.Count;
 end;
 
-function TvForm.GetFormsFormName(Name: String): TvForm;
+function TvForm.GetVNames(Name: String): TvForm;
 begin
   Result := FDic.Items[Name];
 end;

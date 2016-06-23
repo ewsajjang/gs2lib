@@ -11,6 +11,7 @@ type
     const DEFAULT_FIEL_EXT = '.ini';
   private
     class function GetFileName: String; static;
+
     function GetS(Section, Ident: String): String;
     procedure SetS(Section, Ident: String; const Value: String);
     function GetI(Section, Ident: String): Integer;
