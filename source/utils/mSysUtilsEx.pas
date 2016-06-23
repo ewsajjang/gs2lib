@@ -22,6 +22,7 @@ function HexStrToInt(const Source: String): Integer;
 
 // Numbers Utils
 function MinimumCount(const ADividend, ADivisor: Integer): Integer;
+function SwapByte(Value: UInt64): UInt64; overload;
 function SwapByte(Value: DWord): DWord; overload;
 function SwapByte(Value: Word): Word; overload;
 function SwapByte(Value: Single): Single; overload;
@@ -161,6 +162,20 @@ begin
   AStr := Str;
   for i := 1 to System.Length(AStr) do
     Result := Result + Format('%.2x', [Byte(AStr[i])]);
+end;
+
+function SwapByte(Value: UInt64): UInt64; overload;
+type
+  Bytes = packed array[0..7] of Byte;
+begin
+  Bytes(Result)[0]:= Bytes(Value)[7];
+  Bytes(Result)[1]:= Bytes(Value)[6];
+  Bytes(Result)[2]:= Bytes(Value)[5];
+  Bytes(Result)[3]:= Bytes(Value)[4];
+  Bytes(Result)[4]:= Bytes(Value)[3];
+  Bytes(Result)[5]:= Bytes(Value)[2];
+  Bytes(Result)[6]:= Bytes(Value)[1];
+  Bytes(Result)[7]:= Bytes(Value)[0];
 end;
 
 function SwapByte(Value: DWord): DWord;

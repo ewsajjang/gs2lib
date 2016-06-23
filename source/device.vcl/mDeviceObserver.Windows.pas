@@ -22,6 +22,7 @@ type
     FOnNodeChange: TNotifyInteger;
     FOnArrivedProc: TNotifyDevBroadcastDeviceInterfaceProc;
     FOnRemovedProc: TNotifyDevBroadcastDeviceInterfaceProc;
+    FOnNodeChangeProc: TProc;
     procedure WmDeviceChange(var Msg : TMessage); message WM_DEVICECHANGE;
   protected
     procedure do_WndProc(var Message:TMessage); virtual;
@@ -34,6 +35,7 @@ type
     function ExistsNotifycation(const ADeviceInterface: TGUID): Boolean;
 
     property OnNodeChange: TNotifyInteger read FOnNodeChange write FOnNodeChange;
+    property OnNodeChangePorc: TProc read FOnNodeChangeProc write FOnNodeChangeProc;
     property OnArrived: TNotifyDevBroadcastDeviceInterface read FOnArrived write FOnArrived;
     property OnArrivedProc: TNotifyDevBroadcastDeviceInterfaceProc read FOnArrivedProc write FOnArrivedProc;
     property OnRemoved: TNotifyDevBroadcastDeviceInterface read FOnRemoved write FOnRemoved;
@@ -41,6 +43,10 @@ type
   end;
 
 implementation
+
+uses
+  CodeSiteLogging, mCodeSiteHelper
+  ;
 
 { TWinDeviceObserver }
 
@@ -50,6 +56,8 @@ begin
 
   FHandle := AllocateHWND(do_WndProc);
   FRegHandles := TDictionary<TGUID, PHandle>.Create;
+
+  CodeSite.Send('TWinDeviceObserver.Create, Handle', FHandle);
 end;
 
 destructor TWinDeviceObserver.Destroy;
@@ -99,9 +107,13 @@ procedure TWinDeviceObserver.WmDeviceChange(var Msg: TMessage);
 var
   LDbDi: PDEV_BROADCAST_DEVICEINTERFACE;
 begin
+  CodeSite.Send('WmDeviceChange, [%.2x]%d', [Msg.WParam, Msg.WParam]);
   case Msg.WParam of
     DBT_DEVNODES_CHANGED :
-      if Assigned(FOnNodeChange) then FOnNodeChange(Self, Msg.WParam);
+      if Assigned(FOnNodeChange) then
+        FOnNodeChange(Self, Msg.WParam)
+      else if Assigned(FOnNodeChangeProc) then
+        FOnNodeChangeProc;
 
     DBT_DEVICEARRIVAL       ,
     DBT_DEVICEREMOVECOMPLETE:
