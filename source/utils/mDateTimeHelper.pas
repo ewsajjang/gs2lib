@@ -63,6 +63,7 @@ type
     class function FromDateStr(const ADateStr, AFmt: String): TDateTime; static;
 
     class function FmtYMDHN(const YYYYMMDDHHNN: String): TDateTime; overload; static; inline;
+    class function FmtYMDHNS(const YYYYMMDDHHNNSS: String): TDateTime; static; inline;
     class function FmtISO8601(const AValue: String): TDateTime; overload; static; inline;
 
     class property Now: TDateTime read GetNow;
@@ -473,6 +474,21 @@ begin
   N := StrToInt(Copy(YYYYMMDDHHNN, 11, 2));
 
   Result :=   EncodeDateTime(Y, M, D, H, N, 0, 0);
+end;
+
+class function TDateTimeHelper.FmtYMDHNS(
+  const YYYYMMDDHHNNSS: String): TDateTime;
+var
+  Y, M, D, H, N, S: Word;
+begin
+  Y := StrToInt(Copy(YYYYMMDDHHNNSS, 1, 4));
+  M := StrToInt(Copy(YYYYMMDDHHNNSS, 5, 2));
+  D := StrToInt(Copy(YYYYMMDDHHNNSS, 7, 2));
+  H := StrToInt(Copy(YYYYMMDDHHNNSS, 9, 2));
+  N := StrToIntDef(Copy(YYYYMMDDHHNNSS, 11, 2), 0);
+  S := StrToIntDef(Copy(YYYYMMDDHHNNSS, 13, 2), 0);
+
+  Result :=   EncodeDateTime(Y, M, D, H, N, S, 0);
 end;
 
 class function TDateTimeHelper.FromDateStr(const ADateStr,
