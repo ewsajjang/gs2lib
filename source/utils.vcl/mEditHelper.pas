@@ -17,6 +17,7 @@ type
     function StrHint: String;
     function IsEmpty: Boolean;
     procedure EndOfCursor;
+    function IntValue: Integer;
 
     property StrWithCursor: String write SetStrWithCursor;
     property Str: String read GetStr write SetStr;
@@ -32,6 +33,11 @@ uses
 function TEditHelper.StrHint: String;
 begin
   Result := TextHint;
+end;
+
+function TEditHelper.IntValue: Integer;
+begin
+  Result := StrToIntDef(Text, 0);
 end;
 
 procedure TEditHelper.EndOfCursor;
