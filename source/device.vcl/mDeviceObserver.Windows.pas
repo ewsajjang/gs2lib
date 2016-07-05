@@ -107,7 +107,7 @@ procedure TWinDeviceObserver.WmDeviceChange(var Msg: TMessage);
 var
   LDbDi: PDEV_BROADCAST_DEVICEINTERFACE;
 begin
-  CodeSite.Send('WmDeviceChange, [%.2x]%d', [Msg.WParam, Msg.WParam]);
+//  CodeSite.Send('WmDeviceChange, [%.2x]%d', [Msg.WParam, Msg.WParam]);
   case Msg.WParam of
     DBT_DEVNODES_CHANGED :
       if Assigned(FOnNodeChange) then

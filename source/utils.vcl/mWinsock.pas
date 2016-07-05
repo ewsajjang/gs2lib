@@ -4,7 +4,7 @@ interface
 
 uses
   System.Classes, System.SysUtils,
-  Winapi.Winsock, Winapi.windows, Winapi.Messages,
+  Winapi.Winsock2, Winapi.Winsock, Winapi.windows, Winapi.Messages,
   System.Generics.Collections
   ;
 
@@ -30,7 +30,7 @@ type
 
     class function IsPortOpen(const AHost: String; const APort: Integer): Boolean; static;
 
-    class function Excuete(const AErCode: Integer; const AOperation: String): Boolean; static;
+    class function Excuete(const AErCode: Integer; const AOperation: String; const ARaise: Boolean = True): Boolean; static;
 
     class property Active: Boolean read FActive;
     class property ErMsg: String read GetErMsg;
@@ -156,6 +156,11 @@ type
     property OnClientDisconnected: TProc<TServerCustomClientSocket> read FOnClientDisconnected write FOnClientDisconnected;
   end;
 
+function GetKeepAliveStatus(Socket: NativeInt; OptVal: PInteger): Boolean;
+function SetKeepAliveStatus(Socket: NativeInt; OptVal: Integer): Boolean;
+function SetKeepAliveValue(Socket: NativeInt; OnOff, Time, Interval: Integer): Boolean;
+
+
 implementation
 
 uses
@@ -164,6 +169,39 @@ uses
 
 threadvar
   SocketErrorProc: TProc<Integer, String>;
+
+function GetKeepAliveStatus(Socket: NativeInt; OptVal: PInteger): Boolean;
+var
+  Len: Integer;
+begin
+  Len:= SizeOf(OptVal^);
+  Result := GetSockOpt(Socket, SOL_SOCKET, SO_KEEPALIVE,  @(OptVal^), Len) = 0;
+end;
+
+function SetKeepAliveStatus(Socket: NativeInt; OptVal: Integer): Boolean;
+begin
+  Result := SetSockOpt(Socket, SOL_SOCKET, SO_KEEPALIVE,  @OptVal, SizeOf(OptVal)) = 0;
+end;
+
+function SetKeepAliveValue(Socket: NativeInt; OnOff, Time, Interval: Integer): Boolean;
+const
+  SIO_KEEPALIVE_VALS = IOC_IN or IOC_VENDOR or 4;
+type
+  TTcpKeepAlive= packed record
+    OnOff,
+    KeepAliveTime,
+    KeepAliveInterval: Cardinal;
+  end;
+var
+  KeepAliveIn: TTcpKeepAlive;
+  BytesReturned: Cardinal;
+begin
+  FillChar(KeepAliveIn, SizeOf(KeepAliveIn), 0);
+  KeepAliveIn.OnOff:= OnOff;
+  KeepAliveIn.KeepAliveTime:= Time;
+  KeepAliveIn.KeepAliveInterval:= Interval;
+  Result := WSAIoctl(Socket, SIO_KEEPALIVE_VALS,  @KeepAliveIn, SizeOf(KeepAliveIn), nil, 0, &BytesReturned, nil, nil) = 0;
+end;
 
 { TWinsock }
 
@@ -179,7 +217,7 @@ begin
 end;
 
 class function TWinsock.Excuete(const AErCode: Integer;
-  const AOperation: String): Boolean;
+  const AOperation: String; const ARaise: Boolean): Boolean;
 begin
   Result := AErCode = 0;
   if not Result then
@@ -191,7 +229,7 @@ begin
       FErMsg := Format(sWindowsSocketError, [SysErrorMessage(FErCode), FErCode, AOperation]);
     if Assigned(SocketErrorProc) then
       SocketErrorProc(FErCode, FErMsg)
-    else
+    else if ARaise then
       raise Exception.Create(FErMsg);
   end;
 end;
