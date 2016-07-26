@@ -8,7 +8,7 @@ uses
 
 type
   TStringGridHelper = class Helper for TStringGrid
-    procedure AutoSizeCol(const AColIdx: Integer);
+    procedure AutoSizeCol(const AColIdx: Integer; const AMargin: Integer = 25);
     procedure AutoSizeCols;
     procedure Clear;
     procedure ScrollBy(const ARow: Integer);
@@ -23,20 +23,18 @@ uses
 
 { TStringGridHelper }
 
-procedure TStringGridHelper.AutoSizeCol(const AColIdx: Integer);
-const
-  MARGIN = 15;
+procedure TStringGridHelper.AutoSizeCol(const AColIdx: Integer; const AMargin: Integer);
 var
   i, LWidth, LMaxWidth: Integer;
 begin
   LMaxWidth := 0;
   for i := 0 to RowCount - 1 do
   begin
-    LWidth:= Canvas.TextWidth(Cells[AColIdx, i]);
+    LWidth:= Canvas.TextWidth(Cells[AColIdx, i]) - AMargin;
     if LWidth> LMaxWidth then
-      LMaxWidth := LWidth
+      LMaxWidth := LWidth;
   end;
-  ColWidths[AColIdx] := LMaxWidth + MARGIN;
+  ColWidths[AColIdx] := LMaxWidth  - AMargin;
 end;
 
 procedure TStringGridHelper.AutoSizeCols;
