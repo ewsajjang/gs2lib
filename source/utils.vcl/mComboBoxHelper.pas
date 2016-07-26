@@ -15,7 +15,8 @@ type
   public
     procedure AddItems(const AValues: TArray<String>);
     procedure AddFmt(const AStr: String; const Arg: array of const);
-    procedure IndexBy(const AValue: String; const AFireOnChange: Boolean = True);
+    procedure IndexBy(const AValue: String; const AFireOnChange: Boolean = True); overload;
+    procedure IndexBy(const AIndex: Integer; const AFireOnChange: Boolean = True); overload;
     procedure IndexByContainStr(const AValue: String);
     function IndexOfContainStr(const AValue: String): Integer;
     procedure ContainsBy(const AValue: String);
@@ -24,6 +25,7 @@ type
     function ItemObj<T: class>: T;
     procedure DropdownListAutoWidth;
     procedure ClearItemsObjects;
+    procedure SetDropdownCount(const AMin: Integer = 8);
 
     property SelectedText: String read GetSelectedText write SetSelectedText;
   end;
@@ -32,7 +34,7 @@ implementation
 
 uses
 	mconsts,
-  Winapi.Windows, Winapi.Messages;
+  Winapi.Windows, Winapi.Messages, System.Math;
 
 { TComboBoxHelper }
 
@@ -82,6 +84,11 @@ begin
 
   if not LSuccess then
     ItemIndex := -1;
+end;
+
+procedure TComboBoxHelper.SetDropdownCount(const AMin: Integer);
+begin
+  DropDownCount := Min(Items.Count, AMin);
 end;
 
 procedure TComboBoxHelper.DropdownListAutoWidth;
@@ -134,6 +141,15 @@ begin
 
   if not LSuccess then
     ItemIndex := -1;
+end;
+
+procedure TComboBoxHelper.IndexBy(const AIndex: Integer;
+  const AFireOnChange: Boolean);
+begin
+  ItemIndex := AIndex;
+  if ItemIndex > -1 then
+    if AFireOnChange and Assigned(OnChange) then
+      OnChange(Self);
 end;
 
 procedure TComboBoxHelper.IndexByContainStr(const AValue: String);
