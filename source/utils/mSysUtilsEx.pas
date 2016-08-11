@@ -15,6 +15,8 @@ function BytesToStr(const AValue: TBytes; const ALength: Int64): String; overloa
 function AnsiBytesToStr(const AValue: TBytes): String; overload;
 function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
 
+function BytesToRawBytesString(const AValues: TBytes): RawByteString;
+
 function StrToHexStr(const Str: String): String;
 procedure HexStrToBytes(const Source: String; var Dest: TBytes);
 function HexStrToStr(const Source: String): String;
@@ -214,6 +216,15 @@ end;
 function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): String;
 begin
   SetString(Result, PAnsiChar(@AValue[StrIdx]), ALength);
+end;
+
+function BytesToRawBytesString(const AValues: TBytes): RawByteString;
+var
+  LValue: Byte;
+begin
+  Result := '';
+  for LValue in AValues do
+    Result := Result + RawByteString(AnsiChar(LValue));
 end;
 
 procedure ReverseBytes(Source, Dest: Pointer; Size: UInt64);
