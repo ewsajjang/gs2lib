@@ -3,7 +3,8 @@ unit mPreferences;
 interface
 
 uses
-  System.Classes, System.SysUtils, System.IniFiles
+  System.Classes, System.SysUtils, System.IniFiles, System.Rtti,
+  System.Generics.Collections
   ;
 
 const
@@ -42,6 +43,30 @@ type
   public
     constructor Create; virtual;
     destructor Destroy; override;
+  end;
+
+  TOptionIndexer = class
+  strict private
+    const
+      NName= 0;
+      NDefualt = 1;
+    type
+      TNameDefault = TArray<String>;
+    var FSections: TArray<String>;
+    var FNameDefault: TDictionary<String, TArray<TNameDefault>>;
+    function GetDefault(AIdx: Integer): String;
+    function GetName(AIdx: Integer): String;
+    function GetSection(AIdx: Integer): String;
+  private
+  public
+    constructor Create;
+    destructor Destroy; override;
+
+    procedure Add(const ASection: String; const ANameDefault: TArray<TNameDefault>);
+
+    property Section[AIdx: Integer]: String read GetSection;
+    property Name[AIdx: Integer]: String read GetName;
+    property Default[AIdx: Integer]: String read GetDefault;
   end;
 
 implementation
@@ -160,5 +185,41 @@ begin
   FIni.WriteString(Section(Index), Ident(Index), Value);
 end;
 
+{ TOptionIndexer }
+
+procedure TOptionIndexer.Add(const ASection: String;
+  const ANameDefault: TArray<TNameDefault>);
+begin
+  Assert(not FNameDefault.ContainsKey(ASection), Format('The %s is alreay exists', [ASection]));
+
+  FSections := FSections + [ASection];
+  FNameDefault.Add(ASection, ANameDefault);
+end;
+
+destructor TOptionIndexer.Destroy;
+begin
+  if Assigned(FNameDefault) then
+    FreeAndNil(FNameDefault);
+end;
+
+function TOptionIndexer.GetDefault(AIdx: Integer): String;
+begin
+  Result := FNameDefault[Section[AIdx]][IdxR(AIdx)][NIdxDefualt]
+end;
+
+function TOptionIndexer.GetName(AIdx: Integer): String;
+begin
+  Result := FNameDefault[Section[AIdx]][IdxR(AIdx)][NIdxIdent]
+end;
+
+function TOptionIndexer.GetSection(AIdx: Integer): String;
+begin
+  Result := FSections[IdxL(AIdx)]
+end;
+
+constructor TOptionIndexer.Create;
+begin
+  FNameDefault := TDictionary<String, TArray<TNameDefault>>.Create;
+end;
 
 end.
