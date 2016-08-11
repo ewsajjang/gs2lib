@@ -68,9 +68,9 @@ function TCodeSiteLoggerHelper.Send(const Expression: Boolean; Msg: String): Boo
 begin
   Result := Expression;
   if Result then
-    CodeSite.Send(Msg)
+    Send(Msg)
   else
-    CodeSite.SendError(Msg);
+    SendError(Msg);
 end;
 
 function TCodeSiteLoggerHelper.Send(const Expression: Boolean; Fmt: String;
@@ -78,9 +78,9 @@ function TCodeSiteLoggerHelper.Send(const Expression: Boolean; Fmt: String;
 begin
   Result := Expression;
   if Result then
-    CodeSite.Send(Fmt, Args)
+    Send(Fmt, Args)
   else
-    CodeSite.SendError(Fmt, Args);
+    SendError(Fmt, Args);
 end;
 
 function TCodeSiteLoggerHelper.Send(const Expression: Boolean;
@@ -88,9 +88,9 @@ function TCodeSiteLoggerHelper.Send(const Expression: Boolean;
 begin
   Result := Expression;
   if Result then
-    CodeSite.Send(AMsg, BytesToHexStr(APacket))
+    Send(AMsg, BytesToHexStr(APacket))
   else
-    CodeSite.SendError('[%s]%s', [AMsg, BytesToHexStr(APacket)])
+    SendError('[%s]%s', [AMsg, BytesToHexStr(APacket)])
 end;
 
 procedure TCodeSiteLoggerHelper.EnterMethod(const AMethodName: String;
@@ -110,9 +110,9 @@ function TCodeSiteLoggerHelper.Send(const Expression: Boolean;
 begin
   Result := Expression;
   if Result then
-    CodeSite.Send(Format(AMsg, Args), BytesToHexStr(APacket))
+    Send(Format(AMsg, Args), BytesToHexStr(APacket))
   else
-    CodeSite.SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
+    SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; Args: array of const;
@@ -124,7 +124,7 @@ end;
 procedure TCodeSiteLoggerHelper.Send(const APacket: TBytes;
   const ALength: Integer);
 begin
-  CodeSite.Send(BytesToHexStr(APacket, 0, ALength));
+  Send(BytesToHexStr(APacket, 0, ALength));
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const ABuffer: Pointer;
@@ -156,7 +156,7 @@ end;
 procedure TCodeSiteLoggerHelper.SendError(const AMsg: String;
   const Args: array of const; const APacket: TBytes);
 begin
-  CodeSite.SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
+  SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
 end;
 
 function TCodeSiteLoggerHelper.Send(const Expression: Boolean; const AMsg,
@@ -164,48 +164,48 @@ function TCodeSiteLoggerHelper.Send(const Expression: Boolean; const AMsg,
 begin
   Result := Expression;
   if Result then
-    CodeSite.Send(AMsg, AValue)
+    Send(AMsg, AValue)
   else
-    CodeSite.SendError('%s = %s', [AMsg, AValue])
+    SendError('%s = %s', [AMsg, AValue])
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const ARect: TRect);
 begin
-  CodeSite.Send(AMsg, ARect.ToString);
+  Send(AMsg, ARect.ToString);
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; Args: array of const;
   const ARect: TRect);
 begin
-  CodeSite.Send(Format(AMsg, Args), ARect.ToString);
+  Send(Format(AMsg, Args), ARect.ToString);
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const List: TStringList);
 begin
-  CodeSite.Send('', List);
+  Send('', List);
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const Fmt: String; Args: array of const;
   List: TStrings);
 begin
-  CodeSite.Send(Format(Fmt, Args), List);
+  Send(Format(Fmt, Args), List);
 end;
 
 //procedure TCodeSiteLoggerHelper.Send(const AMsg: String;
 //  APacket: array of Byte);
 //begin
-//  CodeSite.Send(AMsg, BytesToHexStr(APacket))
+//  Send(AMsg, BytesToHexStr(APacket))
 //end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; Args: array of const;
   const APacket: TBytes);
 begin
-  CodeSite.Send(Format(AMsg, Args), BytesToHexStr(APacket))
+  Send(Format(AMsg, Args), BytesToHexStr(APacket))
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const APacket: TBytes);
 begin
-  CodeSite.Send(BytesToHexStr(APacket))
+  Send(BytesToHexStr(APacket))
 end;
 
 function TCodeSiteLoggerHelper.Send(const Expression: Boolean;
@@ -213,14 +213,14 @@ function TCodeSiteLoggerHelper.Send(const Expression: Boolean;
 begin
   Result := Expression;
   if Result then
-    CodeSite.Send(BytesToHexStr(APacket))
+    Send(BytesToHexStr(APacket))
   else
-    CodeSite.SendError(BytesToHexStr(APacket))
+    SendError(BytesToHexStr(APacket))
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; APacket: TBytes);
 begin
-  CodeSite.Send(AMsg, BytesToHexStr(APacket))
+  Send(AMsg, BytesToHexStr(APacket))
 end;
 
 initialization
