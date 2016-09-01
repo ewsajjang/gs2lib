@@ -3,9 +3,10 @@ unit mCodeSite;
 interface
 
 uses
-  CodeSiteLogging,
+  CodeSiteLogging, Spring.Utils,
 
-  System.Classes, System.SysUtils, System.UITypes, System.Generics.Collections
+  System.Classes, System.SysUtils, System.UITypes, System.SyncObjs,
+  System.Generics.Collections
   ;
 
 type
@@ -24,6 +25,17 @@ type
     function GetLogger: TCodeSiteLogger; virtual;
     procedure SetLogger(Value: TCodeSiteLogger); virtual;
   public
+    property Logger: TCodeSiteLogger read GetLogger write SetLogger;
+  end;
+
+  TCodeSiteLogThread = class(TInterfacedThread, ICodeSiteLog)
+  protected
+    FLogger: TCodeSiteLogger;
+    function GetLogger: TCodeSiteLogger; virtual;
+    procedure SetLogger(AValue: TCodeSiteLogger); virtual;
+  public
+    destructor Destroy; override;
+
     property Logger: TCodeSiteLogger read GetLogger write SetLogger;
   end;
 
@@ -89,6 +101,29 @@ end;
 procedure TCodeSiteLogObject.SetLogger(Value: TCodeSiteLogger);
 begin
   FLogger := Value;
+end;
+
+{ TCodeSiteLogThreadObject }
+
+destructor TCodeSiteLogThread.Destroy;
+begin
+  if Assigned(FLogger) then
+    FreeAndNil(FLogger);
+
+  inherited;
+end;
+
+function TCodeSiteLogThread.GetLogger: TCodeSiteLogger;
+begin
+  if Assigned(FLogger) then
+    Result := FLogger
+  else
+    Result := CodeSiteLogging.CodeSite
+end;
+
+procedure TCodeSiteLogThread.SetLogger(AValue: TCodeSiteLogger);
+begin
+  FLogger := AValue;
 end;
 
 initialization

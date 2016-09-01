@@ -221,7 +221,7 @@ begin
 
   FDic.AddOrSetValue(Self.ClassName, Self);
 
-  inherited;
+  inherited DoCreate;
 end;
 
 function TvForm.ExistsForms(const AvFormClass: TvFormClass): Boolean;
