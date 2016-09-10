@@ -12,7 +12,7 @@ type
   public
     function PosOfStart(const ATarget: TBytes; const AStartPos: Integer = 0; const AExclusive: Boolean = True): Integer; overload;
     function PosOfStart(const ATarget: TBytes; const AStartPos: Integer; var AFindIdx: Integer; const AExclusive: Boolean = True): Boolean; overload;
-    function PosOfEnd(const ATarget: TBytes; var AFindIdx: Integer; const AExclusive: Boolean = True): Boolean; overload;
+    function PosOfEnd(const AEtx: TBytes; var AEtxIdx: Integer; const AExclusive: Boolean = True): Boolean; overload;
     function PosOfEnd(const ATarget: TBytes; const AExclusive: Boolean = True): Integer; overload;
   end;
 
@@ -31,27 +31,28 @@ begin
     Result := -1;
 end;
 
-function TBytesStreamHelper.PosOfEnd(const ATarget: TBytes;
-  var AFindIdx: Integer; const AExclusive: Boolean): Boolean;
+function TBytesStreamHelper.PosOfEnd(const AEtx: TBytes;
+  var AEtxIdx: Integer; const AExclusive: Boolean): Boolean;
 var
-  LEnd, LTargetLen, i: Integer;
+  LLenOfEtx, i: Integer;
+  LPosOfEnd: Int64;
 begin
   Result := False;
-  LTargetLen := Length(ATarget);
-  LEnd := Size;
-  AFindIdx := LEnd -LTargetLen;
-  while InRange(AFindIdx, 0, LEnd -LTargetLen) do
+  LLenOfEtx := Length(AEtx);
+  LPosOfEnd := Size;
+  AEtxIdx := LPosOfEnd;// - LLenOfEtx;
+  while InRange(AEtxIdx, 0, LPosOfEnd{ -LLenOfEtx}) do
   begin
     i := 0;
-    while (i < LTargetLen) and (Bytes[AFindIdx + i] = ATarget[i]) do
+    while (i < LLenOfEtx) and (Bytes[AEtxIdx + i] = AEtx[i]) do
       Inc(i);
-    Result := i = LTargetLen;
+    Result := i = LLenOfEtx;
     if Result then
     begin
-      Inc(AFindIdx, IfThen(Not AExclusive, LTargetLen));
+      Inc(AEtxIdx, IfThen(Not AExclusive, LLenOfEtx));
       Break;
     end;
-    Dec(AFindIdx);
+    Dec(AEtxIdx);
   end;
 end;
 

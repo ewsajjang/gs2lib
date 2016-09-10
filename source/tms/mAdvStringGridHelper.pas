@@ -20,7 +20,7 @@ type
     procedure AssignCols(AStartOfCol, r: Integer; ACols: TArray<String>; AColor: TColor; AFontStyles: TFontStyles); overload;
     procedure AssignCols(AStartOfCol, r: Integer; AColor: TColor); overload;
     procedure AssignCols(AStartOfCol, r: Integer; ACtrls: TArray<TControl>; AssignTag: Boolean = True); overload;
-    procedure AssignCols<T: TControl>(AStartOfCol, r: Integer; ACtrls: TArray<T>; AssignTag: Boolean = True); overload;
+    procedure AssignCols<T: TControl>(AStartOfCol, r: Integer; ACtrls: TArray<T>; AssignTag: Boolean = False); overload;
     procedure AssignColWidths(AWidths: TArray<Integer>);
     function ToColInts(const ACol, AStartRow: Integer): TArray<Integer>;
     function GetColInts(const ACol, AStartRow, ALength: Integer): TArray<Integer>;

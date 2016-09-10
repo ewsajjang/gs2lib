@@ -72,7 +72,7 @@ end;
 
 procedure TRegOption.SetInteger(const Index, Value: Integer);
 begin
-  SetString(Index, Value.ToString)
+  SetString(Index, Value.ToString);
 end;
 
 procedure TRegOption.SetString(const Index: Integer; const Value: String);
