@@ -3,6 +3,8 @@
 *.local
 *.identcache
 __history
+__recovery
+__*
 *.drc
 *.map
 *.exe
