@@ -6,8 +6,11 @@ const
 	FALSE_STR = 'False';
   TRUE_STR = 'True';
   BoolStr: array[False..True] of string = (FALSE_STR, TRUE_STR);
-  VAL_NOT_ASSIGNED = -1;
-  VAL_NOT_ASSIGNED_STR = 'not assigned';
+  VAL_NOT_ASSIGNED = -1 deprecated 'use NNotAssigned';
+  VAL_NOT_ASSIGNED_STR = 'not assigned' deprecated 'use SNotAssigned';
+
+  NNotAssigned = -1;
+  SNotAssigned = 'not assigned';
 
 function StrToBool(const AValue: String): Boolean;
 
