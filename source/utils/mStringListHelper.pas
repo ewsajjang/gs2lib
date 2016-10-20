@@ -367,7 +367,7 @@ var
   LIdx: Integer;
 begin
   LIdx := IndexOfName(AName);
-  if LIdx > VAL_NOT_ASSIGNED then
+  if LIdx > NNotAssigned then
     Delete(LIdx);
   Result := AddObject(AName, AObj);
 end;

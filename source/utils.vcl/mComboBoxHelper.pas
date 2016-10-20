@@ -161,7 +161,7 @@ function TComboBoxHelper.IndexOfContainStr(const AValue: String): Integer;
 var
   i: Integer;
 begin
-	Result := VAL_NOT_ASSIGNED;
+	Result := NNotAssigned;
   for i := 0 to ItemCount -1 do
     if Items[i].Contains(AValue) then
     begin
