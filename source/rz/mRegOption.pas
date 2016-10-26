@@ -19,7 +19,7 @@ type
     procedure DoCreate; override;
     procedure DoDestroy; override;
 
-    function GetRegIniFile: TRzRegIniFile; virtual; abstract;
+    function GetRegIniFile(var APath: String): TRzRegIniFile; virtual; abstract;
 
     function GetString(const Index: Integer): String;
     procedure SetString(const Index: Integer; const Value: String);
@@ -46,9 +46,13 @@ begin
 end;
 
 procedure TRegOption.DoCreate;
+var
+  LPath: String;
 begin
   FIdx := TOptionIndexer.Create;
-  FReg := GetRegIniFile;
+  FReg := GetRegIniFile(LPath);
+  if not LPath.IsEmpty then
+    FReg.Path := LPath;
 
   inherited;
 end;
