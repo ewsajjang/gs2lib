@@ -364,14 +364,14 @@ class function TDvcDirectionHelper.Create(const AValue: String): TDvcDirection;
 var
   LResult: Integer;
 begin
-  LResult := VAL_NOT_ASSIGNED;
+  LResult := NNotAssigned;
   for Result := Low(TDvcDirection) to High(TDvcDirection) do
     if Result.Str.ToLower.Equals(AValue.ToLower) then
     begin
       LResult := Integer(Result);
       Break;
     end;
-  if LResult = VAL_NOT_ASSIGNED then
+  if LResult = NNotAssigned then
     raise EDvcDirectionHelperCreate.CreateFmt('%s is Can''t matched to TDvcDirection', [AValue]);
 end;
 
