@@ -20,3 +20,4 @@ bin
 *.stat
 dunitx-results.xml
 TestInsightSettings.ini
+Thumbs.db
