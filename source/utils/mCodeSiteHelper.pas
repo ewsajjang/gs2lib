@@ -140,7 +140,7 @@ end;
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const APacket: TBytes;
   const ALength: Integer);
 begin
-  CodeSite.Send(AMsg, BytesToHexStr(APacket, 0, ALength));
+  Send(AMsg, BytesToHexStr(APacket, 0, ALength));
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const ABuffer: Pointer;
