@@ -30,13 +30,18 @@ function SwapByte(Value: Word): Word; overload;
 function SwapByte(Value: Single): Single; overload;
 procedure ReverseBytes(Source, Dest: Pointer; Size: UInt64);
 
+type
+  TFloat = class
+    class function ArrayLog<T>(const AValue: TArray<T>): String; static;
+  end;
+
 // email validate
 function EmailValidate(const Value: String): Boolean;
 
 implementation
 
 uses
-  System.TypInfo, System.RegularExpressions, System.Math
+  System.TypInfo, System.RegularExpressions, System.Math, System.Rtti
   ;
 
 function BufferToHexStr(const ABuffer: Pointer; const ALength: Integer): String;
@@ -239,11 +244,47 @@ begin
   end;
 end;
 
+function DoubleArrayToString(const AValues: TArray<Double>): String;
+var
+  LValue: Double;
+begin
+  Result := '';
+  for LValue in AValues do
+    if Result.IsEmpty then
+      Result := LValue.ToString
+    else
+      Result := Result + ',' + LValue.ToString;
+end;
+
 function EmailValidate(const Value: String): Boolean;
 const
   REG_EXP_EMAIL = '[a-z0-9!#$%&''*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&''*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?';
 begin
   Result := TRegEx.IsMatch(Value, REG_EXP_EMAIL);
+end;
+
+{ TFloat }
+
+class function TFloat.ArrayLog<T>(const AValue: TArray<T>): String;
+var
+  LTypInfo: PTypeInfo;
+  LItem: T;
+  LValue: String;
+begin
+  Result := '';
+
+  LTypInfo := TypeInfo(T);
+  if LTypInfo.Kind <> tkFloat then
+    Exit;
+
+  for LItem in AValue do
+  begin
+    LValue := TValue.From(LItem).AsExtended.ToString;
+    if Result.IsEmpty then
+      Result := LValue
+    else
+      Result := Result + ',' + LValue;
+  end;
 end;
 
 end.
