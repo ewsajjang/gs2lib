@@ -22,7 +22,7 @@ uses
 
 function TListBoxHelper.ItemSelected: Boolean;
 begin
-  Result := ItemIndex > VAL_NOT_ASSIGNED;
+  Result := ItemIndex > NNotAssigned;
 end;
 
 function TListBoxHelper.ItemText: String;
