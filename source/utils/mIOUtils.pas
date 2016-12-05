@@ -83,13 +83,13 @@ begin
   if LSize < NKb then
     Result := Format('%d bytes', [LSize + 0.])
   else if LSize < NMb then
-    Result := Format('%.0n KB', [LSize / NKb])
+    Result := Format('%.2n KB', [LSize / NKb])
   else if LSize < NGb then
-    Result := Format('%.0n MB', [LSize / NMb])
+    Result := Format('%.2n MB', [LSize / NMb])
   else if LSize < NTb then
-    Result := Format('%.0n GB', [LSize / NGb])
+    Result := Format('%.2n GB', [LSize / NGb])
   else
-    Result := Format('%.0n TB', [LSize / NTb]);
+    Result := Format('%.2n TB', [LSize / NTb]);
 end;
 
 end.
