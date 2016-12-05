@@ -44,6 +44,7 @@ type
     procedure EnumComponents<T: class>(AProc: TProc<T>); overload;
     procedure EnumControls<T: class>(const AContainer: TWinControl; AProc: TProc<T, String>); overload;
     procedure EnumControls<T: class>(const AContainer: TWinControl; AProc: TProc<T>); overload;
+    function Controls<T: class>(const AContainer: TWinControl): TArray<T>;
     procedure EnumControls(const AContainer: TWinControl; AProc: TProc<TControl, String>); overload;
 
     function ExistsForms(const AvFormName: String): Boolean; overload;
@@ -200,6 +201,17 @@ procedure TvForm.BeginUpdate;
 begin
   if CanFocus then
     FLockWindowsUpdate := LockWindowUpdate(Handle);
+end;
+
+function TvForm.Controls<T>(const AContainer: TWinControl): TArray<T>;
+var
+	i: Integer;
+begin
+	for i := 0 to AContainer.ControlCount -1 do
+  	if AContainer.Controls[i] is T then
+    	Result := Result + [AContainer.Controls[i] as T]
+    else if AContainer.Controls[i] is TWinControl then
+    	Result := Controls<T>(AContainer.Controls[i] as TWinControl);
 end;
 
 constructor TvForm.Create(AOwner: TComponent);
