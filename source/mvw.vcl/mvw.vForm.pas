@@ -311,7 +311,8 @@ class function TvForm.PlaceOn(const AChildClass: TFormClass;
 begin
   Result := AChildClass.Create(AOwner);
   Result.Parent := ATarget;
-  Result.Align := alClient;
+  if Assigned(Result.Parent) then
+    Result.Align := alClient;
   Result.Show;
   Result.BringToFront;
   if Result is TvForm then
