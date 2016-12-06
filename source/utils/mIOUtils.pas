@@ -9,17 +9,23 @@ uses
   ;
 
 type
-  TFileHelper = record helper for System.IOUtils.TFile
+  TFileHelper = record helper for TFile
   public
     class function GetSize(const AFileName: String): Int64; static;
     class function GetSizeStr(const AFileName: String): String; static;
+  end;
+
+  TPathHelper = record helper for TPath
+    {$IFDEF MSWINDOWS}
+    class function MakeUniqueFileName(const AFileName: String): String; static;
+    {$ENDIF}
   end;
 
 implementation
 
 uses
   {$IFDEF MSWINDOWS}
-  Winapi.Windows
+  Winapi.Windows, Winapi.ShlObj
   {$ENDIF}
 
   {$IFDEF POSIX}
@@ -90,6 +96,22 @@ begin
     Result := Format('%.2n GB', [LSize / NGb])
   else
     Result := Format('%.2n TB', [LSize / NTb]);
+end;
+
+class function TPathHelper.MakeUniqueFileName(
+  const AFileName: String): String;
+var
+  LDst: array[0..MAX_PATH-1] of Char;
+  LPath: String;
+  LFile: String;
+begin
+  LPath := TDirectory.GetParent(AFileName);
+  LFile := TPath.GetFileName(AFileName);
+  Result := TPath.Combine(LPath, LFile);
+
+  if TFile.Exists(Result) then
+    if PathMakeUniqueName(LDst, Length(LDst), PChar(LFile), nil, PChar(LPath)) then
+      Result := LDst;
 end;
 
 end.
