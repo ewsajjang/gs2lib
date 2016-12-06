@@ -17,6 +17,7 @@ type
   private
     FLockWindowsUpdate: Boolean;
     FEnableDropdownFiles: Boolean;
+    FDropDownFileExt: String;
     function GetVClasses(AClass: TvFormClass): TvForm;
     function GetVNames(Name: String): TvForm;
     function GetVCnt: Integer;
@@ -55,6 +56,7 @@ type
     function ExistsForms(const AvFormClass: TvFormClass): Boolean; overload;
 
     property EnableDropdownFiles: Boolean read FEnableDropdownFiles write SetEnableDragNDrop;
+    property DropDownFileExt: String read FDropDownFileExt write FDropDownFileExt;
     property vCnt: Integer read GetVCnt;
     property vNames[Name: String]: TvForm read GetVNames;
     property vClasses[AClass: TvFormClass]: TvForm read GetVClasses;
@@ -91,7 +93,7 @@ implementation
 
 uses
   mvw.Services, mvw.vForm.Helper,
-  System.Actions, System.Generics.Defaults, Winapi.ShellAPI
+  System.Actions, System.Generics.Defaults, Winapi.ShellAPI, System.IOUtils
   ;
 
 { Tv<Tvm> }
@@ -236,6 +238,7 @@ begin
   DoubleBuffered := True;
   Scaled := False;
   TabOrderAlign;
+  FDropDownFileExt := '';
 
   FDic.AddOrSetValue(Self.ClassName, Self);
 
@@ -361,7 +364,12 @@ begin
     for i := 0 to LFileCnt - 1 do
     begin
       DragQueryFile(msg.Drop, i, LFileName, NMaxFileLen);
-      LBuf.Add(LFileName);
+      if FDropDownFileExt.IsEmpty then
+        LBuf.Add(LFileName)
+      else if TPath.GetExtension(LFileName).Equals(FDropDownFileExt) then
+      begin
+        LBuf.Add(LFileName)
+      end;
     end;
     //LBuf.Sort;
     DoDropFile(LBuf.Count, LBuf);
