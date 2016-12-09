@@ -37,6 +37,8 @@ const
   DBT_USERDEFINED             = $0FFFF   ;  // The meaning of this message is user-defined.
 
 const
+  STR_Ports               = '{4D36E978-E325-11CE-BFC1-08002BE10318}';  // Serial and parallel ports
+
   // more infos
   //  http://pcsupport.about.com/od/driverssupport/a/device-class-guid.htm
   //  http://msdn.microsoft.com/en-us/library/windows/hardware/ff553426(v=vs.85).aspx
@@ -56,7 +58,7 @@ const
   GUID_Mouse      : TGUID = '{4D36E96F-E325-11CE-BFC1-08002BE10318}';  // Mice and pointing devices
   GUID_Media      : TGUID = '{4D36E96C-E325-11CE-BFC1-08002BE10318}';  // Audio and video devices
   GUID_Net        : TGUID = '{4D36E972-E325-11CE-BFC1-08002BE10318}';  // Network adapters
-  GUID_Ports      : TGUID = '{4D36E978-E325-11CE-BFC1-08002BE10318}';  // Serial and parallel ports
+  GUID_Ports      : TGUID = STR_Ports;  // Serial and parallel ports
   GUID_SCSIAdapter: TGUID = '{4D36E97B-E325-11CE-BFC1-08002BE10318}';  // SCSI and RAID controllers
   GUID_System     : TGUID = '{4D36E97D-E325-11CE-BFC1-08002BE10318}';  // System buses, bridges, etc.
   GUID_USB        : TGUID = '{36FC9E60-C465-11CF-8056-444553540000}';  // USB host controllers and hubs
@@ -67,10 +69,12 @@ const
 
   // http://msdn.microsoft.com/en-us/library/windows/hardware/ff545972(v=vs.85).aspx
   //  The GUID_DEVINTERFACE_USB_DEVICE device interface class is defined for USB devices that are attached to a USB hub.
-  GUID_DEVINTERFACE_USB_DEVICE: TGUID = '{A5DCBF10-6530-11D2-901F-00C04FB951ED}';
+  STR_DEVINTERFACE_USB_DEVICE = '{A5DCBF10-6530-11D2-901F-00C04FB951ED}';
+  GUID_DEVINTERFACE_USB_DEVICE: TGUID = STR_DEVINTERFACE_USB_DEVICE;//'{A5DCBF10-6530-11D2-901F-00C04FB951ED}';
   // http://msdn.microsoft.com/en-us/library/windows/hardware/ff545821(v=vs.85).aspx
   //  The GUID_DEVINTERFACE_COMPORT device interface class is defined for COM ports.
-  GUID_DEVINTERFACE_COMPORT: TGUID = '{86E0D1E0-8089-11D0-9CE4-08003E301F73}';
+  STR_DEVINTERFACE_COMPORT = '{86E0D1E0-8089-11D0-9CE4-08003E301F73}';
+  GUID_DEVINTERFACE_COMPORT: TGUID = STR_DEVINTERFACE_COMPORT;
 
 type
   DEV_BROADCAST_DEVICEINTERFACE = record
