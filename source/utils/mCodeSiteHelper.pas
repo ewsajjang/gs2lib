@@ -12,7 +12,11 @@ type
 
     procedure EnterMethod(const AMethodName: String; Args: array of const); overload;
     procedure ExitMethod(const AMethodName: String; Args: array of const); overload;
-    procedure Send(const List: TStringList); overload;
+
+    procedure Send(const ABuf: TStringList); overload;
+    procedure Send(const ABufName: String; const ABuf: TStringList); overload;
+
+    procedure Send(const AMsg: String; AProc: TProc); overload;
 
     procedure Send(const Fmt: String; Args: array of const; List: TStrings); overload;
 
@@ -115,6 +119,22 @@ begin
     SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
 end;
 
+procedure TCodeSiteLoggerHelper.Send(const AMsg: String; AProc: TProc);
+begin
+  CodeSite.EnterMethod(AMsg);
+  if Assigned(AProc) then
+    AProc;
+  CodeSite.ExitMethod(AMsg);
+end;
+
+procedure TCodeSiteLoggerHelper.Send(const ABufName: String;
+  const ABuf: TStringList);
+begin
+  EnterMethod(ABufName);
+  Send(ABuf);
+  ExitMethod(ABufName);
+end;
+
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; Args: array of const;
   const ABuffer: Pointer; const ALength: Integer);
 begin
@@ -180,9 +200,12 @@ begin
   Send(Format(AMsg, Args), ARect.ToString);
 end;
 
-procedure TCodeSiteLoggerHelper.Send(const List: TStringList);
+procedure TCodeSiteLoggerHelper.Send(const ABuf: TStringList);
+var
+  i: Integer;
 begin
-  Send('', List);
+  for i := 0 to ABuf.Count -1 do
+    Send(ABuf.KeyNames[i], ABuf.ValueFromIndex[i]);
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const Fmt: String; Args: array of const;
