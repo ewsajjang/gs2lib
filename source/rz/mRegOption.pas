@@ -30,7 +30,15 @@ type
     function GetBool(const Index: Integer): Boolean;
     procedure SetBool(const Index: Integer; const Value: Boolean);
 
+    function mmSecFromSec(const Index: Integer): Integer;
+    function mmSecFromMin(const Index: Integer): Integer;
+    procedure SecToMmSec(const Index, Value: Integer);
+    procedure MinToMmSec(const Index, Value: Integer);
+
     procedure Add(const ASection: String; const ANameDefault: TArray<TArray<String>>); virtual;
+  public const
+    NSec = 1000;
+    NMin = 60 * NSec;
   public
     property Reg: TRzRegIniFile read FReg;
   end;
@@ -102,6 +110,27 @@ end;
 procedure TRegOption.SetBool(const Index: Integer; const Value: Boolean);
 begin
   Reg.WriteBool(FIdx.Section[Index], FIdx.Name[Index], Value)
+end;
+
+function TRegOption.mmSecFromSec(const Index: Integer): Integer;
+begin
+  Result := GetInteger(Index) div NSec;
+end;
+
+function TRegOption.mmSecFromMin(const Index: Integer): Integer;
+begin
+  Result := GetInteger(Index) div NMin;
+end;
+
+
+procedure TRegOption.SecToMmSec(const Index, Value: Integer);
+begin
+  SetInteger(Index, Value * NSec);
+end;
+
+procedure TRegOption.MinToMmSec(const Index, Value: Integer);
+begin
+  SetInteger(Index, Value * NMin);
 end;
 
 end.
