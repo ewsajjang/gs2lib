@@ -39,6 +39,8 @@ type
 
     constructor Create(AOwner: TComponent); override;
 
+    function IsShortCut(var Message: TWMKey): Boolean; override;
+
     procedure BeginUpdate;
     procedure EndUpdate;
     procedure PlaceOnParent(const ATarget: TWinControl = nil); overload;
@@ -226,11 +228,6 @@ begin
   inherited Create(AOwner);
 
   FEnableDropdownFiles := False;
-//  DoubleBuffered := True;
-//  Scaled := False;
-//  TabOrderAlign;
-//
-//  FDic.AddOrSetValue(Self.ClassName, Self);
 end;
 
 procedure TvForm.DoCreate;
@@ -296,6 +293,20 @@ end;
 function TvForm.GetVNames(Name: String): TvForm;
 begin
   Result := FDic.Items[Name];
+end;
+
+function TvForm.IsShortCut(var Message: TWMKey): Boolean;
+var
+  LForm: TvForm;
+begin
+  Result := inherited;
+  if not Result then
+    for LForm in Controls<TvForm>(Self) do
+    begin
+      Result := LForm.Visible and LForm.IsShortCut(Message);
+      if Result then
+        Break;
+    end;
 end;
 
 procedure TvForm.PlaceOnParent(const AParent: TvFormClass);
