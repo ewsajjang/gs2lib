@@ -93,6 +93,7 @@ type
   DEV_BROADCAST_DEVICEINTERFACE_Helper = record helper for DEV_BROADCAST_DEVICEINTERFACE
     function dbcc_nameToStr: String;
     function dbcc_nameToRegPath: String;
+    function dbcc_nameToVIdPId: String;
     function dbcc_nameToDevIntefaceGUID: TGUID;
     function dbcc_NameExist: Boolean;
   end;
@@ -278,6 +279,24 @@ begin
   Result := PChar(@Self.dbcc_name);
 end;
 
+function DEV_BROADCAST_DEVICEINTERFACE_Helper.dbcc_nameToVIdPId: String;
+const
+  IDX_VID_PID    = 1;
+  IDX_SUB_FOLDER = 2;
+var
+  LdbccName: String;
+  LStrs: TArray<String>;
+begin
+  Result := EmptyStr;
+  LdbccName := dbcc_nameToStr;
+  if LdbccName = EmptyStr then
+    Exit;
+
+  LStrs := LdbccName.Split(['#']);
+  if Length(LStrs) >= 3 then
+    Result := LStrs[IDX_VID_PID] + '\' + LStrs[IDX_SUB_FOLDER];
+end;
+
 function DEV_BROADCAST_DEVICEINTERFACE_Helper.dbcc_NameExist: Boolean;
 begin
   Result := (dbcc_size > 0) and (Length(dbcc_nameToStr.Split(['#'])) = 4);
@@ -330,6 +349,7 @@ begin
   Result.S['DeviceType'] :=   DeviceType(Value).Str;
   Result.S['DeviceDesc'] :=   DeviceDesc(Value);
   Result.S['FriendlyName'] := FriendlyName(Value);
+  Result.S['VIdPId'] := Value.dbcc_nameToVIdPId;
   Result.S['Comport'] := FriendlyNameToComport(Result.S['FriendlyName'])
 end;
 
