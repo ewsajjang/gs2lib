@@ -9,7 +9,7 @@ uses
 
 type
   TCodeSiteLoggerHelper = class helper for TCodeSiteLogger
-
+    procedure EnterMethod(Obj: TObject; const AMethodName: String; Args: array of const); overload;
     procedure EnterMethod(const AMethodName: String; Args: array of const); overload;
     procedure ExitMethod(const AMethodName: String; Args: array of const); overload;
     procedure Send(const List: TStringList); overload;
@@ -99,6 +99,12 @@ begin
   EnterMethod(Format(AMethodName, Args));
 end;
 
+procedure TCodeSiteLoggerHelper.EnterMethod(Obj: TObject;
+  const AMethodName: String; Args: array of const);
+begin
+  EnterMethod(Obj, Format(AMethodName, Args));
+end;
+
 procedure TCodeSiteLoggerHelper.ExitMethod(const AMethodName: String;
   Args: array of const);
 begin
@@ -124,7 +130,7 @@ end;
 procedure TCodeSiteLoggerHelper.Send(const APacket: TBytes;
   const ALength: Integer);
 begin
-  Send(BytesToHexStr(APacket, 0, ALength));
+  Send('Len: %d, Buf: %s', [ALength, BytesToHexStr(APacket, 0, ALength)]);
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const ABuffer: Pointer;
@@ -140,7 +146,7 @@ end;
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; const APacket: TBytes;
   const ALength: Integer);
 begin
-  Send(AMsg, BytesToHexStr(APacket, 0, ALength));
+  Send(AMsg, Format('Len: %d, Buf: %s', [ALength, BytesToHexStr(APacket, 0, ALength)]));
 end;
 
 procedure TCodeSiteLoggerHelper.Send(const ABuffer: Pointer;
@@ -205,7 +211,7 @@ end;
 
 procedure TCodeSiteLoggerHelper.Send(const APacket: TBytes);
 begin
-  Send(BytesToHexStr(APacket))
+  Send('Len: %d, Buf: %s', [Length(APacket), BytesToHexStr(APacket)])
 end;
 
 function TCodeSiteLoggerHelper.Send(const Expression: Boolean;
@@ -220,7 +226,7 @@ end;
 
 procedure TCodeSiteLoggerHelper.Send(const AMsg: String; APacket: TBytes);
 begin
-  Send(AMsg, BytesToHexStr(APacket))
+  Send(AMsg, Format('Len: %d, Buf: %s', [Length(APacket), BytesToHexStr(APacket)]));
 end;
 
 initialization

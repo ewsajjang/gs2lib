@@ -12,9 +12,13 @@ type
     class function ToString<T>: String; reintroduce;
     class function IfThen<T>(AValue: Boolean; const ATrue: T): T; overload;
     class function IfThen<T>(AValue: Boolean; const ATrue, AFalse: T): T; overload;
+    class function HasIdxProperty(const ASrc: TObject; const APropName: String): Boolean;
+    class function TryGetIdxProperty<T>(const ASrc: TObject; const APropName: String;
+      const Args: array of TValue; var AValue: T): Boolean;
+    class function TrySetIdxProperty<T>(const ASrc: TObject; const APropName: String;
+      const Args: array of TValue; const AValue: T): Boolean;
+
   end;
-
-
 
 implementation
 
@@ -49,6 +53,21 @@ begin
   Result := IfThen<T>(AValue, ATrue, Default(T));
 end;
 
+class function TGeneric.HasIdxProperty(const ASrc: TObject;
+  const APropName: String): Boolean;
+var
+  LCtx: TRttiContext;
+  LRttiType: TRttiType;
+begin
+  LCtx := TRttiContext.Create;
+  try
+    LRttiType := LCtx.GetType(ASrc.ClassInfo) as TRttiInstanceType;
+    Result := Assigned(LRttiType.GetIndexedProperty(APropName));
+  except on E: Exception do
+    Exit(False);
+  end;
+end;
+
 class function TGeneric.IfThen<T>(AValue: Boolean; const ATrue, AFalse: T): T;
 begin
   if AValue then
@@ -66,6 +85,47 @@ begin
   LTypeInfo := TypeInfo(T);
   LType := LContext.GetType(LTypeInfo);
   Result := LType.Name;
+end;
+
+class function TGeneric.TryGetIdxProperty<T>(const ASrc: TObject;
+  const APropName: String; const Args: array of TValue; var AValue: T): Boolean;
+var
+  LCtx: TRttiContext;
+  LRttiType: TRttiType;
+  LRrttiProp: TRttiIndexedProperty;
+  LValue: TValue;
+begin
+  LCtx := TRttiContext.Create;
+  try
+    LRttiType := LCtx.GetType(ASrc.ClassInfo) as TRttiInstanceType;
+    LValue := LRttiType.GetIndexedProperty(APropName).GetValue(ASrc, Args);
+    Result := not LValue.IsEmpty;
+    AValue := LValue.AsType<T>;
+  except on E: Exception do
+    Exit(False);
+  end;
+  Result := True;
+end;
+
+class function TGeneric.TrySetIdxProperty<T>(const ASrc: TObject;
+  const APropName: String; const Args: array of TValue;
+  const AValue: T): Boolean;
+var
+  LCtx: TRttiContext;
+  LRttiType: TRttiType;
+  LRrttiProp: TRttiIndexedProperty;
+  LValue: TValue;
+begin
+  LCtx := TRttiContext.Create;
+  try
+    LRttiType := LCtx.GetType(ASrc.ClassInfo) as TRttiInstanceType;
+    LValue := TValue.From(AValue);
+    LRttiType.GetIndexedProperty(APropName).SetValue(ASrc, Args, LValue);
+    Result := True;
+  except on E: Exception do
+    Exit(False);
+  end;
+  Result := True;
 end;
 
 end.
