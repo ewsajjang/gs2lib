@@ -12,6 +12,10 @@ const
   NNotAssigned = -1;
   SNotAssigned = 'not assigned';
 
+  NSec = 1000;
+  NMin = NSec * 60;
+  NHour = NMin * 60;
+
 function StrToBool(const AValue: String): Boolean;
 
 implementation

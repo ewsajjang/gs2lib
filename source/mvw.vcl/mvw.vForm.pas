@@ -5,7 +5,7 @@ interface
 uses
   System.Classes, System.SysUtils,
 
-  Vcl.ActnList, vcl.Forms, Vcl.Menus, Vcl.Controls, WinAPI.Windows,
+  Vcl.ActnList, vcl.Forms, Vcl.Menus, Vcl.Controls, WinAPI.Windows, WinApi.Messages,
   System.Generics.Collections
   ;
 
@@ -16,9 +16,13 @@ type
     FDic: TDictionary<String, TvForm>;
   private
     FLockWindowsUpdate: Boolean;
+    FEnableDropdownFiles: Boolean;
+    FDropDownFileExt: String;
     function GetVClasses(AClass: TvFormClass): TvForm;
     function GetVNames(Name: String): TvForm;
     function GetVCnt: Integer;
+    procedure SetEnableDragNDrop(const Value: Boolean);
+    procedure WmDropFiles(var msg: TWMDropFiles); message WM_DROPFILES;
   protected
     FOnPlaceOn: TProc;
     FOnPlaceOnParent: TProc;
@@ -27,12 +31,15 @@ type
     function FindTargetWinControl(const AName: String): TWinControl;
 
     procedure DoCreate; override;
+    procedure DoDropFile(const ACnt: Integer; const AFiles: TStringList); virtual;
   public
     class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl); overload;
     class function PlaceOn(const AChildClass: TFormClass; ATarget: TWinControl; AOwner: TComponent = nil): TForm; overload;
     class function PlaceOn<T: TForm>(ATarget: TWinControl; AOwner: TComponent = nil): T; overload;
 
     constructor Create(AOwner: TComponent); override;
+
+    function IsShortCut(var Message: TWMKey): Boolean; override;
 
     procedure BeginUpdate;
     procedure EndUpdate;
@@ -44,11 +51,14 @@ type
     procedure EnumComponents<T: class>(AProc: TProc<T>); overload;
     procedure EnumControls<T: class>(const AContainer: TWinControl; AProc: TProc<T, String>); overload;
     procedure EnumControls<T: class>(const AContainer: TWinControl; AProc: TProc<T>); overload;
+    function Controls<T: class>(const AContainer: TWinControl): TArray<T>;
     procedure EnumControls(const AContainer: TWinControl; AProc: TProc<TControl, String>); overload;
 
     function ExistsForms(const AvFormName: String): Boolean; overload;
     function ExistsForms(const AvFormClass: TvFormClass): Boolean; overload;
 
+    property EnableDropdownFiles: Boolean read FEnableDropdownFiles write SetEnableDragNDrop;
+    property DropDownFileExt: String read FDropDownFileExt write FDropDownFileExt;
     property vCnt: Integer read GetVCnt;
     property vNames[Name: String]: TvForm read GetVNames;
     property vClasses[AClass: TvFormClass]: TvForm read GetVClasses;
@@ -85,7 +95,7 @@ implementation
 
 uses
   mvw.Services, mvw.vForm.Helper,
-  System.Actions, System.Generics.Defaults
+  System.Actions, System.Generics.Defaults, Winapi.ShellAPI, System.IOUtils
   ;
 
 { Tv<Tvm> }
@@ -202,15 +212,22 @@ begin
     FLockWindowsUpdate := LockWindowUpdate(Handle);
 end;
 
+function TvForm.Controls<T>(const AContainer: TWinControl): TArray<T>;
+var
+	i: Integer;
+begin
+	for i := 0 to AContainer.ControlCount -1 do
+  	if AContainer.Controls[i] is T then
+    	Result := Result + [AContainer.Controls[i] as T]
+    else if AContainer.Controls[i] is TWinControl then
+    	Result := Controls<T>(AContainer.Controls[i] as TWinControl);
+end;
+
 constructor TvForm.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
-//  DoubleBuffered := True;
-//  Scaled := False;
-//  TabOrderAlign;
-//
-//  FDic.AddOrSetValue(Self.ClassName, Self);
+  FEnableDropdownFiles := False;
 end;
 
 procedure TvForm.DoCreate;
@@ -218,10 +235,16 @@ begin
   DoubleBuffered := True;
   Scaled := False;
   TabOrderAlign;
+  FDropDownFileExt := '';
 
   FDic.AddOrSetValue(Self.ClassName, Self);
 
   inherited DoCreate;
+end;
+
+procedure TvForm.DoDropFile(const ACnt: Integer;
+  const AFiles: TStringList);
+begin
 end;
 
 function TvForm.ExistsForms(const AvFormClass: TvFormClass): Boolean;
@@ -272,6 +295,20 @@ begin
   Result := FDic.Items[Name];
 end;
 
+function TvForm.IsShortCut(var Message: TWMKey): Boolean;
+var
+  LForm: TvForm;
+begin
+  Result := inherited;
+  if not Result then
+    for LForm in Controls<TvForm>(Self) do
+    begin
+      Result := LForm.Visible and LForm.IsShortCut(Message);
+      if Result then
+        Break;
+    end;
+end;
+
 procedure TvForm.PlaceOnParent(const AParent: TvFormClass);
 begin
   PlaceOnParent(vClasses[AParent]);
@@ -288,7 +325,8 @@ class function TvForm.PlaceOn(const AChildClass: TFormClass;
 begin
   Result := AChildClass.Create(AOwner);
   Result.Parent := ATarget;
-  Result.Align := alClient;
+  if Assigned(Result.Parent) then
+    Result.Align := alClient;
   Result.Show;
   Result.BringToFront;
   if Result is TvForm then
@@ -310,6 +348,44 @@ begin
   begin
     PlaceOn(Self, FindTargetWinControl(LParent.Name));
     OnPlaceOnParentNotify;
+  end;
+end;
+
+procedure TvForm.SetEnableDragNDrop(const Value: Boolean);
+begin
+  if FEnableDropdownFiles <> Value then
+  begin
+    FEnableDropdownFiles := Value;
+    DragAcceptFiles(Handle, FEnableDropdownFiles);
+  end;
+end;
+
+procedure TvForm.WmDropFiles(var msg: TWMDropFiles);
+const
+  NMaxFileLen = 255;
+var
+  i, LFileCnt: Integer;
+  LFileName: array [0 .. NMaxFileLen] of Char;
+  LBuf: TStringList;
+begin
+  LFileCnt := DragQueryFile(msg.Drop, $FFFFFFFF, LFileName, NMaxFileLen);
+  LBuf := TStringList.Create;
+  try
+    LBuf.Sorted := True;
+    for i := 0 to LFileCnt - 1 do
+    begin
+      DragQueryFile(msg.Drop, i, LFileName, NMaxFileLen);
+      if FDropDownFileExt.IsEmpty then
+        LBuf.Add(LFileName)
+      else if TPath.GetExtension(LFileName).Equals(FDropDownFileExt) then
+      begin
+        LBuf.Add(LFileName)
+      end;
+    end;
+    //LBuf.Sort;
+    DoDropFile(LBuf.Count, LBuf);
+  finally
+    FreeAndNil(LBuf);
   end;
 end;
 

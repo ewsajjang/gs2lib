@@ -9,8 +9,8 @@ uses
 type
   TComboBoxHelper = class helper for TComboBox
   private
-    function GetSelectedText: String;
-    procedure SetSelectedText(const Value: String);
+    function GetItemText: String;
+    procedure SetItemText(const Value: String);
 
   public
     procedure AddItems(const AValues: TArray<String>);
@@ -27,7 +27,7 @@ type
     procedure ClearItemsObjects;
     procedure SetDropdownCount(const AMin: Integer = 8);
 
-    property SelectedText: String read GetSelectedText write SetSelectedText;
+    property ItemText: String read GetItemText write SetItemText;
   end;
 
 implementation
@@ -116,7 +116,7 @@ begin
   end;
 end;
 
-function TComboBoxHelper.GetSelectedText: String;
+function TComboBoxHelper.GetItemText: String;
 begin
   Result := Text;
 end;
@@ -147,7 +147,7 @@ procedure TComboBoxHelper.IndexBy(const AIndex: Integer;
   const AFireOnChange: Boolean);
 begin
   ItemIndex := AIndex;
-  if ItemIndex > -1 then
+  if InRange(AIndex, 0, Items.Count -1) and (ItemIndex > -1) then
     if AFireOnChange and Assigned(OnChange) then
       OnChange(Self);
 end;
@@ -180,7 +180,7 @@ begin
   Result := ItemIndex > -1;
 end;
 
-procedure TComboBoxHelper.SetSelectedText(const Value: String);
+procedure TComboBoxHelper.SetItemText(const Value: String);
 begin
   if ItemSelected then
     Items[ItemIndex] := Value;

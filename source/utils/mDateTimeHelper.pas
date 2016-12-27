@@ -86,6 +86,7 @@ type
     property Millisecond: Word read GetMillisecond;
 
     function ToString(const aFormatStr: string = ''): string; overload; inline;
+    function ToShotString: String;
     function ToString(const AFmt: TFormatSettings; const aFormatStr: string = ''): string; overload; inline;
     function ToISO8601Str: String;
 
@@ -227,6 +228,11 @@ end;
 function TDateTimeHelper.ToISO8601Str: String;
 begin
   Result := FormatDateTime(FMT_DATE_TIME_ISO_8601, Self);
+end;
+
+function TDateTimeHelper.ToShotString: String;
+begin
+  Result := FormatDateTime('c', Self);
 end;
 
 function TDateTimeHelper.ToString(const AFmt: TFormatSettings;
