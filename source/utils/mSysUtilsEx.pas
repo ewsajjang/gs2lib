@@ -12,9 +12,6 @@ function BytesToHexStr(const AValue: array of Byte): String; overload;
 function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
 function BytesToStr(const AValue: TBytes): String; overload;
 function BytesToStr(const AValue: TBytes; const ALength: Int64): String; overload;
-function AnsiBytesToStr(const AValue: TBytes): String; overload;
-function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
-
 function BytesToRawBytesString(const AValues: TBytes): RawByteString;
 
 function StrToHexStr(const Str: String): String;
@@ -65,11 +62,17 @@ end;
 
 function ByteToHex(const AValue: Byte): String;
 const
-  HEX_DIGITS: array [0..15] of Char = ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'); {do not localize}
+  CHexDigits: array [0..15] of Char = ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'); {do not localize}
 begin
   SetLength(Result, 2);
-  Result[1] := HEX_DIGITS[(AValue and $F0) shr 4]; // 1111 0000
-  Result[2] := HEX_DIGITS[AValue and $F];          // 0000 1111
+
+  {$IFDEF WIN32, WIN64}
+    Result[1] := CHexDigits[(AValue and $F0) shr 4]; // 1111 0000
+    Result[2] := CHexDigits[AValue and $F];          // 0000 1111
+  {$ELSE}
+    Result[0] := CHexDigits[(AValue and $F0) shr 4]; // 1111 0000
+    Result[1] := CHexDigits[AValue and $F];          // 0000 1111
+  {$ENDIF}
 end;
 
 function BytesToHexStr(const ABuffer: TBytes): String; overload;
@@ -93,7 +96,7 @@ var
 begin
   Result := EmptyStr;
   for LByte in AValue do
-    Result := Result + LByte.ToHexString(2);
+    Result := Result + ByteToHex(LByte);//.ToHexString(2);
 end;
 
 function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
@@ -138,10 +141,10 @@ begin
     LIdxOfDest := 0;
     for i := 0 to Source.Length - 1 do
     begin
-      if i mod 2 = 0 then
+      if i mod 2 <> 0 then
         Continue;
 
-      Dest[LIdxOfDest] := Byte(Char(StrToInt('$' + Source[i] + Source[i+1])));
+      Dest[LIdxOfDest] := Byte.Parse('$'+Source.Substring(i, 2));
       Inc(LIdxOfDest);
     end;
   end;
@@ -152,7 +155,7 @@ var
   LBytes: TBytes;
 begin
   HexStrToBytes(Source, LBytes);
-  SetString(Result, PAnsiChar(@LBytes[0]), Length(LBytes));
+  SetString(Result, PChar(@LBytes[0]), Length(LBytes));
 end;
 
 function HexStrToInt(const Source: String): Integer;
@@ -213,23 +216,13 @@ begin
   Bytes(Result)[1]:= Bytes(Value)[0];
 end;
 
-function AnsiBytesToStr(const AValue: TBytes): String; overload;
-begin
-  SetString(Result, PAnsiChar(@AValue[0]), Length(AValue));
-end;
-
-function AnsiBytesToStr(const AValue: TBytes; const StrIdx, ALength: Integer): String;
-begin
-  SetString(Result, PAnsiChar(@AValue[StrIdx]), ALength);
-end;
-
 function BytesToRawBytesString(const AValues: TBytes): RawByteString;
 var
   LValue: Byte;
 begin
   Result := '';
   for LValue in AValues do
-    Result := Result + RawByteString(AnsiChar(LValue));
+    Result := Result + RawByteString(Char(LValue));
 end;
 
 procedure ReverseBytes(Source, Dest: Pointer; Size: UInt64);
