@@ -8,6 +8,9 @@ uses
 
 type
   TGeneric = class
+  private
+    class function ValueToLog(const AValue: TValue): String;
+  public
     class function CreateInstance<T>(const AArgs: TArray<TValue>): T;
     class function ToString<T>: String; reintroduce;
     class function IfThen<T>(AValue: Boolean; const ATrue: T): T; overload;
@@ -17,7 +20,9 @@ type
       const Args: array of TValue; var AValue: T): Boolean;
     class function TrySetIdxProperty<T>(const ASrc: TObject; const APropName: String;
       const Args: array of TValue; const AValue: T): Boolean;
-
+    class function ToLog<T>(const AValue: TArray<T>): String; overload; static;
+    class function ToLog<T>(const AValue: array of T): String; overload; static;
+    class function ToLog<T>(const AValue: T): String; overload; static;
   end;
 
 implementation
@@ -74,6 +79,52 @@ begin
     Exit(ATrue)
   else
     Exit(AFalse);
+end;
+
+class function TGeneric.ToLog<T>(const AValue: TArray<T>): String;
+var
+  LItem: T;
+  LBuf: TStringList;
+  LValue: TValue;
+begin
+  LBuf := TStringList.Create;
+  try
+    for LItem in AValue do
+    begin
+      LValue := TValue.From<T>(LItem);
+      LBuf.Add(ValueToLog(LValue) + LValue.ToString);
+    end;
+    Result := LBuf.CommaText;
+  finally
+    FreeAndNil(LBuf);
+  end;
+end;
+
+class function TGeneric.ToLog<T>(const AValue: T): String;
+var
+  LValue: TValue;
+begin
+  LValue := TValue.From<T>(AValue);
+  Result := Format('%s', [ValueToLog(LValue) + LValue.ToString]);
+end;
+
+class function TGeneric.ToLog<T>(const AValue: array of T): String;
+var
+  LItem: T;
+  LBuf: TStringList;
+  LValue: TValue;
+begin
+  LBuf := TStringList.Create;
+  try
+    for LItem in AValue do
+    begin
+      LValue := TValue.From<T>(LItem);
+      LBuf.Add(Format('%s', [ValueToLog(LValue) + LValue.ToString]));
+    end;
+    Result := LBuf.CommaText;
+  finally
+    FreeAndNil(LBuf);
+  end;
 end;
 
 class function TGeneric.ToString<T>: String;
@@ -134,6 +185,43 @@ begin
   except on E: Exception do
   end;
   Result := True;
+end;
+
+class function TGeneric.ValueToLog(const AValue: TValue): String;
+begin
+  Result := '';
+  case AValue.Kind of
+    tkInteger: Result := AValue.AsInteger.ToHexString(AValue.DataSize * 2);
+    tkChar: Result := AValue.AsInteger.ToHexString(AValue.DataSize * 2);
+    tkEnumeration: ;
+
+    tkFloat: ;
+
+    tkString ,
+    tkLString,
+    tkWString,
+    tkUString: ;
+
+    tkSet: ;
+    tkClass: ;
+    tkMethod: ;
+    tkWChar: ;
+    tkVariant: ;
+    tkArray: ;
+    tkRecord: ;
+    tkInterface: ;
+    tkInt64:
+      if AValue.TypeInfo = System.TypeInfo(Int64) then
+        Result := AValue.AsInt64.ToHexString(AValue.DataSize * 2)
+      else if AValue.TypeInfo = System.TypeInfo(UInt64) then
+        Result := AValue.AsUInt64.ToHexString(AValue.DataSize * 2);
+    tkDynArray: ;
+    tkClassRef: ;
+    tkPointer: Result := Format('%p', [AValue.AsType<Pointer>]);
+    tkProcedure: ;
+  end;
+  if not Result.IsEmpty then
+    Result := '[$' + Result + ']';
 end;
 
 end.
