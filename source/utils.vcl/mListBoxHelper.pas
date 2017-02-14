@@ -24,6 +24,7 @@ type
     procedure ItemUp;
     procedure ItemDown;
     procedure DragAndDropEnabled(const AMultiSelect: Boolean = True);
+    procedure ItemIndexBy(const AValue: String; const AFireOnClick: Boolean = True);
   end;
 
   TListBoxEventHelper = class
@@ -39,6 +40,7 @@ uses
 
 procedure TCustomListBoxHelper.DragAndDropEnabled(const AMultiSelect: Boolean);
 begin
+  DragMode := dmAutomatic;
   MultiSelect := AMultiSelect;
   OnDragOver := OnItemDragOver;
   OnDragDrop := OnItemsDragDrop;
@@ -59,6 +61,20 @@ begin
       finally
         Items.EndUpdate;
       end;
+    end;
+end;
+
+procedure TCustomListBoxHelper.ItemIndexBy(const AValue: String; const AFireOnClick: Boolean);
+var
+  i: Integer;
+begin
+  for i := 0 to Count - 1 do
+    if Items[i].Equals(AValue) then
+    begin
+      ItemIndex := i;
+      if AFireOnClick then
+        Click;
+      Break;
     end;
 end;
 
