@@ -31,7 +31,7 @@ procedure ReverseBytes(Source, Dest: Pointer; Size: UInt64);
 
 type
   TFloat = class
-    class function ArrayLog<T>(const AValue: TArray<T>): String; static;
+    class function ArrayLog<T>(const AValue: TArray<T>): String; static; deprecated 'Uses mGeneric.TGneric.ToLog<T>';
   end;
 
 // email validate
