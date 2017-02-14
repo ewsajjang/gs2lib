@@ -13,6 +13,7 @@ type
     procedure EnterMethod(const AMethodName: String; Args: array of const); overload;
     procedure ExitMethod(const AMethodName: String; Args: array of const); overload;
 
+    procedure WL(const AMsg: String);
     procedure Send(const ABuf: TStringList); overload;
     procedure Send(const ABufName: String; const ABuf: TStringList); overload;
 
@@ -183,6 +184,14 @@ procedure TCodeSiteLoggerHelper.SendError(const AMsg: String;
   const Args: array of const; const APacket: TBytes);
 begin
   SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
+end;
+
+procedure TCodeSiteLoggerHelper.WL(const AMsg: String);
+var
+  LItem: String;
+begin
+  for LItem in AMsg.Split([#13#10]) do
+    Send(LItem.Trim);
 end;
 
 function TCodeSiteLoggerHelper.Send(const Expression: Boolean; const AMsg,
