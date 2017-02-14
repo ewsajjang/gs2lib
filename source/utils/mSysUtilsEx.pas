@@ -239,7 +239,7 @@ begin
   try
     for LItem in AValue do
       LBuf.Add(Format('[%s]', [BytesToLog(LItem)]));
-    Result := LBuf.CommaText;
+    Result := LBuf.CommaText.Trim;
   finally
     FreeAndNil(LBuf);
   end;
@@ -257,7 +257,7 @@ begin
   try
     for LItem in AValue do
       LBuf.Add(LItem.ToHexString(2));
-    Result := LBuf.CommaText;
+    Result := LBuf.CommaText.Trim;
   finally
     FreeAndNil(LBuf);
   end;
