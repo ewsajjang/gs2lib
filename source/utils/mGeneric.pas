@@ -92,17 +92,21 @@ class function TGeneric.TryGetIdxProperty<T>(const ASrc: TObject;
 var
   LCtx: TRttiContext;
   LRttiType: TRttiType;
-  LRrttiProp: TRttiIndexedProperty;
+  LRttiProp: TRttiIndexedProperty;
   LValue: TValue;
 begin
+  Result := False;
   LCtx := TRttiContext.Create;
   try
     LRttiType := LCtx.GetType(ASrc.ClassInfo) as TRttiInstanceType;
-    LValue := LRttiType.GetIndexedProperty(APropName).GetValue(ASrc, Args);
-    Result := not LValue.IsEmpty;
-    AValue := LValue.AsType<T>;
+    LRttiProp := LRttiType.GetIndexedProperty(APropName);
+    if Assigned(LRttiProp) then
+    begin
+      LValue := LRttiProp.GetValue(ASrc, Args);
+      Result := not LValue.IsEmpty;
+      AValue := LValue.AsType<T>;
+    end;
   except on E: Exception do
-    Exit(False);
   end;
   Result := True;
 end;
@@ -113,17 +117,21 @@ class function TGeneric.TrySetIdxProperty<T>(const ASrc: TObject;
 var
   LCtx: TRttiContext;
   LRttiType: TRttiType;
-  LRrttiProp: TRttiIndexedProperty;
+  LRttiProp: TRttiIndexedProperty;
   LValue: TValue;
 begin
+  Result := False;
   LCtx := TRttiContext.Create;
   try
     LRttiType := LCtx.GetType(ASrc.ClassInfo) as TRttiInstanceType;
     LValue := TValue.From(AValue);
-    LRttiType.GetIndexedProperty(APropName).SetValue(ASrc, Args, LValue);
-    Result := True;
+    LRttiProp := LRttiType.GetIndexedProperty(APropName);
+    if Assigned(LRttiProp) then
+    begin
+      LRttiProp.SetValue(ASrc, Args, LValue);
+      Result := True;
+    end;
   except on E: Exception do
-    Exit(False);
   end;
   Result := True;
 end;
