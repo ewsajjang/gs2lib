@@ -14,8 +14,8 @@ type
   TRegOption = class(TDataModule)
   private
     FReg: TRzRegIniFile;
-    FIdx: TOptionIndexer;
   protected
+    FIdx: TOptionIndexer;
     procedure DoCreate; override;
     procedure DoDestroy; override;
 
