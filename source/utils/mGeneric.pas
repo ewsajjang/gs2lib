@@ -12,7 +12,7 @@ type
     class function ValueToLog(const AValue: TValue): String;
   public
     class function CreateInstance<T>(const AArgs: TArray<TValue>): T;
-    class function ToString<T>: String; reintroduce;
+    class function ToString<T>: String; reintroduce; overload;
     class function IfThen<T>(AValue: Boolean; const ATrue: T): T; overload;
     class function IfThen<T>(AValue: Boolean; const ATrue, AFalse: T): T; overload;
     class function HasIdxProperty(const ASrc: TObject; const APropName: String): Boolean;
@@ -23,6 +23,8 @@ type
     class function ToLog<T>(const AValue: TArray<T>): String; overload; static;
     class function ToLog<T>(const AValue: array of T): String; overload; static;
     class function ToLog<T>(const AValue: T): String; overload; static;
+    class function ToString<T>(const AValues: TArray<T>): String; reintroduce; overload; static;
+    class function ToString<T>(const AValues: array of T): String; reintroduce; overload; static;
   end;
 
 implementation
@@ -106,6 +108,25 @@ var
 begin
   LValue := TValue.From<T>(AValue);
   Result := Format('%s', [ValueToLog(LValue) + LValue.ToString]);
+end;
+
+class function TGeneric.ToString<T>(const AValues: TArray<T>): String;
+var
+  LItem: T;
+  LBuf: TStringList;
+  LValue: TValue;
+begin
+  LBuf := TStringList.Create;
+  try
+    for LItem in AValues do
+    begin
+      LValue := TValue.From<T>(LItem);
+      LBuf.Add(LValue.ToString);
+    end;
+    Result := LBuf.CommaText;
+  finally
+    FreeAndNil(LBuf);
+  end;
 end;
 
 class function TGeneric.ToLog<T>(const AValue: array of T): String;
@@ -222,6 +243,25 @@ begin
   end;
   if not Result.IsEmpty then
     Result := '[$' + Result + ']';
+end;
+
+class function TGeneric.ToString<T>(const AValues: array of T): String;
+var
+  LItem: T;
+  LBuf: TStringList;
+  LValue: TValue;
+begin
+  LBuf := TStringList.Create;
+  try
+    for LItem in AValues do
+    begin
+      LValue := TValue.From<T>(LItem);
+      LBuf.Add(LValue.ToString);
+    end;
+    Result := LBuf.CommaText;
+  finally
+    FreeAndNil(LBuf);
+  end;
 end;
 
 end.
