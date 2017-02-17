@@ -15,7 +15,7 @@ type
     function GetLogger: TCodeSiteLogger;
     procedure SetLogger(AValue : TCodeSiteLogger);
 
-    property Logger: TCodeSiteLogger read GetLogger write SetLogger;
+    property Log: TCodeSiteLogger read GetLogger write SetLogger;
   end;
 
   TCodeSiteLogObject = class(TInterfacedObject, ICodeSiteLog)
@@ -25,7 +25,7 @@ type
     function GetLogger: TCodeSiteLogger; virtual;
     procedure SetLogger(Value: TCodeSiteLogger); virtual;
   public
-    property Logger: TCodeSiteLogger read GetLogger write SetLogger;
+    property Log: TCodeSiteLogger read GetLogger write SetLogger;
   end;
 
   TCodeSiteLogThread = class(TInterfacedThread, ICodeSiteLog)
@@ -36,7 +36,7 @@ type
   public
     destructor Destroy; override;
 
-    property Logger: TCodeSiteLogger read GetLogger write SetLogger;
+    property Log: TCodeSiteLogger read GetLogger write SetLogger;
   end;
 
   TCodeSiteLoggerFactory = class
@@ -47,7 +47,7 @@ type
     class function GetLoggers(Category: String): TCodeSiteLogger; static;
   public
     class function CreateCodeSiteLogger(const ACategory: String): TCodeSiteLogger; overload;
-    class function CreateCodeSiteLogger(const ACategory: String; AColor: TColor): TCodeSiteLogger; overload;
+    class function CreateCodeSiteLogger(const ACategory: String; ABgColor: TColor; AFontColor: TColor = TColorRec.Black): TCodeSiteLogger; overload;
 
     class property Loggers[Category: String]: TCodeSiteLogger read GetLoggers;
   end;
@@ -65,10 +65,11 @@ begin
 end;
 
 class function TCodeSiteLoggerFactory.CreateCodeSiteLogger(const ACategory: String;
-  AColor: TColor): TCodeSiteLogger;
+  ABgColor, AFontColor: TColor): TCodeSiteLogger;
 begin
   Result := CreateCodeSiteLogger(ACategory);
-  Result.CategoryColor := AColor;
+  Result.CategoryColor := ABgColor;
+  Result.CategoryFontColor := AFontColor;
 end;
 
 class procedure TCodeSiteLoggerFactory.Finalize;
