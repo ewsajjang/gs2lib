@@ -36,6 +36,7 @@ type
     class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl); overload;
     class function PlaceOn(const AChildClass: TFormClass; ATarget: TWinControl; AOwner: TComponent = nil): TForm; overload;
     class function PlaceOn<T: TForm>(ATarget: TWinControl; AOwner: TComponent = nil): T; overload;
+    class procedure PlaceOn<T: TForm>(var AForm: T; ATarget: TWinControl; AOwner: TComponent = nil); overload;
 
     constructor Create(AOwner: TComponent); override;
 
@@ -232,7 +233,6 @@ end;
 
 procedure TvForm.DoCreate;
 begin
-  DoubleBuffered := True;
   Scaled := False;
   TabOrderAlign;
   FDropDownFileExt := '';
@@ -337,6 +337,20 @@ end;
 class function TvForm.PlaceOn<T>(ATarget: TWinControl; AOwner: TComponent): T;
 begin
   Result := PlaceOn(T, ATarget, AOwner) as T;
+end;
+
+class procedure TvForm.PlaceOn<T>(var AForm: T; ATarget: TWinControl; AOwner: TComponent);
+begin
+  if not Assigned(AForm) then
+    AForm := PlaceOn<T>(ATarget, AOwner)
+  else
+  begin
+    AForm.Parent := ATarget;
+      if Assigned(AForm.Parent) then
+        AForm.Align := alClient;
+      AForm.Show;
+      AForm.BringToFront;
+  end;
 end;
 
 procedure TvForm.PlaceOnParent(const AParent: String);

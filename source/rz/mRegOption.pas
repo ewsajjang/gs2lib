@@ -47,7 +47,6 @@ implementation
 
 { TRegOption }
 
-
 procedure TRegOption.Add(const ASection: String; const ANameDefault: TArray<TArray<String>>);
 begin
   FIdx.Add(ASection, ANameDefault);
