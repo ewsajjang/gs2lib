@@ -57,7 +57,7 @@ begin
   FHandle := AllocateHWND(do_WndProc);
   FRegHandles := TDictionary<TGUID, PHandle>.Create;
 
-  CodeSite.Send('TWinDeviceObserver.Create, Handle', FHandle);
+  //CodeSite.Send('TWinDeviceObserver.Create, Handle', FHandle);
 end;
 
 destructor TWinDeviceObserver.Destroy;

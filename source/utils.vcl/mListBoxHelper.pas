@@ -24,6 +24,10 @@ type
     procedure ItemUp;
     procedure ItemDown;
     procedure DragAndDropEnabled(const AMultiSelect: Boolean = True);
+    procedure ItemIndexBy(const AValue: String; const AFireOnClick: Boolean = True);
+    function SelectedIdxs: TArray<Integer>;
+    function SelectedStrs: TArray<String>;
+    function SelectedText(const ADelimiter: Char = ','): String;
   end;
 
   TListBoxEventHelper = class
@@ -39,6 +43,7 @@ uses
 
 procedure TCustomListBoxHelper.DragAndDropEnabled(const AMultiSelect: Boolean);
 begin
+  DragMode := dmAutomatic;
   MultiSelect := AMultiSelect;
   OnDragOver := OnItemDragOver;
   OnDragDrop := OnItemsDragDrop;
@@ -59,6 +64,20 @@ begin
       finally
         Items.EndUpdate;
       end;
+    end;
+end;
+
+procedure TCustomListBoxHelper.ItemIndexBy(const AValue: String; const AFireOnClick: Boolean);
+var
+  i: Integer;
+begin
+  for i := 0 to Count - 1 do
+    if Items[i].Equals(AValue) then
+    begin
+      ItemIndex := i;
+      if AFireOnClick then
+        Click;
+      Break;
     end;
 end;
 
@@ -161,6 +180,43 @@ begin
       FreeAndNil(LChkItems);
       FreeAndNil(LItems);
     end;
+  end;
+end;
+
+function TCustomListBoxHelper.SelectedIdxs: TArray<Integer>;
+var
+  i: Integer;
+begin
+  Result := [];
+  for i := 0 to Count -1 do
+    if Selected[i] then
+      Result := Result + [i];
+end;
+
+function TCustomListBoxHelper.SelectedStrs: TArray<String>;
+var
+  i: Integer;
+begin
+  Result := [];
+  for i := 0 to Count -1 do
+    if Selected[i] then
+      Result := Result + [Items[i]];
+end;
+
+function TCustomListBoxHelper.SelectedText(const ADelimiter: Char): String;
+var
+  LBuf: TStringList;
+  i: Integer;
+begin
+  LBuf := TStringList.Create;
+  try
+    LBuf.Delimiter := ADelimiter;
+    for i := 0 to Count -1 do
+      if Selected[i] then
+        LBuf.Add(Items[i]);
+    Result := LBuf.DelimitedText;
+  finally
+    FreeAndNil(LBuf);
   end;
 end;
 

@@ -13,6 +13,8 @@ function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): St
 function BytesToStr(const AValue: TBytes): String; overload;
 function BytesToStr(const AValue: TBytes; const ALength: Int64): String; overload;
 function BytesToRawBytesString(const AValues: TBytes): RawByteString;
+function BytesToLog(const AValue: TArray<TBytes>): String; overload;
+function BytesToLog(const AValue: TBytes): String; overload;
 
 function StrToHexStr(const Str: String): String;
 procedure HexStrToBytes(const Source: String; var Dest: TBytes);
@@ -29,7 +31,7 @@ procedure ReverseBytes(Source, Dest: Pointer; Size: UInt64);
 
 type
   TFloat = class
-    class function ArrayLog<T>(const AValue: TArray<T>): String; static;
+    class function ArrayLog<T>(const AValue: TArray<T>): String; static; deprecated 'Uses mGeneric.TGneric.ToLog<T>';
   end;
 
 // email validate
@@ -38,7 +40,7 @@ function EmailValidate(const Value: String): Boolean;
 implementation
 
 uses
-  System.TypInfo, System.RegularExpressions, System.Math, System.Rtti
+  System.TypInfo, System.RegularExpressions, System.Math, System.Rtti, System.Classes
   ;
 
 function BufferToHexStr(const ABuffer: Pointer; const ALength: Integer): String;
@@ -223,6 +225,42 @@ begin
   Result := '';
   for LValue in AValues do
     Result := Result + RawByteString(Char(LValue));
+end;
+
+function BytesToLog(const AValue: TArray<TBytes>): String; overload;
+var
+  LItem: TBytes;
+  LBuf: TStringList;
+begin
+  if Length(AValue) = 0 then
+    Exit('');
+
+  LBuf := TStringList.Create;
+  try
+    for LItem in AValue do
+      LBuf.Add(Format('[%s]', [BytesToLog(LItem)]));
+    Result := LBuf.CommaText.Trim;
+  finally
+    FreeAndNil(LBuf);
+  end;
+end;
+
+function BytesToLog(const AValue: TBytes): String; overload;
+var
+  LItem: Byte;
+  LBuf: TStringList;
+begin
+  if Length(AValue) = 0 then
+    Exit('');
+
+  LBuf := TStringList.Create;
+  try
+    for LItem in AValue do
+      LBuf.Add(LItem.ToHexString(2));
+    Result := LBuf.CommaText.Trim;
+  finally
+    FreeAndNil(LBuf);
+  end;
 end;
 
 procedure ReverseBytes(Source, Dest: Pointer; Size: UInt64);
