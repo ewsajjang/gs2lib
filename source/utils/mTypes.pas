@@ -15,6 +15,8 @@ type
   TNotifyInteger = procedure(Sender: TObject; Value: Integer) of object;
   TNotifyString  = procedure(Sender: TObject; Value: String) of object;
 
+  TNotifySimple = procedure of object;
+
   TProcBoolean = reference to procedure(const Value: Boolean);
   TProcPointer = reference to procedure(const Sender: TObject; const Value: Pointer; const Length: Int64);
   TProcBytes = reference to procedure(const Value: TBytes);
