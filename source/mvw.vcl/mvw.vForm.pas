@@ -69,7 +69,8 @@ type
   private
     FCloseAction: TAction;
     FActionList: TActionList;
-    procedure OnCloseActionExecute(Sender: TObject);
+  protected
+    procedure OnCloseActionExecute(Sender: TObject); virtual;
   public
     constructor Create(AOwner: TComponent); override;
   end;
