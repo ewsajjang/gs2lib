@@ -11,8 +11,8 @@ type
     constructor Create(const Msg: String); overload; virtual;
     constructor CreateFmt(const Msg: String; Args: array of const); overload; virtual;
   end;
-  ELogicalError = class(EAbstractException);
-
+  ELogical = class(EAbstractException);
+  ELogicalError = ELogical;
 
 implementation
 
