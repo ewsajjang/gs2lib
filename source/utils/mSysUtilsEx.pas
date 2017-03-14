@@ -35,7 +35,7 @@ type
   end;
 
 // email validate
-function EmailValidate(const Value: String): Boolean;
+function EmailValidate(const Value: String): Boolean; deprecated 'Use mRegularExpressionsHelper.TRegExHelper.EmailValidate';
 
 implementation
 
