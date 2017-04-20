@@ -6,7 +6,8 @@ uses
   System.SysUtils, System.Types;
 
 function BufferToHexStr(const ABuffer: Pointer; const ALength: Integer): String;
-function ByteToHex(const AValue: Byte): String;
+function ByteToHex(const AValue: Byte): String; overload;
+function ByteToHex(const AValue: TBytes): String; overload;
 function BytesToHexStr(const ABuffer: TBytes): String; overload;
 function BytesToHexStr(const AValue: array of Byte): String; overload;
 function BytesToHexStr(const AValue: TBytes; const StrIdx, ALength: Integer): String; overload;
@@ -60,6 +61,12 @@ begin
   Result := ADividend div ADivisor;
   if LRemainder > 0 then
     Inc(Result);
+end;
+
+function ByteToHex(const AValue: TBytes): String; overload;
+begin
+  SetLength(Result, Length(AValue) * 2);
+  BinToHex(@AValue[0], PChar(Result), Result.Length);
 end;
 
 function ByteToHex(const AValue: Byte): String;
