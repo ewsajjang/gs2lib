@@ -9,8 +9,9 @@ uses
 type
   TGeneric = class
   private
-    class function ValueToLog(const AValue: TValue): String;
   public
+    class function ToHex(const AValue: TValue): String; static;
+    class function ToCommaLog(const AValue: TValue): String; static;
     class function CreateInstance<T>(const AArgs: TArray<TValue>): T;
     class function ToString<T>: String; reintroduce; overload;
     class function IfThen<T>(AValue: Boolean; const ATrue: T): T; overload;
@@ -94,7 +95,10 @@ begin
     for LItem in AValue do
     begin
       LValue := TValue.From<T>(LItem);
-      LBuf.Add(ValueToLog(LValue) + LValue.ToString);
+      if LValue.Kind = tkDynArray then
+        LBuf.Add(ToCommaLog(LValue))
+      else
+        LBuf.Add(ToHex(LValue) + LValue.ToString);
     end;
     Result := LBuf.CommaText;
   finally
@@ -107,7 +111,10 @@ var
   LValue: TValue;
 begin
   LValue := TValue.From<T>(AValue);
-  Result := Format('%s', [ValueToLog(LValue) + LValue.ToString]);
+  if LValue.Kind = tkDynArray then
+    Result := ToCommaLog(LValue)
+  else
+    Result := Format('%s', [ToHex(LValue) + LValue.ToString]);
 end;
 
 class function TGeneric.ToString<T>(const AValues: TArray<T>): String;
@@ -121,7 +128,10 @@ begin
     for LItem in AValues do
     begin
       LValue := TValue.From<T>(LItem);
-      LBuf.Add(LValue.ToString);
+      if LValue.Kind = tkDynArray then
+        LBuf.Add(ToCommaLog(LValue))
+      else
+        LBuf.Add(LValue.ToString);
     end;
     Result := LBuf.CommaText;
   finally
@@ -140,7 +150,10 @@ begin
     for LItem in AValue do
     begin
       LValue := TValue.From<T>(LItem);
-      LBuf.Add(Format('%s', [ValueToLog(LValue) + LValue.ToString]));
+      if LValue.Kind = tkDynArray then
+        LBuf.Add(ToCommaLog(LValue))
+      else
+        LBuf.Add(Format('%s', [ToHex(LValue) + LValue.ToString]));
     end;
     Result := LBuf.CommaText;
   finally
@@ -208,7 +221,7 @@ begin
   Result := True;
 end;
 
-class function TGeneric.ValueToLog(const AValue: TValue): String;
+class function TGeneric.ToHex(const AValue: TValue): String;
 begin
   Result := '';
   case AValue.Kind of
@@ -245,6 +258,27 @@ begin
     Result := '[$' + Result + ']';
 end;
 
+class function TGeneric.ToCommaLog(const AValue: TValue): String;
+var
+  i: Integer;
+  LValue: TValue;
+begin
+  with TStringList.Create do
+  try
+    for i := 0 to AValue.GetArrayLength -1 do
+    begin
+      LValue := AValue.GetArrayElement(i);
+      if LValue.Kind = tkDynArray then
+        Result := ToCommaLog(LValue)
+      else
+        Add(ToHex(LValue) + LValue.ToString);
+    end;
+    Result := '(' + CommaText + ')';
+  finally
+    Free;
+  end;
+end;
+
 class function TGeneric.ToString<T>(const AValues: array of T): String;
 var
   LItem: T;
@@ -256,7 +290,10 @@ begin
     for LItem in AValues do
     begin
       LValue := TValue.From<T>(LItem);
-      LBuf.Add(LValue.ToString);
+      if LValue.Kind = tkDynArray then
+        LBuf.Add(ToCommaLog(LValue))
+      else
+        LBuf.Add(LValue.ToString);
     end;
     Result := LBuf.CommaText;
   finally
