@@ -37,6 +37,7 @@ type
     class function PlaceOn(const AChildClass: TFormClass; ATarget: TWinControl; AResizeHeight: Boolean = False; AOwner: TComponent = nil): TForm; overload;
     class function PlaceOn<T: TForm>(ATarget: TWinControl; AResizeHeight: Boolean = False; AOwner: TComponent = nil): T; overload;
     class procedure PlaceOn<T: TForm>(var AForm: T; ATarget: TWinControl; AResizeHeight: Boolean = False; AOwner: TComponent = nil); overload;
+    class function CreateChild<T: TForm>(AOwner: TComponent = nil): T;
 
     constructor Create(AOwner: TComponent); override;
 
@@ -230,6 +231,12 @@ begin
   inherited Create(AOwner);
 
   FEnableDropdownFiles := False;
+end;
+
+class function TvForm.CreateChild<T>(AOwner: TComponent): T;
+begin
+  Result := T.Create(AOwner);
+  Result.Visible := False;
 end;
 
 procedure TvForm.DoCreate;
