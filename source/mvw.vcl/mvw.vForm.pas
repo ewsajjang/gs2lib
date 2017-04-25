@@ -33,10 +33,11 @@ type
     procedure DoCreate; override;
     procedure DoDropFile(const ACnt: Integer; const AFiles: TStringList); virtual;
   public
-    class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl); overload;
-    class function PlaceOn(const AChildClass: TFormClass; ATarget: TWinControl; AOwner: TComponent = nil): TForm; overload;
-    class function PlaceOn<T: TForm>(ATarget: TWinControl; AOwner: TComponent = nil): T; overload;
-    class procedure PlaceOn<T: TForm>(var AForm: T; ATarget: TWinControl; AOwner: TComponent = nil); overload;
+    class procedure PlaceOn(const AChild: TvForm; ATarget: TWinControl; AResizeHeight: Boolean = False); overload;
+    class function PlaceOn(const AChildClass: TFormClass; ATarget: TWinControl; AResizeHeight: Boolean = False; AOwner: TComponent = nil): TForm; overload;
+    class function PlaceOn<T: TForm>(ATarget: TWinControl; AResizeHeight: Boolean = False; AOwner: TComponent = nil): T; overload;
+    class procedure PlaceOn<T: TForm>(var AForm: T; ATarget: TWinControl; AResizeHeight: Boolean = False; AOwner: TComponent = nil); overload;
+    class function CreateChild<T: TForm>(AOwner: TComponent = nil): T;
 
     constructor Create(AOwner: TComponent); override;
 
@@ -232,6 +233,12 @@ begin
   FEnableDropdownFiles := False;
 end;
 
+class function TvForm.CreateChild<T>(AOwner: TComponent): T;
+begin
+  Result := T.Create(AOwner);
+  Result.Visible := False;
+end;
+
 procedure TvForm.DoCreate;
 begin
   Scaled := False;
@@ -276,9 +283,11 @@ begin
   Result := vNames[AClass.ClassName];
 end;
 
-class procedure TvForm.PlaceOn(const AChild: TvForm; ATarget: TWinControl);
+class procedure TvForm.PlaceOn(const AChild: TvForm; ATarget: TWinControl; AResizeHeight: Boolean);
 begin
   AChild.Parent := ATarget;
+  if AResizeHeight then
+    ATarget.Height := AChild.Height;
   AChild.Align := alClient;
   AChild.Show;
   AChild.BringToFront;
@@ -322,12 +331,16 @@ begin
 end;
 
 class function TvForm.PlaceOn(const AChildClass: TFormClass;
-  ATarget: TWinControl; AOwner: TComponent): TForm;
+  ATarget: TWinControl; AResizeHeight: Boolean; AOwner: TComponent): TForm;
 begin
   Result := AChildClass.Create(AOwner);
   Result.Parent := ATarget;
   if Assigned(Result.Parent) then
+  begin
+    if AResizeHeight then
+      ATarget.Height := Result.Height;
     Result.Align := alClient;
+  end;
   Result.Show;
   Result.BringToFront;
   if Result is TvForm then
@@ -335,22 +348,26 @@ begin
       (Result as TvForm).FOnPlaceOn();
 end;
 
-class function TvForm.PlaceOn<T>(ATarget: TWinControl; AOwner: TComponent): T;
+class function TvForm.PlaceOn<T>(ATarget: TWinControl; AResizeHeight: Boolean; AOwner: TComponent): T;
 begin
-  Result := PlaceOn(T, ATarget, AOwner) as T;
+  Result := PlaceOn(T, ATarget, AResizeHeight, AOwner) as T;
 end;
 
-class procedure TvForm.PlaceOn<T>(var AForm: T; ATarget: TWinControl; AOwner: TComponent);
+class procedure TvForm.PlaceOn<T>(var AForm: T; ATarget: TWinControl; AResizeHeight: Boolean; AOwner: TComponent);
 begin
   if not Assigned(AForm) then
-    AForm := PlaceOn<T>(ATarget, AOwner)
+    AForm := PlaceOn<T>(ATarget, AResizeHeight, AOwner)
   else
   begin
     AForm.Parent := ATarget;
-      if Assigned(AForm.Parent) then
-        AForm.Align := alClient;
-      AForm.Show;
-      AForm.BringToFront;
+    if Assigned(AForm.Parent) then
+    begin
+      AForm.Align := alClient;
+      if AResizeHeight then
+        ATarget.Height := AForm.Height;
+    end;
+    AForm.Show;
+    AForm.BringToFront;
   end;
 end;
 
@@ -416,13 +433,7 @@ begin
   OnPlaceOnParentNotify;
 end;
 
-{class function TvForm.PlaceOn<T>(const AChildClass: TFormClass;
-  ATarget: TWinControl; AOwner: TComponent): T;
-begin
-
-end;
-
- TvDlg }
+{ TvDlg }
 
 constructor TvDlg.Create(AOwner: TComponent);
 begin
