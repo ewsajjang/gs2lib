@@ -20,11 +20,13 @@ type
     procedure SetDT(Name: String; const Value: TDateTime);
     procedure SetI(Name: String; const Value: Integer);
     procedure SetS(Name: String; const Value: String);
-    function GetC(Name: String): TColor;
-    procedure SetC(Name: String; const Value: TColor);
+    function GetCL(Name: String): TColor;
+    procedure SetCL(Name: String; const Value: TColor);
     function GetGUID(Name: String): TGUID;
     procedure SetGUID(Name: String; const Value: TGUID);
+    function GetC(Name: String): Char;
 
+    procedure SetC(Name: String; const Value: Char);
   public
     procedure PriorityS(const AName, AValue: String);
 
@@ -51,7 +53,8 @@ type
     property B[Name: String]: Boolean read GetB write SetB;
     property D[Name: String]: Double read GetD write SetD;
     property DT[Name: String]: TDateTime read GetDT write SetDT;
-    property C[Name: String]: TColor read GetC write SetC;
+    property CL[Name: String]: TColor read GetCL write SetCL;
+    property C[Name: String]: Char read GetC write SetC;
     property GUID[Name: String]: TGUID read GetGUID write SetGUID;
   end;
 
@@ -130,7 +133,12 @@ begin
   Result := Values[Name] = BoolStr[True];
 end;
 
-function TStringsHelper.GetC(Name: String): TColor;
+function TStringsHelper.GetC(Name: String): Char;
+begin
+  Result := Values[Name].Chars[0];
+end;
+
+function TStringsHelper.GetCL(Name: String): TColor;
 begin
   Result := StringToColor(Values[Name]);
 end;
@@ -237,7 +245,12 @@ begin
   Values[Name] := BoolStr[Value];
 end;
 
-procedure TStringsHelper.SetC(Name: String; const Value: TColor);
+procedure TStringsHelper.SetC(Name: String; const Value: Char);
+begin
+  Values[Name] := Value
+end;
+
+procedure TStringsHelper.SetCL(Name: String; const Value: TColor);
 begin
   Values[Name] := ColorToString(Value);
 end;
