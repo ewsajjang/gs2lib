@@ -13,7 +13,9 @@ type
     procedure EnterMethod(const AMethodName: String; Args: array of const); overload;
     procedure ExitMethod(const AMethodName: String; Args: array of const); overload;
 
-    procedure WL(const AMsg: String);
+    procedure WL(const AMsg: String); overload;
+    procedure WL(const AMsg: TStrings); overload;
+    procedure WL(const AMsg: String; const Value: TStrings); overload;
     procedure SndWL(const AMsg: String);
     procedure RcvWL(const AMsg: String);
     procedure Send(const ABuf: TStringList); overload;
@@ -205,6 +207,24 @@ var
 begin
   for LItem in AMsg.Split([#13#10]) do
     Send(CodeSiteLogging.csmOrange, LItem.Trim)
+end;
+
+procedure TCodeSiteLoggerHelper.WL(const AMsg: String; const Value: TStrings);
+var
+  LItem: String;
+begin
+  EnterMethod(AMsg);
+  for LItem in Value do
+    Send(LItem.Trim);
+  ExitMethod(AMsg);
+end;
+
+procedure TCodeSiteLoggerHelper.WL(const AMsg: TStrings);
+var
+  LItem: String;
+begin
+  for LItem in AMsg do
+    Send(LItem.Trim)
 end;
 
 procedure TCodeSiteLoggerHelper.WL(const AMsg: String);

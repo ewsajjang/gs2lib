@@ -34,8 +34,6 @@ type
     function GetLogger: TCodeSiteLogger; virtual;
     procedure SetLogger(AValue: TCodeSiteLogger); virtual;
   public
-    destructor Destroy; override;
-
     property Log: TCodeSiteLogger read GetLogger write SetLogger;
   end;
 
@@ -105,14 +103,6 @@ begin
 end;
 
 { TCodeSiteLogThreadObject }
-
-destructor TCodeSiteLogThread.Destroy;
-begin
-  if Assigned(FLogger) then
-    FreeAndNil(FLogger);
-
-  inherited;
-end;
 
 function TCodeSiteLogThread.GetLogger: TCodeSiteLogger;
 begin
