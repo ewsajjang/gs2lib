@@ -19,6 +19,7 @@ type
     procedure OnItemDragOver(Sender, Source: TObject; X, Y: Integer; State:  TDragState; var Accept: Boolean) ;
     procedure OnItemsDragDrop(Sender, Source: TObject; X, Y: Integer);
   public
+    procedure Click;
     function ItemSelected: Boolean;
     function ItemText: String;
     procedure ItemUp;
@@ -40,6 +41,12 @@ uses
   mConsts, System.Types, mGeneric;
 
 { TCustomListBoxHelper }
+
+procedure TCustomListBoxHelper.Click;
+begin
+  if Assigned(OnClick) then
+    OnClick(Self);
+end;
 
 procedure TCustomListBoxHelper.DragAndDropEnabled(const AMultiSelect: Boolean);
 begin
