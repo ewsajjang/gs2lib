@@ -13,6 +13,7 @@ function WriteRegString(const AKey: HKEY; const ARegKey, AName, AValue: String):
 function AppDataPath(AOrgName: String = ''): String;
 function GetSpecialFolder(CSIDL_VALUE: Integer): string;
 function ShellExecuteFile(const FileName: String; Parameters: String = ''; Directory: String = ''): Integer;
+function OpenFolderAndSelectFile(const AFileName: String): Boolean;
 function ControlPanelExcute(Handle: HWnd; const ACommand: WideString; AFuncCall: WideString = ''): Integer;
 procedure SelectFileInExplorer(const AFileName: string);
 
@@ -152,6 +153,32 @@ function ShellExecuteFile(const FileName: String; Parameters: String = ''; Direc
 begin
   Result := ShellExecute(0, 'open', PChar(FileName), PChar(Parameters),
     PChar(Directory), SW_SHOWNORMAL);
+end;
+
+const
+  OFASI_EDIT = $0001;
+  OFASI_OPENDESKTOP = $0002;
+
+{$IFDEF UNICODE}
+function ILCreateFromPath(pszPath: PChar): PItemIDList stdcall; external shell32 name 'ILCreateFromPathW';
+{$ELSE}
+function ILCreateFromPath(pszPath: PChar): PItemIDList stdcall; external shell32 name 'ILCreateFromPathA';
+{$ENDIF}
+procedure ILFree(pidl: PItemIDList) stdcall; external shell32;
+function SHOpenFolderAndSelectItems(pidlFolder: PItemIDList; cidl: Cardinal; apidl: pointer; dwFlags: DWORD): HRESULT; stdcall; external shell32;
+
+function OpenFolderAndSelectFile(const AFileName: String): Boolean;
+var
+  LItemIdList: PItemIDList;
+begin
+  Result := False;
+  LItemIdList := ILCreateFromPath(PChar(AFileName));
+  if Assigned(LItemIdList) then
+    try
+      Result := SHOpenFolderAndSelectItems(LItemIdList, 0, nil, 0) = S_OK;
+    finally
+      ILFree(LItemIdList);
+    end;
 end;
 
 function ControlPanelExcute(Handle: HWnd; const ACommand: WideString; AFuncCall: WideString = ''): Integer;
