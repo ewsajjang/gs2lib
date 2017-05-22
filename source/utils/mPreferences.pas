@@ -112,7 +112,7 @@ type
     constructor Create; virtual;
     destructor Destroy; override;
 
-    procedure Clear; virtual;
+    procedure ClearIdx; virtual;
     procedure Add(const ASection: String; const ANameDefault: TArray<TStringArray>); virtual;
 
     function LoadFromIni(const APath: String; const ACreateNotExists: Boolean = False): Boolean;
@@ -285,7 +285,7 @@ begin
   FIdx.Add(ASection, ANameDefault);
 end;
 
-procedure TPreferences.Clear;
+procedure TPreferences.ClearIdx;
 begin
   FIdx.Clear;
 end;
