@@ -66,8 +66,18 @@ end;
 
 class function TCodeSiteLoggerFactory.CreateCodeSiteLogger(const ACategory: String;
   ABgColor, AFontColor: TColor): TCodeSiteLogger;
+var
+  i: Integer;
+  LName: String;
 begin
-  Result := CreateCodeSiteLogger(ACategory);
+  i := 0;
+  LName := ACategory;
+  while FDic.ContainsKey(LName) do
+  begin
+    Inc(i);
+    LName := ACategory + i.ToString;
+  end;
+  Result := CreateCodeSiteLogger(LName);
   Result.CategoryColor := ABgColor;
   Result.CategoryFontColor := AFontColor;
 end;
