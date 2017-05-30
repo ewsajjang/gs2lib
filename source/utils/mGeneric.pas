@@ -262,8 +262,9 @@ class function TGeneric.ToCommaLog(const AValue: TValue): String;
 var
   i: Integer;
   LValue: TValue;
+  LBuf: TStringList;
 begin
-  with TStringList.Create do
+  LBuf := TStringList.Create;
   try
     for i := 0 to AValue.GetArrayLength -1 do
     begin
@@ -271,11 +272,11 @@ begin
       if LValue.Kind = tkDynArray then
         Result := ToCommaLog(LValue)
       else
-        Add(ToHex(LValue) + LValue.ToString);
+        LBuf.Add(ToHex(LValue) + LValue.ToString);
     end;
-    Result := '(' + CommaText + ')';
+    Result := '(' + LBuf.CommaText + ')';
   finally
-    Free;
+    FreeAndNil(LBuf);
   end;
 end;
 

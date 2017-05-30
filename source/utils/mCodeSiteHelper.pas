@@ -13,9 +13,13 @@ type
     procedure EnterMethod(const AMethodName: String; Args: array of const); overload;
     procedure ExitMethod(const AMethodName: String; Args: array of const); overload;
 
-    procedure WL(const AMsg: String);
-    procedure SndWL(const AMsg: String);
-    procedure RcvWL(const AMsg: String);
+    procedure WL(const AMsg: String); overload;
+    procedure WL(const AMsg: TStrings); overload;
+    procedure WL(const AMsg: String; const Value: TStrings); overload;
+    procedure SndWL(const AMsg: String); overload;
+    procedure SndWL(const AMsg, Value: String); overload;
+    procedure RcvWL(const AMsg: String); overload;
+    procedure RcvWL(const AMsg, Value: String); overload;
     procedure Send(const ABuf: TStringList); overload;
     procedure Send(const ABufName: String; const ABuf: TStringList); overload;
 
@@ -121,6 +125,13 @@ begin
   ExitMethod(Format(AMethodName, Args))
 end;
 
+procedure TCodeSiteLoggerHelper.RcvWL(const AMsg, Value: String);
+begin
+  EnterMethod(AMsg);
+  RcvWL(Value);
+  ExitMethod(AMsg);
+end;
+
 procedure TCodeSiteLoggerHelper.RcvWL(const AMsg: String);
 var
   LItem: String;
@@ -199,12 +210,37 @@ begin
   SendError('[%s]%s', [Format(AMsg, Args), BytesToHexStr(APacket)])
 end;
 
+procedure TCodeSiteLoggerHelper.SndWL(const AMsg, Value: String);
+begin
+  EnterMethod(AMsg);
+  SndWL(Value);
+  ExitMethod(AMsg);
+end;
+
 procedure TCodeSiteLoggerHelper.SndWL(const AMsg: String);
 var
   LItem: String;
 begin
   for LItem in AMsg.Split([#13#10]) do
     Send(CodeSiteLogging.csmOrange, LItem.Trim)
+end;
+
+procedure TCodeSiteLoggerHelper.WL(const AMsg: String; const Value: TStrings);
+var
+  LItem: String;
+begin
+  EnterMethod(AMsg);
+  for LItem in Value do
+    Send(LItem.Trim);
+  ExitMethod(AMsg);
+end;
+
+procedure TCodeSiteLoggerHelper.WL(const AMsg: TStrings);
+var
+  LItem: String;
+begin
+  for LItem in AMsg do
+    Send(LItem.Trim)
 end;
 
 procedure TCodeSiteLoggerHelper.WL(const AMsg: String);
