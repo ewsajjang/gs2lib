@@ -37,6 +37,15 @@ type
     property Log: TCodeSiteLogger read GetLogger write SetLogger;
   end;
 
+  TCodeSiteLogDataModule = class(TDataModule, ICodeSiteLog)
+  private
+    FLogger: TCodeSiteLogger;
+    function GetLogger: TCodeSiteLogger; virtual;
+    procedure SetLogger(AValue: TCodeSiteLogger); virtual;
+  public
+    property Log: TCodeSiteLogger read GetLogger write SetLogger;
+  end;
+
   TCodeSiteLoggerFactory = class
   private
     class var FDic: TObjectDictionary<String, TCodeSiteLogger>;
@@ -113,6 +122,21 @@ begin
 end;
 
 procedure TCodeSiteLogThread.SetLogger(AValue: TCodeSiteLogger);
+begin
+  FLogger := AValue;
+end;
+
+{ TCodeSiteLogDataModule }
+
+function TCodeSiteLogDataModule.GetLogger: TCodeSiteLogger;
+begin
+  if Assigned(FLogger) then
+    Result := FLogger
+  else
+    Result := CodeSite;
+end;
+
+procedure TCodeSiteLogDataModule.SetLogger(AValue: TCodeSiteLogger);
 begin
   FLogger := AValue;
 end;

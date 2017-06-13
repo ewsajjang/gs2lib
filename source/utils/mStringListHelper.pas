@@ -47,6 +47,7 @@ type
 
     function First: String; inline;
     function Last: String; inline;
+    procedure Append(const S: string; const Args: array of const); overload;
 
     property S[Name: String]: String read GetS write SetS;
     property I[Name: String]: Integer read GetI write SetI;
@@ -63,7 +64,7 @@ type
   public
     procedure TryDelete(const AValue: String);
     function AddFmt(const S: string; const Args: array of const): Integer;
-    procedure Append(const S: string; const Args: array of const); overload;
+
 
     function O<T: Class>(const AIdx: Integer): T; overload;
     function O<T: class>(const AName: String): T; overload;
@@ -334,6 +335,12 @@ begin
   Result := DelimitedValues(',');
 end;
 
+procedure TStringsHelper.Append(const S: string;
+  const Args: array of const);
+begin
+  Append(Format(S, Args));
+end;
+
 { TStringListHelper }
 
 procedure TStringListHelper.TryDelete(const AValue: String);
@@ -359,12 +366,6 @@ function TStringListHelper.OExtract<T>(const AIdx: Integer): T;
 begin
   Result := O<T>(AIdx);
   Delete(AIdx);
-end;
-
-procedure TStringListHelper.Append(const S: string;
-  const Args: array of const);
-begin
-  Append(Format(S, Args));
 end;
 
 function TStringListHelper.O(const AName: String; AObj: TObject): Integer;
