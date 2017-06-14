@@ -345,7 +345,7 @@ begin
     if ACreateNotExists then
       TFile.Create(APath);
 
-  Result := TFile.Exists(APath);
+  Result := not APath.IsEmpty and TFile.Exists(APath);
   if Result then
   begin
     FSrc.PathType := ptIniFile;
