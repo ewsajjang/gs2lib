@@ -4,13 +4,13 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.SyncObjs,
-  Vcl.StdCtrls, Vcl.Forms, Vcl.ComCtrls,
+  Vcl.StdCtrls, Vcl.Forms, Vcl.ComCtrls, System.StrUtils,
   WinApi.Windows
 
 
   ;
 
-procedure LogInit(const AFileLog: Boolean);
+procedure LogInit(const AFileLog: Boolean; const ADateTimeFormat: String = '[YYYY-MM-DD HH:NN]');
 procedure wl(const ALog: string); overload;
 procedure wl(const ALog: string; const Args: array of const); overload;
 
@@ -21,7 +21,7 @@ var
   MemoMaxLineCount: Integer = 10000;
   DbgStr: Boolean = False;
   FileName: String = '';
-  DateTimeFormat: String = '[YYYY-MM-DD HH:NN]';
+  DateTimeFormat: String = '';
   LogAppName: Boolean = False;
 
 implementation
@@ -40,7 +40,6 @@ type
     procedure Execute; override;
   public
     constructor Create(const FileName: String);
-    destructor Destroy; override;
 
     property LogQueue: TThreadedQueue<String> read FLogQueue;
   end;
@@ -99,7 +98,6 @@ begin
   end;
 end;
 
-{$IFDEF DEBUG}
 procedure wl(const ALog: string); overload;
 
 var
@@ -111,22 +109,18 @@ begin
   else
     AppName := EmptyStr;
 
-  Log := Format('%s%s', [AppName, ALog]);
+  Log := IfThen(not AppName.IsEmpty, Format('%s%s', [AppName, ALog]), ALog);
   if DbgStr then
     OutputDebugString(PChar(Log));
   MemoLog(Log);
 
   if FileLog then
   begin
-    Log := Format('%s %s'#13#10, [FormatDateTime(DateTimeFormat, Now), Log]);
+    if not DateTimeFormat.IsEmpty then
+      Log := Format('%s %s'#13#10, [FormatDateTime(DateTimeFormat, Now), Log]);
     FLogTh.LogQueue.PushItem(Log);
   end;
 end;
-{$ELSE}
-procedure wl(const ALog: string); overload;
-begin
-end;
-{$ENDIF}
 
 procedure wl(const ALog: string; const Args: array of const); overload;
 begin
@@ -138,9 +132,10 @@ begin
   Result := ChangeFileExt(TFile.ModuleFileName, '.log');
 end;
 
-procedure LogInit(const AFileLog: Boolean);
+procedure LogInit(const AFileLog: Boolean; const ADateTimeFormat: String);
 begin
   FileLog := AFileLog;
+  DateTimeFormat := ADateTimeFormat;
   if FileName <> EmptyStr then
     LogFileName := FileName
   else
@@ -160,39 +155,37 @@ begin
   inherited Create(False);
 
   FFileName := FileName;
-  FLogQueue := TThreadedQueue<String>.Create;
-end;
-
-destructor TSimpleFileLogThread.Destroy;
-begin
-  FLogQueue.Free;
-
-  inherited;
+  FreeOnTerminate := True;
 end;
 
 procedure TSimpleFileLogThread.execute;
 var
-  LogFile : TFileStream;
-  FileMode : Word;
-  ALog : String;
+  LLogFile : TFileStream;
+  LFileMode : Word;
+  LItem : String;
+  LQueueSize: Integer;
 begin
   NameThreadForDebugging('TSimpleFileLogThread');
 
   if FileExists(FFileName) then
-    FileMode := fmOpenWrite or fmShareDenyWrite
+    LFileMode := fmOpenWrite or fmShareDenyWrite
   else
-    FileMode := fmCreate or fmShareDenyWrite;
-  LogFile := TFileStream.Create(FFileName,FileMode);
+    LFileMode := fmCreate or fmShareDenyWrite;
+
+  FLogQueue := TThreadedQueue<String>.Create;
+  LLogFile := TFileStream.Create(FFileName, LFileMode);
   try
     while not Terminated do
-    begin
-      ALog := FLogQueue.PopItem;
-      if (ALog <> '')  then
-        LogFile.Write(ALog[1],Length(ALog)*SizeOf(Char));
-      Sleep(5000);
-    end;
+      if FLogQueue.PopItem(LQueueSize, LItem) = wrSignaled then
+        if not Terminated then
+        begin
+          if not LItem.EndsWith(#13#10) then
+            LItem := LItem + #13#10;
+          LLogFile.Write(LItem[1], Length(LItem) * SizeOf(Char))
+        end;
   finally
-    LogFile.Free;
+    LLogFile.Free;
+    FLogQueue.Free;
   end;
 end;
 
@@ -200,11 +193,6 @@ initialization
 
 finalization
   if FLogTh <> nil then
-  begin
     FLogTh.Terminate;
-    FLogTh.LogQueue.DoShutDown;
-    FLogTh.WaitFor;
-    FreeAndNil(FLogTh);
-  end;
 
 end.

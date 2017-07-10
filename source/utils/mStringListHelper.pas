@@ -48,6 +48,7 @@ type
     function First: String; inline;
     function Last: String; inline;
     procedure Append(const S: string; const Args: array of const); overload;
+    procedure AddPair(const AKey, AValue: string; const AValueArgs: array of const); overload;
 
     property S[Name: String]: String read GetS write SetS;
     property I[Name: String]: Integer read GetI write SetI;
@@ -323,6 +324,11 @@ begin
     else
       Result := siInsert;
   end;
+end;
+
+procedure TStringsHelper.AddPair(const AKey, AValue: string; const AValueArgs: array of const);
+begin
+  AddPair(AKey, Format(AValue, AVAlueArgs));
 end;
 
 function TStringsHelper.CommaKeys: String;
