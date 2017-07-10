@@ -53,6 +53,7 @@ type
     class procedure Finalize;
     class function GetLoggers(Category: String): TCodeSiteLogger; static;
   public
+    class function CreateOrSelectLogger(const ACategory: String; ABgColor: TColor; AFontColor: TColor = TColorRec.Black): TCodeSiteLogger;
     class function CreateCodeSiteLogger(const ACategory: String): TCodeSiteLogger; overload;
     class function CreateCodeSiteLogger(const ACategory: String; ABgColor: TColor; AFontColor: TColor = TColorRec.Black): TCodeSiteLogger; overload;
 
@@ -82,11 +83,20 @@ begin
   while FDic.ContainsKey(LName) do
   begin
     Inc(i);
-    LName := ACategory + i.ToString;
+    LName := Format('%s[%d]', [ACategory, i.ToString]);
   end;
   Result := CreateCodeSiteLogger(LName);
   Result.CategoryColor := ABgColor;
   Result.CategoryFontColor := AFontColor;
+end;
+
+class function TCodeSiteLoggerFactory.CreateOrSelectLogger(const ACategory: String; ABgColor,
+  AFontColor: TColor): TCodeSiteLogger;
+begin
+  if FDic.ContainsKey(ACategory) then
+    Result := FDic[ACategory]
+  else
+    Result := CreateCodeSiteLogger(ACategory, ABgColor, AFontColor);
 end;
 
 class procedure TCodeSiteLoggerFactory.Finalize;
