@@ -66,7 +66,6 @@ type
     procedure TryDelete(const AValue: String);
     function AddFmt(const S: string; const Args: array of const): Integer;
 
-
     function O<T: Class>(const AIdx: Integer): T; overload;
     function O<T: class>(const AName: String): T; overload;
     function O(const AName: String; AObj: TObject): Integer; overload;
