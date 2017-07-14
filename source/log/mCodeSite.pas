@@ -83,7 +83,7 @@ begin
   while FDic.ContainsKey(LName) do
   begin
     Inc(i);
-    LName := Format('%s[%d]', [ACategory, i.ToString]);
+    LName := Format('%s[%d]', [ACategory, i]);
   end;
   Result := CreateCodeSiteLogger(LName);
   Result.CategoryColor := ABgColor;
