@@ -128,16 +128,20 @@ type
     FProductVer: TVersion;
     FFileInfos: TArray<array[TTransItemIdx] of String>;
     FBuildFlags: TBuildFlags;
-    FFileName: String;
+    FFileFullPath: String;
     function GetFileInfos(const Index: Integer): String;
     function GetTransCnt: Integer;
     function GetTranslation: TTranslation;
+    function GetDirectory: String;
+    function GetFileName: String;
   public
     function Load(const AFileName: String): Boolean;
     function TryAssignTranslation(const ALang: TLanguage; const ACodePage: TCodePage): Boolean; overload;
     function TryAssignTranslation(const ALang: TLanguage): Boolean; overload;
 
-    property FileName: String read FFileName;
+    property FileFullPath: String read FFileFullPath;
+    property Directory: String read GetDirectory;
+    property FileName: String read GetFileName;
     property BuildFlags: TBuildFlags read FBuildFlags;
     property FileVersion: TVersion read FFileVer;
     property ProductVersion: TVersion read FProductVer;
@@ -264,9 +268,19 @@ end;
 
 { TFileInfo }
 
+function TFileInfo.GetDirectory: String;
+begin
+  Result := TDirectory.GetParent(FFileFullPath);
+end;
+
 function TFileInfo.GetFileInfos(const Index: Integer): String;
 begin
   Result := FFileInfos[FTransIdx][Index]
+end;
+
+function TFileInfo.GetFileName: String;
+begin
+  Result := TPath.GetFileName(FFileFullPath);
 end;
 
 function TFileInfo.GetTransCnt: Integer;
@@ -319,7 +333,7 @@ begin
   if not TFile.Exists(AFileName) then
     Exit;
 
-  FFileName := AFileName;
+  FFileFullPath := AFileName;
   try
     LInfoSz := GetFileVersionInfoSize(PChar(AFileName), LWnd);
     if LInfoSz <= 0 then
