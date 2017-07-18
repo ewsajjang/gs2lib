@@ -157,11 +157,20 @@ type
     property SpecialBuild     : String index 9 read GetFileInfos;
   end;
 
+function ModuleFileName: String;
+
 implementation
 
 uses
   System.IOUtils, System.Math
   ;
+
+function ModuleFileName: String;
+var
+  LBuffer: array [0..MAX_PATH] of Char;
+begin
+  SetString(Result, LBuffer, GetModuleFileName(0, LBuffer, Length(LBuffer)))
+end;
 
 { TFileInfo.TTranslation }
 
