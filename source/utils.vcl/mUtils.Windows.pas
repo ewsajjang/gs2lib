@@ -295,7 +295,7 @@ var
   VerInfo: TExeFileVerInfo;
 begin
   if FileName = EmptyStr then
-    FileName := TFile.ModuleFileName;
+    FileName :=  TFile.ModuleFileName;
   Result := EmptyStr;
   if not FileExists(FileName) then
     Exit;
