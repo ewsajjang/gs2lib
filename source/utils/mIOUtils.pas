@@ -21,9 +21,12 @@ type
     {$ENDIF}
   end;
 
+function SizeToStr(ASize: Int64): String;
+
 implementation
 
 uses
+  System.Math,
   {$IFDEF MSWINDOWS}
   Winapi.Windows, Winapi.ShlObj
   {$ENDIF}
@@ -32,6 +35,26 @@ uses
   Posix.SysStat
   {$ENDIF}
   ;
+
+function SizeToStr(ASize: Int64): String;
+const
+  NKb = Int64(1024);
+  NMb = NKb * NKb;
+  NGb = NKb * NMb;
+  NTb = NKb * NGb;
+begin
+  ASize := Max(0, ASize);
+  if ASize < NKb then
+    Result := Format('%d bytes', [ASize + 0.])
+  else if ASize < NMb then
+    Result := Format('%.2n KB', [ASize / NKb])
+  else if ASize < NGb then
+    Result := Format('%.2n MB', [ASize / NMb])
+  else if ASize < NTb then
+    Result := Format('%.2n GB', [ASize / NGb])
+  else
+    Result := Format('%.2n TB', [ASize / NTb]);
+end;
 
 { TFileHelper }
 
@@ -77,25 +100,8 @@ end;
 {$ENDIF}
 
 class function TFileHelper.GetSizeStr(const AFileName: String): String;
-const
-  NKb = Int64(1024);
-  NMb = NKb * NKb;
-  NGb = NKb * NMb;
-  NTb = NKb * NGb;
-var
-  LSize: Int64;
 begin
-  LSize := GetSize(AFileName);
-  if LSize < NKb then
-    Result := Format('%d bytes', [LSize + 0.])
-  else if LSize < NMb then
-    Result := Format('%.2n KB', [LSize / NKb])
-  else if LSize < NGb then
-    Result := Format('%.2n MB', [LSize / NMb])
-  else if LSize < NTb then
-    Result := Format('%.2n GB', [LSize / NGb])
-  else
-    Result := Format('%.2n TB', [LSize / NTb]);
+  Result := SizeToStr(GetSize(AFileName));
 end;
 
 class function TPathHelper.MakeUniqueFileName(
