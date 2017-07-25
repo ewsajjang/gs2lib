@@ -63,7 +63,7 @@ type
       function ToWord: Word;
       class function Create(const AValue: Word): TLanguage; static;
     end;
-    TCodePage = (
+    TCodePage16 = (
       fcASCII7bit,
       fcJapanShiftJISX0208,
       fcKoreaShiftKSC5601,
@@ -77,22 +77,22 @@ type
       fcHebrew,
       fcArabic
     );
-    TCodePageHelper = record helper for TCodePage
+    TCodePageHelper = record helper for TCodePage16
       function ToWord: Word;
-      class function Create(const AValue: Word): TCodePage; static;
+      class function Create(const AValue: Word): TCodePage16; static;
     end;
     TTransItemIdx = 0..9;
     TTranslation = record
     private
       FLanguage: TLanguage;
-      FCodePage: TCodePage;
+      FCodePage: TCodePage16;
       function GetwCodePage: Word;
       function GetwLanguage: Word;
     public
       constructor Create(const AValue: Cardinal);
       class function Default: TTranslation; static;
       function ToHexStr: String;
-      function Equals(const ALanguage: TLanguage; ACodePage: TCodePage): Boolean; overload;
+      function Equals(const ALanguage: TLanguage; ACodePage: TCodePage16): Boolean; overload;
       function Equals(const ALanguage: TLanguage): Boolean; overload;
       property wLanguage: Word read GetwLanguage;
       property wCodePage: Word read GetwCodePage;
@@ -136,7 +136,7 @@ type
     function GetFileName: String;
   public
     function Load(const AFileName: String): Boolean;
-    function TryAssignTranslation(const ALang: TLanguage; const ACodePage: TCodePage): Boolean; overload;
+    function TryAssignTranslation(const ALang: TLanguage; const ACodePage: TCodePage16): Boolean; overload;
     function TryAssignTranslation(const ALang: TLanguage): Boolean; overload;
 
     property FileFullPath: String read FFileFullPath;
@@ -181,7 +181,7 @@ end;
 constructor TFileInfo.TTranslation.Create(const AValue: Cardinal);
 begin
   FLanguage := TLanguage.Create(AValue and $FFFF);          // Lo
-  FCodePage := TCodePage.Create((AValue shr 16) and $FFFF); // Hi
+  FCodePage := TCodePage16.Create((AValue shr 16) and $FFFF); // Hi
 end;
 
 class function TFileInfo.TTranslation.Default: TTranslation;
@@ -197,7 +197,7 @@ begin
   Result := FLanguage = ALanguage;
 end;
 
-function TFileInfo.TTranslation.Equals(const ALanguage: TLanguage; ACodePage: TCodePage): Boolean;
+function TFileInfo.TTranslation.Equals(const ALanguage: TLanguage; ACodePage: TCodePage16): Boolean;
 begin
   Result := (FLanguage = ALanguage) and (FCodePage = ACodePage)
 end;
@@ -354,10 +354,8 @@ begin
         if VerQueryValue(LInfo, PChar(STrans), Pointer(LBuf), LBufLen) then
         begin
           SetLength(FTrans, LBufLen div SizeOf(TLanguageCodePage));
-
           SetLength(LLangCodePage, TransItemCnt);
           Move(LBuf^, LLangCodePage[0], LBufLen);
-
           SetLength(FFileInfos, TransItemCnt);
 
           FTransIdx := IfThen(TransItemCnt > 1, -1, 0);
@@ -413,7 +411,7 @@ begin
     end;
 end;
 
-function TFileInfo.TryAssignTranslation(const ALang: TLanguage; const ACodePage: TCodePage): Boolean;
+function TFileInfo.TryAssignTranslation(const ALang: TLanguage; const ACodePage: TCodePage16): Boolean;
 var
   t: Integer;
 begin
@@ -496,12 +494,12 @@ end;
 
 { TFileInfo.TCodePageHelper }
 
-class function TFileInfo.TCodePageHelper.Create(const AValue: Word): TCodePage;
+class function TFileInfo.TCodePageHelper.Create(const AValue: Word): TCodePage16;
 var
-  LCodePage: TCodePage;
+  LCodePage: TCodePage16;
 begin
   Result := fcUnicode;
-  for LCodePage := Low(TCodePage) to High(TCodePage) do
+  for LCodePage := Low(TCodePage16) to High(TCodePage16) do
     if LCodePage.ToWord = AValue then
     begin
       Result := LCodePage;
@@ -528,12 +526,5 @@ begin
     raise Exception.Create('Handled code not exists');
   end;
 end;
-
-//var
-//  LInfo: TFileInfo;
-
-initialization
-  //LInfo.Load(TPath.GetFullPath('.\MultiVer.exe'));
-  //LInfo.Load(ParamStr(0));
 
 end.
