@@ -44,6 +44,7 @@ type
     function DelimitedKeys(const ADelimiter: Char): String;
     function CommaKeys: String;
     function CommaValues: String;
+    function ToNamesArray: TArray<String>;
 
     function First: String; inline;
     function Last: String; inline;
@@ -198,6 +199,14 @@ end;
 function TStringsHelper.KeyExists(const AKey: String): Boolean;
 begin
   Result := Exists(AKey);
+end;
+
+function TStringsHelper.ToNamesArray: TArray<String>;
+var
+  i: Integer;
+begin
+  for i := 0 to Count -1 do
+    Result := Result + [Names[i]];
 end;
 
 function TStringsHelper.KeysExists(const AKeys: array of String): Boolean;
