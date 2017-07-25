@@ -45,7 +45,7 @@ const
 begin
   ASize := Max(0, ASize);
   if ASize < NKb then
-    Result := Format('%d bytes', [ASize + 0.])
+    Result := Format('%d bytes', [ASize])
   else if ASize < NMb then
     Result := Format('%.2n KB', [ASize / NKb])
   else if ASize < NGb then
