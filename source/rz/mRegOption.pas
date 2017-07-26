@@ -44,6 +44,7 @@ type
     NSec = 1000;
     NMin = 60 * NSec;
   public
+    function CreateRzRegOption(const APath: String; AOwner: TComponent = nil): TRzRegIniFile;
     property Reg: TRzRegIniFile read FReg;
   end;
 
@@ -54,6 +55,14 @@ implementation
 procedure TRegOption.Add(const ASection: String; const ANameDefault: TArray<TArray<String>>);
 begin
   FIdx.Add(ASection, ANameDefault);
+end;
+
+function TRegOption.CreateRzRegOption(const APath: String; AOwner: TComponent = nil): TRzRegIniFile;
+begin
+  if not Assigned(AOwner) then
+    AOwner := Self;
+  Result := TRzRegIniFile.Create(AOwner);
+  Result.PathType := ptRegistry;
 end;
 
 procedure TRegOption.DoCreate;
