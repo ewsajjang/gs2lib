@@ -275,7 +275,7 @@ begin
       try
         LSocket.Open(AHost, APort);
       except on E: Exception do
-        Result := False;
+        Exit(False);
       end;
       Result := LSocket.Connected;
       if Result then
