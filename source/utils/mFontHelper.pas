@@ -21,7 +21,7 @@ type
     FFixedFontExists: Boolean;
     class function SystemFixedWidthFontName: String;
   private const
-    FONTS_FIXED_WIDTH: array[0..6] of String = ('Source Code Pro', 'Consolas', 'Courier', 'Lucida Console', 'Terminal', 'FixedSys', 'Hyperfont');
+    FONTS_FIXED_WIDTH: array[0..7] of String = ('D2Coding', 'Source Code Pro', 'Consolas', 'Courier', 'Lucida Console', 'Terminal', 'FixedSys', 'Hyperfont');
   public
     class function IsFixedWidthFont(const AFontName: String): Boolean;
     class procedure AssingToCtrl(const ACtrl: TControl);
