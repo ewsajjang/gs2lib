@@ -21,6 +21,7 @@ type
   public
     procedure Click;
     function ItemSelected: Boolean;
+    function GroupSelected: Boolean;
     function ItemText: String;
     procedure ItemUp;
     procedure ItemDown;
@@ -54,6 +55,11 @@ begin
   MultiSelect := AMultiSelect;
   OnDragOver := OnItemDragOver;
   OnDragDrop := OnItemsDragDrop;
+end;
+
+function TCustomListBoxHelper.GroupSelected: Boolean;
+begin
+  Result := ItemSelected and ItemText.StartsWith('//')
 end;
 
 procedure TCustomListBoxHelper.ItemDown;
