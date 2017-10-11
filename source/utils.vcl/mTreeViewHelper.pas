@@ -43,7 +43,7 @@ end;
 procedure TTreeViewHelper.SetExplorerTheme(const Value: Boolean);
 begin
   // fork from - https://stackoverflow.com/a/8408192/1174572
-  if ThemeServices.ThemesEnabled and CheckWin32Version(6, 0) then
+  if StyleServices.Enabled and CheckWin32Version(6, 0) then
     if Value then
       SetWindowTheme(Handle, 'Explorer', nil)
     else
