@@ -26,7 +26,7 @@ type
   protected
     FOnPlaceOn: TProc;
     FOnPlaceOnParent: TProc;
-    procedure OnPlaceOnParentNotify; virtual;
+    procedure DoPlaceOnParent; virtual;
 
     function FindTargetWinControl(const AName: String): TWinControl;
 
@@ -324,7 +324,7 @@ begin
   PlaceOnParent(vClasses[AParent]);
 end;
 
-procedure TvForm.OnPlaceOnParentNotify;
+procedure TvForm.DoPlaceOnParent;
 begin
   if Assigned(FOnPlaceOnParent) then
     FOnPlaceOnParent;
@@ -379,7 +379,7 @@ begin
   if Assigned(LParent) then
   begin
     PlaceOn(Self, FindTargetWinControl(LParent.Name));
-    OnPlaceOnParentNotify;
+    DoPlaceOnParent;
   end;
 end;
 
@@ -424,13 +424,13 @@ end;
 procedure TvForm.PlaceOnParent(const ATarget: TWinControl);
 begin
   PlaceOn(Self, ATarget);
-  OnPlaceOnParentNotify;
+  DoPlaceOnParent;
 end;
 
 procedure TvForm.PlaceOnParent(const AParent: TvForm);
 begin
   PlaceOn(Self, FindTargetWinControl(AParent.Name));
-  OnPlaceOnParentNotify;
+  DoPlaceOnParent;
 end;
 
 { TvDlg }
