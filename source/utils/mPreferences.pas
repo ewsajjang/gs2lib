@@ -119,6 +119,9 @@ type
     function LoadFromReg(const APath: String; const AKey: TRzRegKey = hkeyCurrentUser; const AAccess: TRzRegAccess = [keyAllAccess]): Boolean;
   end;
 
+function IdxR(const Index: Integer): Integer;
+function IdxL(const Index: Integer): Integer;
+
 implementation
 
 uses
