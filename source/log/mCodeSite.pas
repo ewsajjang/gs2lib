@@ -18,7 +18,7 @@ type
     property Log: TCodeSiteLogger read GetLogger write SetLogger;
   end;
 
-  TCodeSiteLogClass = class(TInterfacedObject, ICodeSiteLog)
+  TCodeSiteLogObject = class(TInterfacedObject, ICodeSiteLog)
   private
   protected
     FLogger: TCodeSiteLogger;
@@ -116,9 +116,9 @@ begin
     FDic := TObjectDictionary<String, TCodeSiteLogger>.Create([doOwnsValues]);
 end;
 
-{ TCodeSiteLogClass }
+{ TCodeSiteLogObject }
 
-function TCodeSiteLogClass.GetLogger: TCodeSiteLogger;
+function TCodeSiteLogObject.GetLogger: TCodeSiteLogger;
 begin
   if Assigned(FLogger) then
     Result := FLogger
@@ -126,7 +126,7 @@ begin
     Result := CodeSite;
 end;
 
-procedure TCodeSiteLogClass.SetLogger(Value: TCodeSiteLogger);
+procedure TCodeSiteLogObject.SetLogger(Value: TCodeSiteLogger);
 begin
   FLogger := Value;
 end;
