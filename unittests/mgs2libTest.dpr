@@ -1,10 +1,14 @@
 program mgs2libTest;
 
-
+{$IFNDEF TESTINSIGHT}
 {$APPTYPE CONSOLE}
+{$ENDIF}{$STRONGLINKTYPES ON}
 
 uses
   SysUtils,
+  {$IFDEF TESTINSIGHT}
+  TestInsight.DUnitX,
+  {$ENDIF }
   DUnitX.AutoDetect.Console,
   DUnitX.Loggers.Console,
   DUnitX.Loggers.Xml.NUnit,
@@ -23,9 +27,12 @@ uses
   TestmGenericValueList in 'TestmGenericValueList.pas',
   mGenericValueList in '..\source\utils\mGenericValueList.pas',
   mLinkedCollections in '..\source\utils\mLinkedCollections.pas',
-  TestmLinkedCollections in 'TestmLinkedCollections.pas';
-
-{R *.RES}
+  TestmLinkedCollections in 'TestmLinkedCollections.pas',
+  t.types in 't.types.pas',
+  mTypes in '..\source\utils\mTypes.pas',
+  mTypesHelper in '..\source\utils\mTypesHelper.pas',
+  mTypes.bytesarray in '..\source\utils\mTypes.bytesarray.pas',
+  t.types.bytesarray in 't.types.bytesarray.pas';
 
 var
   runner : ITestRunner;
@@ -33,6 +40,10 @@ var
   logger : ITestLogger;
   nunitLogger : ITestLogger;
 begin
+{$IFDEF TESTINSIGHT}
+  TestInsight.DUnitX.RunRegisteredTests;
+  exit;
+{$ENDIF}
   ReportMemoryLeaksOnShutdown := True;
   try
     //Create the runner
@@ -44,7 +55,6 @@ begin
     nunitLogger := TDUnitXXMLNUnitFileLogger.Create;
     runner.AddLogger(logger);
     runner.AddLogger(nunitLogger);
-
 
     //Run tests
     results := runner.Execute;

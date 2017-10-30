@@ -29,6 +29,21 @@ type
     function Copy: TBytesList;
   end;
 
+  TBytesArray = TArray<TBytes>;
+  TBytesArrayHelper = record helper for TBytesArray
+    class function Parse(const AValue: String): TBytesArray; overload; static;
+    class function ToString(const AValue: TBytesArray): String; overload; static;
+    function ToString: String; overload;
+  end;
+
+  TBytesHelper = record helper for TBytes
+    class function Parse(const AValue: String): TBytes; overload; static;
+    class function ToString(const AValue: TBytes): String; overload; static;
+    function ToString: String; overload;
+  end;
+
+  TStringArray = TArray<String>;
+
   TProgressInfo = record
     Total: Boolean;
     Value: Int64;
@@ -55,10 +70,46 @@ type
     constructor Create(const AValue: T; const AParam1: T1; const AParam2: T2);
   end;
 
+//function EncodeBytesArray(const ASrc: String): TArray<TBytes>;
+
 implementation
 
 uses
-  mDateTimeHelper;
+  mDateTimeHelper, mTypes.bytesarray;
+
+{ TBytesArrayHelper }
+
+class function TBytesArrayHelper.Parse(const AValue: String): TBytesArray;
+begin
+  Result := TBytesArrayEncoder.Execute(AValue)
+end;
+
+class function TBytesArrayHelper.ToString(const AValue: TBytesArray): String;
+begin
+  Result := TBytesArrayDecoder.Execute(AValue)
+end;
+
+function TBytesArrayHelper.ToString: String;
+begin
+  Result := TBytesArrayDecoder.Execute(Self)
+end;
+
+{ TBytesHelper }
+
+class function TBytesHelper.Parse(const AValue: String): TBytes;
+begin
+  Result := TBytesEncoder.Execute(AValue)
+end;
+
+class function TBytesHelper.ToString(const AValue: TBytes): String;
+begin
+  Result := TBytesDecoder.Execute(AValue)
+end;
+
+function TBytesHelper.ToString: String;
+begin
+  Result := TBytesDecoder.Execute(Self)
+end;
 
 { TProgressInfo }
 
