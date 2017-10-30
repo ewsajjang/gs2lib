@@ -20,6 +20,7 @@ type
     function Exists(const AGUID: TGUID; AFunc: TDvcExistsFunc): Boolean; overload;
     procedure ClearAndSearch(const AGUIDs: array of TGUID);
     procedure Clear;
+    function AsStringArray: TArray<String>;
 
     property Devices[Index: Integer]: TWinDevice read GetDevices; default;
     property Count: Integer read GetCount;
