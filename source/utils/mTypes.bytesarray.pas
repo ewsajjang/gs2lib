@@ -86,11 +86,11 @@ type
   end;
 
   TBytesDecoder = class
-    class function Execute(const AValues: TBytes; const AAddCommaSpace: Boolean = True; const AContainsBracket: Boolean = True; const AHexStr: Boolean = True): String;
+    class function Execute(const AValues: TBytes; const AContainsBracket: Boolean = True; const AAddCommaSpace: Boolean = True; const AHexStr: Boolean = True): String;
   end;
 
   TBytesArrayDecoder = class(TBytesDecoder)
-    class function Execute(const AValues: TBytesArray; const AAddCommaSpace: Boolean = True; const AContainsBracket: Boolean = False; const AHexStr: Boolean = True): String;
+    class function Execute(const AValues: TBytesArray; const AContainsBracket: Boolean = True; const AAddCommaSpace: Boolean = True; const AHexStr: Boolean = True): String;
   end;
 
 implementation
@@ -406,7 +406,7 @@ end;
 
 { TBytesEncoder }
 
-class function TBytesDecoder.Execute(const AValues: TBytes; const AAddCommaSpace: Boolean; const AContainsBracket: Boolean;
+class function TBytesDecoder.Execute(const AValues: TBytes; const AContainsBracket: Boolean; const AAddCommaSpace: Boolean;
   const AHexStr: Boolean): String;
 var
   i: Integer;
@@ -428,8 +428,8 @@ end;
 
 { TBytesArrayEncoder }
 
-class function TBytesArrayDecoder.Execute(const AValues: TBytesArray; const AAddCommaSpace: Boolean;
-  const AContainsBracket: Boolean; const AHexStr: Boolean): String;
+class function TBytesArrayDecoder.Execute(const AValues: TBytesArray;
+  const AContainsBracket: Boolean; const AAddCommaSpace: Boolean; const AHexStr: Boolean): String;
 var
   LBuf: TStringList;
   i: Integer;
@@ -437,7 +437,7 @@ begin
   LBuf := TStringList.Create;
   try
     for i := Low(AValues) to High(AValues) do
-      Result := Result + inherited Execute(AValues[i], AAddCommaSpace, True, AHexStr) + IfThen(i < High(AValues), ',' +IfThen(AAddCommaSpace, ' '));
+      Result := Result + inherited Execute(AValues[i], True, AAddCommaSpace, AHexStr) + IfThen(i < High(AValues), ',' +IfThen(AAddCommaSpace, ' '));
 
     if AContainsBracket then
       Result := '[' + Result + ']';

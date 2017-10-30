@@ -478,9 +478,9 @@ end;
 
 procedure TBytesDecoderTest.TestBracketOnly;
 begin
-  Assert.AreEqual('[$01]', TBytesDecoder.Execute([$01], False));
-  Assert.AreEqual('[$01,$FF]', TBytesDecoder.Execute([$01, $FF], False));
-  Assert.AreEqual('[$01,$7F,$FF]', TBytesDecoder.Execute([$01, $7F, $FF], False));
+  Assert.AreEqual('[$01]', TBytesDecoder.Execute([$01], True, False));
+  Assert.AreEqual('[$01,$FF]', TBytesDecoder.Execute([$01, $FF], True, False));
+  Assert.AreEqual('[$01,$7F,$FF]', TBytesDecoder.Execute([$01, $7F, $FF], True, False));
 end;
 
 procedure TBytesDecoderTest.TestDecimal;
@@ -492,9 +492,9 @@ end;
 
 procedure TBytesDecoderTest.TestSpaceOnly;
 begin
-  Assert.AreEqual('$01', TBytesDecoder.Execute([$01], True, False));
-  Assert.AreEqual('$01, $FF', TBytesDecoder.Execute([$01, $FF], True, False));
-  Assert.AreEqual('$01, $7F, $FF', TBytesDecoder.Execute([$01, $7F, $FF], True, False));
+  Assert.AreEqual('$01', TBytesDecoder.Execute([$01], False, True));
+  Assert.AreEqual('$01, $FF', TBytesDecoder.Execute([$01, $FF], False, True));
+  Assert.AreEqual('$01, $7F, $FF', TBytesDecoder.Execute([$01, $7F, $FF], False, True));
 end;
 
 { TBytesArrayEncoderTest }
@@ -508,9 +508,9 @@ end;
 
 procedure TBytesArrayDecoderTest.TestBraketOnly;
 begin
-  Assert.AreEqual('[[$00]]', TBytesArrayDecoder.Execute([[$00]], False, True));
-  Assert.AreEqual('[[$00,$01]]', TBytesArrayDecoder.Execute([[$00, $01]], False, True));
-  Assert.AreEqual('[[$00,$01],[$7F,$FF]]', TBytesArrayDecoder.Execute([[$00, $01],[$7F, $FF]], False, True));
+  Assert.AreEqual('[[$00]]', TBytesArrayDecoder.Execute([[$00]]));
+  Assert.AreEqual('[[$00,$01]]', TBytesArrayDecoder.Execute([[$00, $01]], True, False));
+  Assert.AreEqual('[[$00,$01],[$7F,$FF]]', TBytesArrayDecoder.Execute([[$00, $01],[$7F, $FF]], True, False));
 end;
 
 procedure TBytesArrayDecoderTest.TestDecimal;
@@ -522,9 +522,9 @@ end;
 
 procedure TBytesArrayDecoderTest.TestSpaceOnly;
 begin
-  Assert.AreEqual('[$00]', TBytesArrayDecoder.Execute([[$00]]));
-  Assert.AreEqual('[$00, $01]', TBytesArrayDecoder.Execute([[$00, $01]]));
-  Assert.AreEqual('[$00, $01], [$7F, $FF]', TBytesArrayDecoder.Execute([[$00, $01], [$7F, $FF]]));
+  Assert.AreEqual('[$00]', TBytesArrayDecoder.Execute([[$00]], False));
+  Assert.AreEqual('[$00, $01]', TBytesArrayDecoder.Execute([[$00, $01]], False));
+  Assert.AreEqual('[$00, $01], [$7F, $FF]', TBytesArrayDecoder.Execute([[$00, $01], [$7F, $FF]], False));
 end;
 
 initialization
