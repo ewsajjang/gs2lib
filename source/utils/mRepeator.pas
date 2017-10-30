@@ -79,7 +79,7 @@ end;
 
 function TSimpleRepeator<T>.Exists(const AItem: T): Boolean;
 begin
-  Result := FList.IndexOf(AItem) > VAL_NOT_ASSIGNED;
+  Result := FList.IndexOf(AItem) > NNotAssigned;
 end;
 
 function TSimpleRepeator<T>.GetCount: Integer;
