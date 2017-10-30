@@ -88,9 +88,15 @@ end;
 
 procedure TMsgRouter<TID>.Clear;
 begin
+  FGenericBefores.Clear;
+  FGenericAfters.Clear;
   FGenerics.Clear;
   FExcutes.Clear;
+  FExcuteBefores.Clear;
+  FExcuteAfters.Clear;
   FNotifys.Clear;
+  FNotifyBefores.Clear;
+  FNotifyAfters.Clear;
 end;
 
 constructor TMsgRouter<TID>.Create;
@@ -102,13 +108,13 @@ begin
   FNotifyAfters := TDictionary<TID, TList<TProc>>.Create;
   FNotifyAfters.OnValueNotify := OnNotify;
 
-  FExcutes := TDictionary<TID, TFunc<Boolean>>.Create;
-  FExcuteBefores := TDictionary<TID, TFunc<Boolean>>.Create;
-  FExcuteAfters := TDictionary<TID, TFunc<Boolean>>.Create;
-
   FGenerics := TDictionary<TID, TFunc<TValue>>.Create;
   FGenericBefores := TDictionary<TID, TFunc<TValue>>.Create;
   FGenericAfters := TDictionary<TID, TFunc<TValue>>.Create;
+
+  FExcutes := TDictionary<TID, TFunc<Boolean>>.Create;
+  FExcuteBefores := TDictionary<TID, TFunc<Boolean>>.Create;
+  FExcuteAfters := TDictionary<TID, TFunc<Boolean>>.Create;
 end;
 
 function TMsgRouter<TID>.Data<T>: T;
@@ -360,29 +366,24 @@ end;
 function TMsgRouter<TID>.Query<T>(AID: TID; var Value: T): Boolean;
 var
   LFunc: TFunc<TValue>;
-  LBefore, LOn: Boolean;
+  LBefore: Boolean;
+  LOn: Boolean;
 begin
-  Result := False;
-
-  if FGenericBefores.TryGetValue(AID, LFunc) then
+  if FGenericBefores.ContainsKey(AID) then
   begin
+    LFunc := FGenericBefores[AID];
     if Assigned(LFunc) then
-    begin
-      Value := LFunc.AsType<T>;
-      LBefore := True;
-    end;
-  end
-  else
-    LBefore := True;
+      LFunc();
+  end;
 
-  if FGenerics.TryGetValue(AID, LFunc) then
-    if Assigned(LFunc) then
-    begin
-      Value := LFunc.AsType<T>;
-      LOn := True;
-    end;
+  if not FGenerics.ContainsKey(AID) then
+    Exit(False);
 
-  Result := LBefore and LOn;
+  LFunc := nil;
+  LFunc := FGenerics[AID];
+  Result := Assigned(LFunc);
+  if Result then
+    Value := LFunc().AsType<T>;
 end;
 
 procedure TMsgRouter<TID>.RemoveHandler(AID: TID; Proc: TProc);
