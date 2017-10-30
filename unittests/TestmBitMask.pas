@@ -64,16 +64,19 @@ var
   LLongWordFlag: TBitMask<LongWord>;
   LUInt64Flag  : TBitMask<UInt64  >;
 begin
-  LIntegerFlag.Load (LInteger );
-  LCardinalFlag.Load(LCardinal);
-  LShortIntFlag.Load(LShortInt);
-  LSmallIntFlag.Load(LSmallInt);
-  LLongIntFlag.Load (LLongInt );
-  LInt64Flag.Load   (LInt64   );
-  LByteFlag.Load    (LByte    );
-  LWordFlag.Load    (LWord    );
-  LLongWordFlag.Load(LLongWord);
-  LUInt64Flag.Load  (LUInt64  );
+  Assert.WillNotRaiseAny( procedure
+    begin
+      LIntegerFlag.Load (LInteger );
+      LCardinalFlag.Load(LCardinal);
+      LShortIntFlag.Load(LShortInt);
+      LSmallIntFlag.Load(LSmallInt);
+      LLongIntFlag.Load (LLongInt );
+      LInt64Flag.Load   (LInt64   );
+      LByteFlag.Load    (LByte    );
+      LWordFlag.Load    (LWord    );
+      LLongWordFlag.Load(LLongWord);
+      LUInt64Flag.Load  (LUInt64  );
+    end);
 end;
 
 procedure TestTBitMask.TestLoadExceptedByObject;

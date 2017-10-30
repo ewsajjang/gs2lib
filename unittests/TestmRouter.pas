@@ -23,31 +23,19 @@ type
   strict private
     FRouter: TMsgRouter<Integer>;
   public
-    [Setup]
-    procedure SetUp;
-    [TearDown]
-    procedure TearDown;
-  published
-    [Test]
-    procedure TestNotify;
-    [Test]
-    procedure TestNotifyWithData;
-    [Test]
-    procedure TestWithDatas;
-    [Test]
-    procedure TestRemoveHandler;
-    [Test]
-    procedure TestERouterMethodIDAlreadyExists;
-    [Test]
-    procedure TestExcute;
-    [Test]
-    procedure TestExcuteWithData;
-    [Test]
-    procedure TestData;
-    [Test]
-    procedure TestQueryResultObj;
-    [Test]
-    procedure TestQueryVarObj;
+    [Setup] procedure SetUp;
+    [TearDown] procedure TearDown;
+
+    [Test] procedure TestNotify;
+    [Test] procedure TestNotifyWithData;
+    [Test] procedure TestWithDatas;
+    [Test] procedure TestRemoveHandler;
+    [Test] procedure TestERouterMethodIDAlreadyExists;
+    [Test] procedure TestExcute;
+    [Test] procedure TestExcuteWithData;
+    [Test] procedure TestData;
+    [Test] procedure TestTryQueryObj;
+    [Test] procedure TestQueryResultObj;
   end;
 
 implementation
@@ -243,7 +231,7 @@ begin
   FreeAndNil(LObj);
 end;
 
-procedure TestTRouter.TestQueryVarObj;
+procedure TestTRouter.TestTryQueryObj;
 var
   LObj: TObj;
 begin
