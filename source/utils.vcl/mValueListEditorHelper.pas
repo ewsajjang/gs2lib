@@ -9,7 +9,14 @@ uses
 
 type
   TValueListEditorHelper = class helper for TValueListEditor
-    function CalcRow(const ARow: Integer): Integer;
+  private
+    function GetItemValue: String;
+    procedure SetItemValue(const Value: String);
+  public
+    function ItemRow: Integer;
+    function ItemKey: String;
+
+    property ItemValue: String read GetItemValue write SetItemValue;
   end;
 
 implementation
@@ -20,9 +27,29 @@ uses
 
 { TValueListEditorHelper }
 
-function TValueListEditorHelper.CalcRow(const ARow: Integer): Integer;
+function TValueListEditorHelper.ItemRow: Integer;
 begin
-  Result := ARow - IfThen(doColumnTitles in DisplayOptions, 1)
+  Result := Row - IfThen(doColumnTitles in DisplayOptions, 1)
+end;
+
+function TValueListEditorHelper.ItemKey: String;
+begin
+  Result := '';
+  if ItemRow > -1 then
+    Result := Strings.Names[ItemRow];
+end;
+
+procedure TValueListEditorHelper.SetItemValue(const Value: String);
+begin
+  if ItemRow > -1 then
+    Strings.ValueFromIndex[ItemRow] := Value;
+end;
+
+function TValueListEditorHelper.GetItemValue: String;
+begin
+  Result := '';
+  if ItemRow > -1 then
+    Result := Strings.ValueFromIndex[ItemRow];
 end;
 
 end.
