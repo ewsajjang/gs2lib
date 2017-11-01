@@ -36,6 +36,9 @@ type
     class procedure OnItemsDragDrop(Sender, Source: TObject; X, Y: Integer); static;
   end;
 
+  TCheckListBoxHelper = class helper (TCustomListBoxHelper) for TCheckListBox
+  end;
+
 implementation
 
 uses
