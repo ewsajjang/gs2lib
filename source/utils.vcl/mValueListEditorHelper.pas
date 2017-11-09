@@ -13,6 +13,7 @@ type
     function GetItemValue: String;
     procedure SetItemValue(const Value: String);
   public
+    function CalcRow(const ARow: Integer): Integer;
     function ItemRow: Integer;
     function ItemKey: String;
 
@@ -43,6 +44,11 @@ procedure TValueListEditorHelper.SetItemValue(const Value: String);
 begin
   if ItemRow > -1 then
     Strings.ValueFromIndex[ItemRow] := Value;
+end;
+
+function TValueListEditorHelper.CalcRow(const ARow: Integer): Integer;
+begin
+  Result := ARow - IfThen(doColumnTitles in DisplayOptions, 1)
 end;
 
 function TValueListEditorHelper.GetItemValue: String;
