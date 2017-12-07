@@ -19,6 +19,7 @@ type
     {$IFDEF MSWINDOWS}
     class function MakeUniqueFileName(const AFileName: String): String; static;
     {$ENDIF}
+    class function AppendExtention(const APath, AExtention: string): string; static;
   end;
 
 function SizeToStr(ASize: Int64): String;
@@ -26,7 +27,7 @@ function SizeToStr(ASize: Int64): String;
 implementation
 
 uses
-  System.Math,
+  System.Math, System.StrUtils, System.RTLConsts,
   {$IFDEF MSWINDOWS}
   Winapi.Windows, Winapi.ShlObj
   {$ENDIF}
@@ -102,6 +103,22 @@ end;
 class function TFileHelper.GetSizeStr(const AFileName: String): String;
 begin
   Result := SizeToStr(GetSize(AFileName));
+end;
+
+class function TPathHelper.AppendExtention(const APath, AExtention: string): string;
+begin
+  if APath = '' then // DO NOT LOCALIZE
+    Exit('');
+
+  if not HasValidPathChars(APath, True) then
+    raise EArgumentException.CreateRes(@SInvalidCharsInPath);
+
+  if APath.EndsWith(TPath.ExtensionSeparatorChar) then
+    Result := IfThen(not AExtention.StartsWith(TPath.ExtensionSeparatorChar), AExtention, AExtention.Substring(1))
+  else
+    Result := IfThen(not AExtention.StartsWith(TPath.ExtensionSeparatorChar), TPath.ExtensionSeparatorChar) + AExtention;
+
+  Result := APath + Result;
 end;
 
 class function TPathHelper.MakeUniqueFileName(
