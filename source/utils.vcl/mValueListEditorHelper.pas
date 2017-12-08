@@ -12,12 +12,18 @@ type
   private
     function GetItemValue: String;
     procedure SetItemValue(const Value: String);
+    function GetItemKeys(Index: Integer): String;
+    function GetItemValues(Index: Integer): String;
+    function GetItemCount: Integer;
   public
     function CalcRow(const ARow: Integer): Integer;
     function ItemRow: Integer;
     function ItemKey: String;
 
     property ItemValue: String read GetItemValue write SetItemValue;
+    property ItemCount: Integer read GetItemCount;
+    property ItemKeys[Index: Integer]: String read GetItemKeys;
+    property ItemValues[Index: Integer]: String read GetItemValues;
   end;
 
 implementation
@@ -30,7 +36,22 @@ uses
 
 function TValueListEditorHelper.ItemRow: Integer;
 begin
-  Result := Row - IfThen(doColumnTitles in DisplayOptions, 1)
+  Result := Row -IfThen(doColumnTitles in DisplayOptions, 1);
+end;
+
+function TValueListEditorHelper.GetItemCount: Integer;
+begin
+  Result := Strings.Count;
+end;
+
+function TValueListEditorHelper.GetItemKeys(Index: Integer): String;
+begin
+  Result := Cells[0, Index +IfThen(doColumnTitles in DisplayOptions, 1)];
+end;
+
+function TValueListEditorHelper.GetItemValues(Index: Integer): String;
+begin
+  Result := Cells[1, Index +IfThen(doColumnTitles in DisplayOptions, 1)];
 end;
 
 function TValueListEditorHelper.ItemKey: String;

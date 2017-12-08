@@ -16,13 +16,14 @@ type
       constructor Create(const AChk: TCheckBoxState; const AEnabled: Boolean);
     end;
   private
+    function GetItemText: String;
     procedure OnItemDragOver(Sender, Source: TObject; X, Y: Integer; State:  TDragState; var Accept: Boolean) ;
     procedure OnItemsDragDrop(Sender, Source: TObject; X, Y: Integer);
+    procedure SetItemText(const Value: String);
   public
     procedure Click;
     function ItemSelected: Boolean;
     function GroupSelected: Boolean;
-    function ItemText: String;
     procedure ItemUp;
     procedure ItemDown;
     procedure DragAndDropEnabled(const AMultiSelect: Boolean = True);
@@ -30,6 +31,8 @@ type
     function SelectedIdxs: TArray<Integer>;
     function SelectedStrs: TArray<String>;
     function SelectedText(const ADelimiter: Char = ','): String;
+
+    property ItemText: String read GetItemText write SetItemText;
   end;
 
   TListBoxEventHelper = class
@@ -48,6 +51,9 @@ uses
 
 procedure TCustomListBoxHelper.Click;
 begin
+  if ItemIndex > -1 then
+    Selected[ItemIndex] := True;
+
   if Assigned(OnClick) then
     OnClick(Self);
 end;
@@ -62,7 +68,7 @@ end;
 
 function TCustomListBoxHelper.GroupSelected: Boolean;
 begin
-  Result := ItemSelected and ItemText.StartsWith('//')
+  Result := ItemSelected and GetItemText.StartsWith('//')
 end;
 
 procedure TCustomListBoxHelper.ItemDown;
@@ -102,7 +108,7 @@ begin
   Result := ItemIndex > NNotAssigned;
 end;
 
-function TCustomListBoxHelper.ItemText: String;
+function TCustomListBoxHelper.GetItemText: String;
 begin
   if ItemSelected then
     Result := Items[ItemIndex]
@@ -145,8 +151,10 @@ var
 
   LChkSt: TCheckBoxState;
   LEnabled: Boolean;
+  LHasItemState: Boolean;
 begin
   Assert(Source=Sender);
+  LHasItemState := TGeneric.HasIdxProperty(Sender, 'ItemState');
   LPos := LListBox.ItemAtPos(Point(X, Y), False);
   if LPos > NNotAssigned then
   begin
@@ -157,23 +165,29 @@ begin
     try
       for i := 0 to LListBox.Items.Count -1 do
       begin
-        TGeneric.TryGetIdxProperty<TCheckBoxState>(Sender, 'ItemState', [i], LChkSt);
-        TGeneric.TryGetIdxProperty<Boolean>(Sender, 'ItemEnabled', [i], LEnabled);
-        LChkBoxs.Add(TStEx.Create(LChkSt, LEnabled));
+        if LHasItemState then
+        begin
+          TGeneric.TryGetIdxProperty<TCheckBoxState>(Sender, 'ItemState', [i], LChkSt);
+          TGeneric.TryGetIdxProperty<Boolean>(Sender, 'ItemEnabled', [i], LEnabled);
+          LChkBoxs.Add(TStEx.Create(LChkSt, LEnabled));
+        end;
       end;
 
       for i := LListBox.Items.Count -1 downto 0 do
       begin
         if LListBox.Selected[i] then
         begin
-          TGeneric.TryGetIdxProperty<TCheckBoxState>(Sender, 'ItemState', [i], LChkSt);
-          TGeneric.TryGetIdxProperty<Boolean>(Sender, 'ItemEnabled', [i], LEnabled);
-
-          LChkItems.Add(TStEx.Create(LChkSt, LEnabled));
+          if LHasItemState then
+          begin
+            TGeneric.TryGetIdxProperty<TCheckBoxState>(Sender, 'ItemState', [i], LChkSt);
+            TGeneric.TryGetIdxProperty<Boolean>(Sender, 'ItemEnabled', [i], LEnabled);
+            LChkItems.Add(TStEx.Create(LChkSt, LEnabled));
+          end;
           LItems.AddObject(LListBox.Items[i], LListBox.Items.Objects[i]);
 
           LListBox.Items.Delete(i);
-          LChkBoxs.Delete(i);
+          if LHasItemState then
+            LChkBoxs.Delete(i);
           if i < LPos then
             Dec(LPos);
         end;
@@ -182,7 +196,8 @@ begin
       begin
         LListBox.Items.InsertObject(LPos, LItems[i], LItems.Objects[i]);
         LListBox.Selected[LPos] := True;
-        LChkBoxs.Insert(LPos, LChkItems[i]);
+        if LHasItemState then
+          LChkBoxs.Insert(LPos, LChkItems[i]);
         Inc(LPos);
       end;
       for i := 0 to LChkBoxs.Count -1 do
@@ -234,6 +249,12 @@ begin
   finally
     FreeAndNil(LBuf);
   end;
+end;
+
+procedure TCustomListBoxHelper.SetItemText(const Value: String);
+begin
+  if ItemSelected then
+    Items[ItemIndex] := Value;
 end;
 
 { TListBoxEventHelper }
