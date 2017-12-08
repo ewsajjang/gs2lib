@@ -39,6 +39,7 @@ type
     property DeviceClassName: String index SPDRP_CLASS read GetString;
     property DriverName: String index SPDRP_DRIVER read GetString;
     property Description: String index SPDRP_DEVICEDESC read GetString;
+    property DeviceType: String index SPCRP_DEVTYPE read GetString;
 
     property Enumerator: String index SPDRP_ENUMERATOR_NAME read GetString;
 
