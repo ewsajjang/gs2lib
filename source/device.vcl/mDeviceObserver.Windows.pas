@@ -33,6 +33,7 @@ type
     function AddNotifycation(const ADeviceInterface: TGUID): Boolean;
     procedure RemoveNotification(const ADeviceInterface: TGUID);
     function ExistsNotifycation(const ADeviceInterface: TGUID): Boolean;
+    function RegNotifications: TArray<TGUID>;
 
     property OnNodeChange: TNotifyInteger read FOnNodeChange write FOnNodeChange;
     property OnNodeChangePorc: TProc read FOnNodeChangeProc write FOnNodeChangeProc;
@@ -81,6 +82,11 @@ function TWinDeviceObserver.ExistsNotifycation(
   const ADeviceInterface: TGUID): Boolean;
 begin
   Result := FRegHandles.ContainsKey(ADeviceInterface)
+end;
+
+function TWinDeviceObserver.RegNotifications: TArray<TGUID>;
+begin
+  Result := FRegHandles.Keys.ToArray
 end;
 
 procedure TWinDeviceObserver.RemoveNotification(
