@@ -275,7 +275,9 @@ end;
 
 function TFileInfo.GetFileInfos(const Index: Integer): String;
 begin
-  Result := FFileInfos[FTransIdx][Index]
+  Result := '';
+  if (FTransIdx < Length(FFileInfos)) and (Index < Length(FFileInfos[FTransIdx])) then
+    Result := FFileInfos[FTransIdx][Index]
 end;
 
 function TFileInfo.GetFileName: String;
@@ -330,6 +332,8 @@ begin
   Result := False;
   FBuildFlags := [];
   FFileInfos := [];
+  FFileVer := Default(TVersion);
+  FProductVer := Default(TVersion);
   if not TFile.Exists(AFileName) then
     Exit;
 
