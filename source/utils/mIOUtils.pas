@@ -13,6 +13,7 @@ type
   public
     class function GetSize(const AFileName: String): Int64; static;
     class function GetSizeStr(const AFileName: String): String; static;
+    class function GetMD5String(const AFileName: String): String; static;
   end;
 
   TPathHelper = record helper for TPath
@@ -27,7 +28,7 @@ function SizeToStr(ASize: Int64): String;
 implementation
 
 uses
-  System.Math, System.StrUtils, System.RTLConsts,
+  System.Math, System.StrUtils, System.RTLConsts, Hash,
   {$IFDEF MSWINDOWS}
   Winapi.Windows, Winapi.ShlObj
   {$ENDIF}
@@ -58,6 +59,22 @@ begin
 end;
 
 { TFileHelper }
+
+class function TFileHelper.GetMD5String(const AFileName: String): String;
+var
+  LBuf: TFileStream;
+begin
+  Result := '';
+  if not TFile.Exists(AFileName) then
+    Exit;
+
+  LBuf := TFileStream.Create(AFileName, fmOpenRead);
+  try
+    Result := THashMD5.GetHashString(LBuf);
+  finally
+    FreeAndNil(LBuf);
+  end;
+end;
 
 class function TFileHelper.GetSize(const AFileName: String): Int64;
 {$IFDEF MSWINDOWS}
