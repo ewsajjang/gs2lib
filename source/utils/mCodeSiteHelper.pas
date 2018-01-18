@@ -12,6 +12,7 @@ type
     procedure EnterMethod(Obj: TObject; const AMethodName: String; Args: array of const); overload;
     procedure EnterMethod(const AMethodName: String; Args: array of const); overload;
     procedure ExitMethod(const AMethodName: String; Args: array of const); overload;
+    procedure ExitMethod(const AMethodName: String; AResult: Variant); overload;
 
     procedure WL(const AMsg: String); overload;
     procedure WL(const AMsg: TStrings); overload;
@@ -111,6 +112,11 @@ procedure TCodeSiteLoggerHelper.EnterMethod(const AMethodName: String;
   Args: array of const);
 begin
   EnterMethod(Format(AMethodName, Args));
+end;
+
+procedure TCodeSiteLoggerHelper.ExitMethod(const AMethodName: String; AResult: Variant);
+begin
+  ExitMethod(nil, AMethodName, AResult);
 end;
 
 procedure TCodeSiteLoggerHelper.EnterMethod(Obj: TObject;
