@@ -31,6 +31,7 @@ type
     function Exists(AFunc: TDvcExistsFunc): Boolean; overload;
     function Exists(const AGUID: TGUID; AFunc: TDvcExistsFunc): Boolean; overload;
     procedure Clear;
+    function AsStringArray: TArray<String>;
 
     { IDeviceList }
     property Devices[Index: Integer]: TWinDevice read GetDevices; default;
@@ -40,6 +41,11 @@ type
 implementation
 
 { TWinDeviceList }
+
+function TWinDeviceList.AsStringArray: TArray<String>;
+begin
+  Result := [];
+end;
 
 procedure TWinDeviceList.Clear;
 begin

@@ -84,7 +84,7 @@ end;
 
 function TSimpleOrderList<T>.Exists(const AItem: T): Boolean;
 begin
-  Result := FList.IndexOf(AItem) > VAL_NOT_ASSIGNED;
+  Result := FList.IndexOf(AItem) > NNotAssigned;
 end;
 
 function TSimpleOrderList<T>.GetCount: Integer;
