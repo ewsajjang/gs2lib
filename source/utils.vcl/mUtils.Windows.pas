@@ -16,6 +16,7 @@ function ShellExecuteFile(const FileName: String; Parameters: String = ''; Direc
 function OpenFolderAndSelectFile(const AFileName: String): Boolean;
 function ControlPanelExcute(Handle: HWnd; const ACommand: WideString; AFuncCall: WideString = ''): Integer;
 procedure SelectFileInExplorer(const AFileName: string);
+function HasAssoication(AFileExt: string): Boolean;
 
 function ComObjExists(ClassName: string): Boolean;
 function ComObjRunning(ClassName: string): Boolean;
@@ -51,7 +52,7 @@ const
 implementation
 
 uses
-  System.Win.ComObj, System.Variants, Winapi.ActiveX, Winapi.ShellAPI, Vcl.Forms;
+  System.Win.ComObj, System.Variants, Winapi.ActiveX, Winapi.ShellAPI, Vcl.Forms, ShLwApi;
 
 function ComObjExists(ClassName: string): Boolean;
 var
@@ -206,6 +207,38 @@ procedure SelectFileInExplorer(const AFileName: string);
 begin
   ShellExecute(0, 'open', 'explorer.exe',
     PChar('/select,"' + AFileName+'"'), nil, SW_NORMAL);
+end;
+
+function HasAssoication(AFileExt: string): Boolean;
+var
+  LBuf: string;
+  LBufSize: DWord;
+  LRes: HResult;
+begin
+  if not AFileExt.StartsWith('.') then
+    AFileExt := '.' +AFileExt;
+  LBufSize := 0;
+  LRes := AssocQueryString(
+    ASSOCF_INIT_IGNOREUNKNOWN, //ASSOCF_REMAPRUNDLL or ASSOCF_NOTRUNCATE,
+    ASSOCSTR_EXECUTABLE,
+    PChar(AFileExt),
+    nil,
+    nil,
+    @LBufSize
+  );
+  if LRes = S_FALSE then
+  begin
+    SetLength(LBuf, LBufSize-1);
+    LRes := AssocQueryString(
+      ASSOCF_INIT_IGNOREUNKNOWN, //ASSOCF_REMAPRUNDLL or ASSOCF_NOTRUNCATE,
+      ASSOCSTR_EXECUTABLE,
+      PChar(AFileExt),
+      nil,
+      PChar(LBuf),
+      @LBufSize
+    );
+  end;
+  Result := (LRes = S_OK);// and LBuf.Contains('');
 end;
 
 function MakeUniqueFileName(const APath, AFileName: string): string;
