@@ -5,7 +5,6 @@ interface
 uses
   mTypes,
   mDeviceObserver.Windows.Common,
-
   System.SysUtils, System.Classes,
 
   WinApi.Messages, WinAPI.Windows,
@@ -25,7 +24,7 @@ type
     FOnNodeChangeProc: TProc;
     procedure WmDeviceChange(var Msg : TMessage); message WM_DEVICECHANGE;
   protected
-    procedure do_WndProc(var Message:TMessage); virtual;
+    procedure do_WndProc(var Message:TMessage);
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
@@ -46,6 +45,7 @@ type
 implementation
 
 uses
+  MakeAllocateHwndThreadsafe,
   CodeSiteLogging, mCodeSiteHelper
   ;
 
@@ -55,7 +55,7 @@ constructor TWinDeviceObserver.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
 
-  FHandle := AllocateHWND(do_WndProc);
+  FHandle := ThreadSafeAllocateHWND(do_WndProc);
   FRegHandles := TDictionary<TGUID, PHandle>.Create;
 
   //CodeSite.Send('TWinDeviceObserver.Create, Handle', FHandle);
@@ -67,7 +67,7 @@ var
 begin
   for LHandle in FRegHandles.Values do
     UnRegDeviceNotification(LHandle);
-  DeAllocateHWND(FHandle);
+  ThreadSafeDeAllocateHWND(FHandle);
   FreeAndNil(FRegHandles);
 
   inherited;
