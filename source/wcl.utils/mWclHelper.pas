@@ -18,6 +18,7 @@ type
     function Address: Int64;
     function AsAddrString: string;
     function RemoteName(const Address: Int64): string;
+    function RemotePaired(const AAddress: Int64): string;
   end;
 
 function wclExeLog(const ASuccess: Integer; const AStr: string): Boolean;
@@ -172,6 +173,16 @@ end;
 function TwclBluetoothRadioHelper.RemoteName(const Address: Int64): string;
 begin
   GetRemoteName(Address, Result);
+end;
+
+function TwclBluetoothRadioHelper.RemotePaired(const AAddress: Int64): string;
+var
+  LPaired: Boolean;
+begin
+  if GetRemotePaired(AAddress, LPaired) <> WCL_E_SUCCESS then
+    Result := 'Unkwon'
+  else
+    Result := BoolToStr(LPaired, True);
 end;
 
 end.
