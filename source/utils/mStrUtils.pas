@@ -8,6 +8,7 @@ function IntegerValidate(const AValue: String): Boolean;
 function NonEmptyStr(const AValue1, AValue2: String): String;
 function IsNumeric(const AValue: String): Boolean;
 function IsInteger(const AValue: String): Boolean;
+function ValidateIPv4(const AValue: string): Boolean;
 
 implementation
 
@@ -53,5 +54,13 @@ var
 begin
   Result := TryStrToInt64(AValue, LValue);
 end;
+
+function ValidateIPv4(const AValue: string): Boolean;
+const
+  SRegExp = '^(?=\d+\.\d+\.\d+\.\d+($|\/))(([1-9]?\d|1\d\d|2[0-4]\d|25[0-5])\.?){4}(([0-9]|[1-2][0-9]|3[0-2]))?$';
+begin
+  Result := TRegEx.IsMatch(AValue, SRegExp);
+end;
+
 
 end.
