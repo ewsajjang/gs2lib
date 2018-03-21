@@ -3,6 +3,7 @@ unit mDeviceObserver.Windows;
 interface
 
 uses
+  MakeAllocateHwndThreadsafe,
   mTypes,
   mDeviceObserver.Windows.Common,
   System.SysUtils, System.Classes,
@@ -45,7 +46,6 @@ type
 implementation
 
 uses
-  MakeAllocateHwndThreadsafe,
   CodeSiteLogging, mCodeSiteHelper
   ;
 
@@ -146,5 +146,9 @@ begin
 
   end;
 end;
+
+initialization
+
+finalization
 
 end.

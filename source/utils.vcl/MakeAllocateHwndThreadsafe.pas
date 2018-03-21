@@ -10,13 +10,16 @@ unit MakeAllocateHwndThreadsafe;
 
 interface
 
-{$IF CompilerVersion >= 23}{$DEFINE ScopedUnitNames}{$IFEND}
 uses
-  {$IFDEF ScopedUnitNames}System.SysUtils{$ELSE}SysUtils{$ENDIF},
-  {$IFDEF ScopedUnitNames}System.Classes{$ELSE}Classes{$ENDIF},
-  {$IFDEF ScopedUnitNames}Winapi.Windows{$ELSE}Windows{$ENDIF},
-  {$IFDEF ScopedUnitNames}Winapi.Messages{$ELSE}Messages{$ENDIF}
+  System.SysUtils,
+  System.Classes,
+  Winapi.Windows,
+  Winapi.Messages
   ;
+
+var
+  //DSiAllocateHwnd lock
+  GDSiWndHandlerCritSect: TRTLCriticalSection;
 
 function ThreadSafeAllocateHWnd(wndProcMethod: TWndMethod): HWND;
 procedure ThreadSafeDeallocateHWnd(wnd: HWND);
@@ -32,7 +35,7 @@ const //DSiAllocateHwnd window extra data offsets
 
 var
   //DSiAllocateHwnd lock
-  GDSiWndHandlerCritSect: TRTLCriticalSection;
+  //GDSiWndHandlerCritSect: TRTLCriticalSection;
   //Count of registered windows in this instance
   GDSiWndHandlerCount: integer;
 
@@ -73,19 +76,19 @@ var
   tempClass        : TWndClass;
   utilWindowClass  : TWndClass;
 begin
-  Result := 0;
+  //Result := 0;
   FillChar(utilWindowClass, SizeOf(utilWindowClass), 0);
   EnterCriticalSection(GDSiWndHandlerCritSect);
   try
     alreadyRegistered := GetClassInfo(HInstance, CDSiHiddenWindowName, tempClass);
     if (not alreadyRegistered) or (tempClass.lpfnWndProc <> @DSiClassWndProc) then begin
       if alreadyRegistered then
-        {$IFDEF ScopedUnitNames}Winapi.{$ENDIF}Windows.UnregisterClass(CDSiHiddenWindowName, HInstance);
+        Winapi.Windows.UnregisterClass(CDSiHiddenWindowName, HInstance);
       utilWindowClass.lpszClassName := CDSiHiddenWindowName;
       utilWindowClass.hInstance := HInstance;
       utilWindowClass.lpfnWndProc := @DSiClassWndProc;
       utilWindowClass.cbWndExtra := SizeOf(TMethod);
-      if {$IFDEF ScopedUnitNames}Winapi.{$ENDIF}Windows.RegisterClass(utilWindowClass) = 0 then
+      if Winapi.Windows.RegisterClass(utilWindowClass) = 0 then
         raise Exception.CreateFmt('Unable to register DSiWin32 hidden window class. %s',
           [SysErrorMessage(GetLastError)]);
     end;
@@ -118,7 +121,7 @@ begin
   try
     Dec(GDSiWndHandlerCount);
     if GDSiWndHandlerCount <= 0 then
-      {$IFDEF ScopedUnitNames}Winapi.{$ENDIF}Windows.UnregisterClass(CDSiHiddenWindowName, HInstance);
+      Winapi.Windows.UnregisterClass(CDSiHiddenWindowName, HInstance);
   finally LeaveCriticalSection(GDSiWndHandlerCritSect); end;
 end; { DSiDeallocateHWnd }
 
