@@ -1,4 +1,4 @@
-unit mWinsockHelper;
+unit mScktComp;
 
 interface
 
