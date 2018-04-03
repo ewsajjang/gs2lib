@@ -39,7 +39,7 @@ type
     procedure SecToMmSec(const Index, Value: Integer);
     procedure MinToMmSec(const Index, Value: Integer);
 
-    procedure Add(const ASection: String; const ANameDefault: TArray<TArray<String>>); virtual;
+    procedure Add(const ASection: String; const ANameDefault: TArray<TVariantArray>); virtual;
   public const
     NSec = 1000;
     NMin = 60 * NSec;
@@ -52,7 +52,7 @@ implementation
 
 { TRegOption }
 
-procedure TRegOption.Add(const ASection: String; const ANameDefault: TArray<TArray<String>>);
+procedure TRegOption.Add(const ASection: String; const ANameDefault: TArray<TVariantArray>);
 begin
   FIdx.Add(ASection, ANameDefault);
 end;
@@ -91,7 +91,7 @@ end;
 
 function TRegOption.GetInteger(const Index: Integer): Integer;
 begin
-  Result := GetString(Index).ToInteger;
+  Result := Reg.ReadInteger(FIdx.Section[Index], FIdx.Name[Index], FIdx.Default[Index]);
 end;
 
 function TRegOption.GetString(const Index: Integer): String;
@@ -111,7 +111,7 @@ end;
 
 procedure TRegOption.SetInteger(const Index, Value: Integer);
 begin
-  SetString(Index, Value.ToString);
+  Reg.WriteInteger(FIdx.Section[Index], FIdx.Name[Index], Value)
 end;
 
 procedure TRegOption.SetString(const Index: Integer; const Value: String);
@@ -136,7 +136,7 @@ end;
 
 function TRegOption.GetBool(const Index: Integer): Boolean;
 begin
-  Result := Reg.ReadBool(FIdx.Section[Index], FIdx.Name[Index], FIdx.Default[Index].ToBoolean)
+  Result := Reg.ReadBool(FIdx.Section[Index], FIdx.Name[Index], FIdx.Default[Index])
 end;
 
 procedure TRegOption.SetBool(const Index: Integer; const Value: Boolean);

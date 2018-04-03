@@ -18,6 +18,7 @@ type
     EInitFailed = class(ECustomPreferences);
 
   TStringArray = TArray<String>;
+  TVariantArray = TArray<Variant>;
   IPreferences = interface
     ['{019E078F-BC8E-459F-9E8B-8A93E4EED77A}']
 
@@ -34,7 +35,7 @@ type
     function GetBool(const Index: Integer): Boolean;
     procedure SetBool(const Index: Integer; const Value: Boolean);
 
-    procedure Add(const ASection: String; const ANameDefault: TArray<TStringArray>);
+    procedure Add(const ASection: String; const ANameDefault: TArray<TVariantArray>);
   end;
 
   TCustomPreferences = class
@@ -71,10 +72,10 @@ type
       NName= 0;
       NDefualt = 1;
     type
-      TNameDefault = TArray<String>;
+      TVariantArray = TArray<Variant>;
     var FSections: TArray<String>;
-    var FSecNameDefaults: TDictionary<String, TArray<TNameDefault>>;
-    function GetDefault(AIdx: Integer): String;
+    var FSecNameDefaults: TDictionary<String, TArray<TVariantArray>>;
+    function GetDefault(AIdx: Integer): Variant;
     function GetName(AIdx: Integer): String;
     function GetSection(AIdx: Integer): String;
   private
@@ -82,12 +83,12 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    procedure Add(const ASection: String; const ANameDefault: TArray<TNameDefault>);
+    procedure Add(const ASection: String; const ANameDefault: TArray<TVariantArray>);
     procedure Clear;
 
     property Section[AIdx: Integer]: String read GetSection;
     property Name[AIdx: Integer]: String read GetName;
-    property Default[AIdx: Integer]: String read GetDefault;
+    property Default[AIdx: Integer]: Variant read GetDefault;
   end;
 
   TPreferences = class(TInterfacedObject, IPreferences)
@@ -113,7 +114,7 @@ type
     destructor Destroy; override;
 
     procedure ClearIdx; virtual;
-    procedure Add(const ASection: String; const ANameDefault: TArray<TStringArray>); virtual;
+    procedure Add(const ASection: String; const ANameDefault: TArray<TVariantArray>); virtual;
 
     function LoadFromIni(const APath: String; const ACreateNotExists: Boolean = False): Boolean;
     function LoadFromReg(const APath: String; const AKey: TRzRegKey = hkeyCurrentUser; const AAccess: TRzRegAccess = [keyAllAccess]): Boolean;
@@ -241,7 +242,7 @@ end;
 { TOptionIndexer }
 
 procedure TOptionIndexer.Add(const ASection: String;
-  const ANameDefault: TArray<TNameDefault>);
+  const ANameDefault: TArray<TVariantArray>);
 begin
   Assert(not FSecNameDefaults.ContainsKey(ASection), Format('The %s is alreay exists', [ASection]));
 
@@ -255,7 +256,7 @@ begin
     FreeAndNil(FSecNameDefaults);
 end;
 
-function TOptionIndexer.GetDefault(AIdx: Integer): String;
+function TOptionIndexer.GetDefault(AIdx: Integer): Variant;
 begin
   Result := FSecNameDefaults[Section[AIdx]][IdxR(AIdx)][NIdxDefualt]
 end;
@@ -278,12 +279,12 @@ end;
 
 constructor TOptionIndexer.Create;
 begin
-  FSecNameDefaults := TDictionary<String, TArray<TNameDefault>>.Create;
+  FSecNameDefaults := TDictionary<String, TArray<TVariantArray>>.Create;
 end;
 
 { TPreferences }
 
-procedure TPreferences.Add(const ASection: String; const ANameDefault: TArray<TStringArray>);
+procedure TPreferences.Add(const ASection: String; const ANameDefault: TArray<TVariantArray>);
 begin
   FIdx.Add(ASection, ANameDefault);
 end;
