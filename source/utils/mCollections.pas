@@ -7,6 +7,7 @@ uses
   ;
 
 type
+  TExecuteProc<TValue> = reference to procedure(const AValue: TValue);
   TThreadedDictionary<TKey, TValue> = class
   private
     FDic: TDictionary<TKey, TValue>;
@@ -32,6 +33,7 @@ type
 
     destructor Destroy; override;
 
+    procedure Execute(const AKey: TKey; AExeProc: TExecuteProc<TValue>);
     procedure Add(const Key: TKey; const Value: TValue);
     procedure Remove(const Key: TKey);
     function ExtractPair(const Key: TKey): TPair<TKey,TValue>;
@@ -186,6 +188,17 @@ end;
 function TThreadedDictionary<TKey, TValue>.GetEnumerator: TEnumerator<TPair<TKey, TValue>>;
 begin
   Result := FDic.GetEnumerator
+end;
+
+procedure TThreadedDictionary<TKey, TValue>.Execute(const AKey: TKey; AExeProc: TExecuteProc<TValue>);
+begin
+  Lock;
+  try
+    if FDic.ContainsKey(AKey) then
+      AExeProc(FDic[AKey]);
+  finally
+    Unlock;
+  end;
 end;
 
 function TThreadedDictionary<TKey, TValue>.ExtractPair(const Key: TKey): TPair<TKey, TValue>;
