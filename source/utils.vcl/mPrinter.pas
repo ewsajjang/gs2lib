@@ -7,51 +7,52 @@ uses
   ;
 
 type
-  TPrinterProperties = class
+  TPrinterDlg = class
   private const
     PRINTER_FDEFAULTS: TPrinterDefaults = (
       pDatatype: nil;
       pDevMode: nil;
-      DesiredAccess: STANDARD_RIGHTS_REQUIRED or PRINTER_ACCESS_USE);
+      DesiredAccess: {STANDARD_RIGHTS_REQUIRED or }PRINTER_ACCESS_USE);
     NBufLen = 256;
   private class var
-    FDeviceName: array [0..NBufLen -1] of Char;
-    FDriverName: array [0..NBufLen -1] of Char;
-    FPort: array [0..NBufLen -1] of Char;
+    FDeviceName: string;
+    FDriverName: string;
+    FPort: string;
     FDeviceHandle: THandle;
     FHandle: THandle;
     FPrinterInfoLen: Cardinal;
   private
     class procedure InitValues(const APrinterIdx: Integer);
   public
-    class procedure Open(const APrinterIdx: Integer = -1);
-    class procedure DocOpen(const APrinterIdx: Integer = -1);
+    class procedure OpenProperties(const APrinterIdx: Integer = -1);
+    class procedure OpenDocProperties(const APrinterIdx: Integer = -1);
   end;
 
 implementation
 
 uses
-  Vcl.Printers, Winapi.ShlObj, Vcl.Forms
+  Vcl.Printers, Winapi.ShlObj, Vcl.Forms, SysUtils
   ;
 
 { TPrinterPropertiesDlg }
 
-class procedure TPrinterProperties.InitValues(const APrinterIdx: Integer);
+class procedure TPrinterDlg.InitValues(const APrinterIdx: Integer);
 begin
   Printer.PrinterIndex := APrinterIdx;
-
-  ZeroMemory(@FDeviceName[0], NBufLen);
-  ZeroMemory(@FDriverName[0], NBufLen);
-  ZeroMemory(@FPort[0], NBufLen);
+  SetLength(FDeviceName, NBufLen);
+  SetLength(FDriverName, NBufLen);
+  SetLength(FPort, NBufLen);
   FDeviceHandle := INVALID_HANDLE_VALUE;
   FHandle := INVALID_HANDLE_VALUE;
 end;
 
-class procedure TPrinterProperties.Open(const APrinterIdx: Integer);
+class procedure TPrinterDlg.OpenProperties(const APrinterIdx: Integer);
 begin
   InitValues(APrinterIdx);
-  Printer.GetPrinter(FDeviceName, FDriverName, FPort, FDeviceHandle);
-  if OpenPrinter(@FDeviceName, FHandle, @PRINTER_FDEFAULTS) then
+  Printer.GetPrinter(PChar(FDeviceName), PChar(FDriverName), PChar(FPort), FDeviceHandle);
+  if not OpenPrinter(PChar(FDeviceName), FHandle, @PRINTER_FDEFAULTS) then
+    raise EInvalidOp.Create(GetLastError.ToString)
+  else
     try
       PrinterProperties(Application.MainForm.Handle, FHandle);
     finally
@@ -59,14 +60,16 @@ begin
     end;
 end;
 
-class procedure TPrinterProperties.DocOpen(const APrinterIdx: Integer);
+class procedure TPrinterDlg.OpenDocProperties(const APrinterIdx: Integer);
 var
   LPrinterInfo2: PPrinterInfo2;
   LDlgResult: Integer;
 begin
   InitValues(APrinterIdx);
-  Printer.GetPrinter(FDeviceName, FDriverName, FPort, FDeviceHandle);
-  if OpenPrinter(@FDeviceName, FHandle, @PRINTER_FDEFAULTS) then
+  Printer.GetPrinter(PChar(FDeviceName), PChar(FDriverName), PChar(FPort), FDeviceHandle);
+  if not OpenPrinter(PChar(FDeviceName), FHandle, @PRINTER_FDEFAULTS) then
+    raise EInvalidOp.Create(GetLastError.ToString)
+  else
     try
       SetLastError(0);
       // See - http://msdn.microsoft.com/en-us/library/windows/desktop/dd144911(v=vs.85).aspx or Search 'msdn GetPrinter' in google :)
@@ -79,7 +82,7 @@ begin
             LDlgResult := DocumentProperties(
               Application.MainForm.Handle,
               FHandle,
-              @FDeviceName,
+              PChar(FDeviceName),
               LPrinterInfo2.pDevMode^,
               LPrinterInfo2.pDevMode^,
               DM_IN_PROMPT or DM_IN_BUFFER or DM_OUT_BUFFER);
