@@ -21,7 +21,7 @@ implementation
 procedure THackRzSplitter.DrawSplitterBar;
 var
   FBarRect, R: TRect;
-  H, W: Integer;
+  W: Integer;
 begin
   inherited DrawSplitterBar;;
 
