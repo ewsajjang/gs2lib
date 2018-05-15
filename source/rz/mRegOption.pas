@@ -33,6 +33,10 @@ type
     procedure SetFloat(const Index: Integer; const Value: Double);
     function GetBool(const Index: Integer): Boolean;
     procedure SetBool(const Index: Integer; const Value: Boolean);
+    function  GetStringArray(const Index: Integer): TArray<string>;
+    procedure SetStringArray(const Index: Integer; const AValues: TArray<string>);
+    function GetIntegerArray(const Index: Integer): TArray<Integer>;
+    procedure SetIntegerArray(const Index: Integer; const AValues: TArray<Integer>);
 
     function mmSecFromSec(const Index: Integer): Integer;
     function mmSecFromMin(const Index: Integer): Integer;
@@ -49,6 +53,10 @@ type
   end;
 
 implementation
+
+uses
+  Variants
+  ;
 
 { TRegOption }
 
@@ -94,9 +102,56 @@ begin
   Result := Reg.ReadInteger(FIdx.Section[Index], FIdx.Name[Index], FIdx.Default[Index]);
 end;
 
+function TRegOption.GetIntegerArray(const Index: Integer): TArray<Integer>;
+var
+  LBuf: TArray<string>;
+  LRet, i: Integer;
+begin
+  Result := [];
+  LBuf := GetStringArray(Index);
+  if Length(LBuf) = 0 then
+    Exit;
+
+  for i := 0 to Length(LBuf) -1 do
+    if TryStrToInt(LBuf[i], LRet) then
+      Result := Result + [LRet];
+end;
+
 function TRegOption.GetString(const Index: Integer): String;
 begin
   Result := Reg.ReadString(FIdx.Section[Index], FIdx.Name[Index], FIdx.Default[Index]);
+end;
+
+function TRegOption.GetStringArray(const Index: Integer): TArray<string>;
+var
+  LVarArray: Variant;
+  LCnt, lo, hi, dim: Integer;
+  LBuf: string;
+begin
+  Result := [];
+  if Reg.ValueExists(FIdx.Section[Index], FIdx.Name[Index]) then
+  begin
+    LBuf := Reg.ReadString(FIdx.Section[Index], FIdx.Name[Index], '');
+    if not LBuf.IsEmpty then
+      Result := LBuf.Split([','])
+  end
+  else
+  begin
+    LVarArray := FIdx.Default[Index];
+    dim := VarArrayDimCount(LVarArray);
+    lo := VarArrayLowBound(LVarArray, dim);
+    hi := VarArrayHighBound(LVarArray, dim);
+    LCnt := hi - lo +1;
+    if LCnt > 0 then
+    begin
+      SetLength(Result, LCnt);
+      while lo < LCnt do
+      begin
+        Result[lo] := LVarArray[lo];
+        Inc(lo);
+      end;
+    end;
+  end;
 end;
 
 function TRegOption.GetUInt64(const Index: Integer): UInt64;
@@ -114,9 +169,43 @@ begin
   Reg.WriteInteger(FIdx.Section[Index], FIdx.Name[Index], Value)
 end;
 
+procedure TRegOption.SetIntegerArray(const Index: Integer; const AValues: TArray<Integer>);
+var
+  LBuf: TStringList;
+  i: Integer;
+begin
+  LBuf := TStringList.Create;
+  try
+    LBuf.Delimiter := ',';
+    LBuf.QuoteChar := #0;
+    LBuf.StrictDelimiter := True;
+    for i in AValues do
+      LBuf.Add(i.ToString);
+    SetString(Index, LBuf.DelimitedText);
+  finally
+    FreeAndNil(LBuf);
+  end;
+end;
+
 procedure TRegOption.SetString(const Index: Integer; const Value: String);
 begin
   Reg.WriteString(FIdx.Section[Index], FIdx.Name[Index], Value)
+end;
+
+procedure TRegOption.SetStringArray(const Index: Integer; const AValues: TArray<string>);
+var
+  LBuf: TStringList;
+begin
+  LBuf := TStringList.Create;
+  try
+    LBuf.Delimiter := ',';
+    LBuf.QuoteChar := #0;
+    LBuf.StrictDelimiter := True;
+    LBuf.AddStrings(AValues);
+    SetString(Index, LBuf.DelimitedText);
+  finally
+    FreeAndNil(LBuf);
+  end;
 end;
 
 procedure TRegOption.SetUInt64(const Index: Integer; const Value: UInt64);

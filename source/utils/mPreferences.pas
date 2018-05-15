@@ -126,7 +126,7 @@ function IdxL(const Index: Integer): Integer;
 implementation
 
 uses
-  mIniFileHelper, System.IOUtils, mConsts
+  mIniFileHelper, System.IOUtils, mConsts, Variants
   ;
 
 const
@@ -247,7 +247,7 @@ begin
   Assert(not FSecNameDefaults.ContainsKey(ASection), Format('The %s is alreay exists', [ASection]));
 
   FSections := FSections + [ASection];
-  FSecNameDefaults.Add(ASection, ANameDefault);
+  FSecNameDefaults.Add(ASection, ANameDefault)
 end;
 
 destructor TOptionIndexer.Destroy;
