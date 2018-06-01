@@ -12,10 +12,16 @@ type
   public
     class function ToHex(const AValue: TValue): String; static;
     class function ToCommaLog(const AValue: TValue): String; static;
-    class function CreateInstance<T>(const AArgs: TArray<TValue>): T;
+    class function CreateInstance<T>(const AArgs: TArray<TValue> = []): T;
+    class function TryExecProc<T>(const AProcName: string; const AArgs: TArray<TValue> = []): Boolean;
+    class function TryExecFunc<T1, T2>(const AProcName: string; const AArgs: TArray<TValue>; out AResult: T2): Boolean;
+    class function ExecFunc<T1, T2>(const AProcName: string; const AArgs: TArray<TValue>; const ADefault: T2): T2;
     class function ToString<T>: String; reintroduce; overload;
     class function IfThen<T>(AValue: Boolean; const ATrue: T): T; overload;
     class function IfThen<T>(AValue: Boolean; const ATrue, AFalse: T): T; overload;
+    class function TryGetPropValue<T>(ASrc: TObject; const APropName: string; out AValue: T): Boolean; overload;
+    class function GetPropValue<T>(ASrc: TObject; const APropName: string; const ADefaultValue: T): T; overload;
+    class function TrySetPropValue(ASrc: TObject; const APropName: string; const AValue: TValue): Boolean; overload;
     class function HasIdxProperty(const ASrc: TObject; const APropName: String): Boolean;
     class function TryGetIdxProperty<T>(const ASrc: TObject; const APropName: String;
       const Args: array of TValue; var AValue: T): Boolean;
@@ -59,6 +65,28 @@ end;
 class function TGeneric.IfThen<T>(AValue: Boolean; const ATrue: T): T;
 begin
   Result := IfThen<T>(AValue, ATrue, Default(T));
+end;
+
+class function TGeneric.TryGetPropValue<T>(ASrc: TObject; const APropName: string; out AValue: T): Boolean;
+var
+  LCtx: TRttiContext;
+  LType: TRttiType;
+  LProp: TRttiProperty;
+  LValue: TValue;
+begin
+  Result := False;
+  LCtx := TRttiContext.Create;
+  try
+    LType := LCtx.GetType(ASrc.ClassInfo) as TRttiInstanceType;
+    LProp := LType.GetProperty(APropName);
+    if Assigned(LProp) then
+    begin
+      LValue := LProp.GetValue(ASrc);
+      Result := not LValue.IsEmpty;
+      AValue := LValue.AsType<T>;
+    end;
+  except on E: Exception do
+  end;
 end;
 
 class function TGeneric.HasIdxProperty(const ASrc: TObject;
@@ -196,6 +224,58 @@ begin
   Result := True;
 end;
 
+class function TGeneric.TryExecFunc<T1, T2>(const AProcName: string; const AArgs: TArray<TValue>; out AResult: T2): Boolean;
+var
+  LValue: TValue;
+  LCtx: TRttiContext;
+  LType: TRttiType;
+  LMethod: TRttiMethod;
+  LInstanceType: TRttiInstanceType;
+begin
+  Result := False;
+  LCtx := TRttiContext.Create;
+  LType := LCtx.GetType(TypeInfo(T1));
+  for LMethod in LType.GetMethods do
+    if LMethod.Name.Equals(AProcName) and (Length(LMethod.GetParameters) = Length(AArgs)) then
+    begin
+      LInstanceType := LType.AsInstance;
+      AResult := LMethod.Invoke(LInstanceType.MetaclassType, AArgs).AsType<T2>;
+      Exit(True);
+    end;
+end;
+
+class function TGeneric.TryExecProc<T>(const AProcName: string; const AArgs: TArray<TValue>): Boolean;
+var
+  LValue: TValue;
+  LCtx: TRttiContext;
+  LType: TRttiType;
+  LMethod: TRttiMethod;
+  LInstanceType: TRttiInstanceType;
+begin
+  Result := False;
+  LCtx := TRttiContext.Create;
+  LType := LCtx.GetType(TypeInfo(T));
+  for LMethod in LType.GetMethods do
+    if LMethod.Name.Equals(AProcName) and (Length(LMethod.GetParameters) = Length(AArgs)) then
+    begin
+      LInstanceType := LType.AsInstance;
+      LValue := LMethod.Invoke(LInstanceType.MetaclassType, AArgs);
+      Exit(True);
+    end;
+end;
+
+class function TGeneric.ExecFunc<T1, T2>(const AProcName: string; const AArgs: TArray<TValue>; const ADefault: T2): T2;
+begin
+  if not TryExecFunc<T1, T2>(AProcName, AArgs, Result) then
+    Result := ADefault;
+end;
+
+class function TGeneric.GetPropValue<T>(ASrc: TObject; const APropName: string; const ADefaultValue: T): T;
+begin
+  if not TryGetPropValue(ASrc, APropName, Result) then
+    Result := ADefaultValue;
+end;
+
 class function TGeneric.TrySetIdxProperty<T>(const ASrc: TObject;
   const APropName: String; const Args: array of TValue;
   const AValue: T): Boolean;
@@ -219,6 +299,26 @@ begin
   except on E: Exception do
   end;
   Result := True;
+end;
+
+class function TGeneric.TrySetPropValue(ASrc: TObject; const APropName: string; const AValue: TValue): Boolean;
+var
+  LCtx: TRttiContext;
+  LType: TRttiType;
+  LRttiProp: TRttiProperty;
+begin
+  Result := False;
+  LCtx := TRttiContext.Create;
+  try
+    LType := LCtx.GetType(ASrc.ClassInfo) as TRttiInstanceType;
+    LRttiProp := LType.GetProperty(APropName);
+    if Assigned(LRttiProp) then
+    begin
+      LRttiProp.SetValue(ASrc, AValue);
+      Result := True;
+    end;
+  except on E: Exception do
+  end;
 end;
 
 class function TGeneric.ToHex(const AValue: TValue): String;
