@@ -49,13 +49,15 @@ type
     NMin = 60 * NSec;
   public
     function CreateRzRegOption(const APath: String; AOwner: TComponent = nil): TRzRegIniFile;
+    procedure EraseRegPath;
+
     property Reg: TRzRegIniFile read FReg;
   end;
 
 implementation
 
 uses
-  Variants
+  Variants, Registry
   ;
 
 { TRegOption }
@@ -90,6 +92,18 @@ begin
   inherited;
 
   FreeAndNil(FIdx);
+end;
+
+procedure TRegOption.EraseRegPath;
+var
+  LReg: TRegistry;
+begin
+  LReg := TRegistry.Create;
+  try
+    LReg.DeleteKey(FReg.Path);
+  finally
+    FreeAndNil(LReg);
+  end;
 end;
 
 function TRegOption.GetInt64(const Index: Integer): Int64;
