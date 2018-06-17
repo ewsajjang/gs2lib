@@ -32,7 +32,9 @@ uses
   mTypes in '..\source\utils\mTypes.pas',
   mTypesHelper in '..\source\utils\mTypesHelper.pas',
   mTypes.bytesarray in '..\source\utils\mTypes.bytesarray.pas',
-  t.types.bytesarray in 't.types.bytesarray.pas';
+  t.types.bytesarray in 't.types.bytesarray.pas',
+  mEvent in '..\source\utils\mEvent.pas',
+  t.event in 't.event.pas';
 
 var
   runner : ITestRunner;
