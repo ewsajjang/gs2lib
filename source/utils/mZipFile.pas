@@ -1,3 +1,6 @@
+//
+// refer the https://www.gesource.jp/weblog/?p=5764
+//
 unit mZipFile;
 {$Warnings OFF} {$Hints Off}
 interface
