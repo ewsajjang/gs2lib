@@ -48,7 +48,7 @@ type
     function GetMonth: Word; inline;
     function GetSecond: Word; inline;
     function GetTime: TDateTime; inline;
-    function GetYear: Integer; inline;
+    function GetYear: Word ; inline;
     class function GetNow: TDateTime; static; inline;
     class function GetToday: TDateTime; static; inline;
     class function GetTomorrow: TDateTime; static; inline;
@@ -62,6 +62,7 @@ type
     class function FmtSettingsStr(const ADateStr: String; AFmtSettings: TFormatSettings): TDateTime; static; inline;
     class function FromDateStr(const ADateStr, AFmt: String): TDateTime; static;
 
+    class function FmtYMD(const YYYYMMDD: String): TDateTime; overload; static; inline;
     class function FmtYMDHN(const YYYYMMDDHHNN: String): TDateTime; overload; static; inline;
     class function FmtYMDHNS(const YYYYMMDDHHNNSS: String): TDateTime; static; inline;
     class function FmtISO8601(const AValue: String): TDateTime; overload; static; inline;
@@ -77,7 +78,7 @@ type
     property DayOfWeek: Word read GetDayOfWeek;
     property DayOfYear: Word read GetDayOfYear;
 
-    property Year: Integer read GetYear;
+    property Year: Word read GetYear;
     property Month: Word read GetMonth;
     property Day: Word read GetDay;
     property Hour: Word read GetHour;
@@ -133,6 +134,9 @@ type
     function WithinMinutes(const aDateTime: TDateTime; const aMinutes: Int64): Boolean; inline;
     function WithinSeconds(const aDateTime: TDateTime; const aSeconds: Int64): Boolean; inline;
     function WithinMilliseconds(const aDateTime: TDateTime; const AMilliseconds: Int64): Boolean; inline;
+
+    function WeekOfTheYear: Word;
+    function WeekOfTheMonth: Word;
   end;
 
 implementation
@@ -309,7 +313,7 @@ begin
   Result := System.SysUtils.Date + 1;
 end;
 
-function TDateTimeHelper.GetYear: Integer;
+function TDateTimeHelper.GetYear: Word;
 begin
   Result := YearOf(Self);
 end;
@@ -402,6 +406,23 @@ begin
     Result := FormatDateTime(aFormatStr, Self);
 end;
 
+function TDateTimeHelper.WeekOfTheMonth: Word;
+var
+  y, m: word;
+begin
+  y := Year;
+  m := Month;
+  Result := System.DateUtils.WeekOfTheMonth(Self, y, m);
+end;
+
+function TDateTimeHelper.WeekOfTheYear: Word;
+var
+  y: word;
+begin
+  y := Year;
+  Result := System.DateUtils.WeekOfTheYear(Self, y);
+end;
+
 function TDateTimeHelper.WeeksBetween(const aDateTime: TDateTime): Integer;
 begin
   Result := System.DateUtils.WeeksBetween(Self, aDateTime);
@@ -467,6 +488,17 @@ var
 begin
   LDT := ADate.ToString('YYYYMMDD') + ATime.ToString('HHNN');
   Result := FmtYMDHN(LDT);
+end;
+
+class function TDateTimeHelper.FmtYMD(const YYYYMMDD: String): TDateTime;
+var
+  Y, M, D: Word;
+begin
+  Y := StrToInt(Copy(YYYYMMDD, 1, 4));
+  M := StrToInt(Copy(YYYYMMDD, 5, 2));
+  D := StrToInt(Copy(YYYYMMDD, 7, 2));
+
+  Result := EncodeDate(Y, M, D);
 end;
 
 class function TDateTimeHelper.FmtYMDHN(const YYYYMMDDHHNN: String): TDateTime;
